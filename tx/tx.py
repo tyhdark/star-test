@@ -5,6 +5,10 @@
 @Version :  V1.0
 @Desc    :  None
 """
+import inspect
+
+from loguru import logger
+
 from base.base import BaseClass
 from tools import handle_data
 
@@ -14,6 +18,7 @@ class Tx(BaseClass):
     def query_tx(self, tx_hash):
         """查询 tx_hash """
         cmd = self.ssh_home + f"./srs-poad query tx {tx_hash}"
+        logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         res = self.ssh_client.ssh(cmd)
         return handle_data.handle_yaml_to_dict(res)
 

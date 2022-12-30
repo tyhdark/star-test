@@ -7,11 +7,13 @@
 """
 import sys
 import time
+import uuid
 
 from loguru import logger
 
 from bank.bank import Bank
 from srstaking.region import Region
+from srvault.fixed_deposit import Deposit
 from srvault.kyc import KYC
 from user.keys import User
 
@@ -21,42 +23,73 @@ logger.add("logs/case_{time}.log", rotation="500MB", level="DEBUG")
 
 super_admin_addr = "sil17xneh8t87qy0z0z4kfx3ukjppqrnwpazwg83dc"
 
+user = User()
+kyc = KYC()
+region = Region()
+bank = Bank()
+deposit = Deposit()
+
 
 def test_create_region():
-    user = User()
-    kyc = KYC()
-    region = Region()
-    bank = Bank()
-
-    region_id = 9876543
-    region_name = "beijing-05"
+    region_id = uuid.uuid1().hex
+    region_name = f"test-{region_id}"
 
     # 添加用户
-    user_info = user.keys_add("wang55")
+    user_name = "user-" + region_id
+    user_info = user.keys_add(user_name)
     logger.info(f"新增用户信息: {user_info}")
-    user_addr = user_info[0][0]['address']
+    region_admin_addr = user_info[0][0]['address']
 
-    balances_info = bank.query_balances(user_addr)
+    balances_info = bank.query_balances(region_admin_addr)
     logger.info(f"账户余额信息: {balances_info}")
 
     # 认证kyc 为区管理员
-    kyc_info = kyc.new_kyc(addr=user_addr, region_id=region_id, role="KYC_ROLE_ADMIN",
+    kyc_info = kyc.new_kyc(addr=region_admin_addr, region_id=region_id, role="KYC_ROLE_ADMIN",
                            delegate_limit=200, from_addr=super_admin_addr, fees=1)
     logger.info(f"认证kyc 为管理员信息: {kyc_info}")
 
-    time.sleep(3)
+    time.sleep(5)
     # 使用SuperAdmin给区管理转账
-    send_tx_info = bank.send_tx(from_addr=super_admin_addr, to_addr=user_addr, amount=100, fees=1.01, from_super=True)
+    send_tx_info = bank.send_tx(from_addr=super_admin_addr, to_addr=region_admin_addr, amount=100, fees=1.01,
+                                from_super=True)
     logger.info(f"转账信息: {send_tx_info}")
 
     # 创建区域
-    time.sleep(3)
-    region_info = region.create_region(region_name=region_name, region_id=region_id, power_limit=100000,
-                                       delegators_limit=200, fee_rate=0.5, from_addr=user_addr, stake_up=100000,
+    time.sleep(5)
+    region_info = region.create_region(region_name=region_name, region_id=region_id, power_limit=1000000,
+                                       delegators_limit=200, fee_rate=0.5, from_addr=region_admin_addr,
+                                       stake_up=1000000,
                                        fees=1)
     logger.info(f"创建区信息: {region_info}")
-    pass
+    return region_admin_addr, region_id
+
+
+def test_do_fixed_deposit(region_admin_addr, region_id):
+    user_name = "user-" + uuid.uuid1().hex
+    user_info = user.keys_add(user_name)
+    logger.info(f"新增用户信息: {user_info}")
+    region_user_addr = user_info[0][0]['address']
+
+    # 认证kyc
+    kyc_info = kyc.new_kyc(addr=region_user_addr, region_id=region_id, role="KYC_ROLE_USER",
+                           delegate_limit=200000, from_addr=region_admin_addr, fees=1, from_super=False)
+    logger.info(f"{region_id} 认证kyc: {kyc_info}")
+
+    time.sleep(5)
+    # 使用SuperAdmin给区kyc用户转账
+    send_tx_info = bank.send_tx(from_addr=super_admin_addr, to_addr=region_user_addr, amount=1000, fees=1.1,
+                                from_super=True)
+    logger.info(f"转账信息: {send_tx_info}")
+
+    # 区内kyc 发起定期存款
+    time.sleep(5)
+    res = deposit.do_fixed_deposit(amount=100, period="PERIOD_3_MONTHS", from_addr=region_user_addr, fees=1)
+    print(res)
 
 
 if __name__ == '__main__':
-    test_create_region()
+    # region_admin_addr, region_id = test_create_region()
+    # print(f"region_admin_addr:{region_admin_addr}, region_id:{region_id}")
+    region_admin_addr = "sil10s67dqj0ad6crd3vqz49zql4d7px9drc5m3jmc"
+    region_id = "22398b92882311edaebd1e620a42e34a"
+    test_do_fixed_deposit(region_admin_addr, region_id)

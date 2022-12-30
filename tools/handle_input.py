@@ -31,7 +31,7 @@ def ready_info(channel):
         if channel.recv_ready():
             stdout = channel.recv(9999)
             resp2 += stdout.decode('utf-8')
-            if resp2 is not None and not resp2.isspace():
+            if resp2 != "" and not resp2.isspace():
                 logger.debug(f"console message: {resp2}")
                 break
 

@@ -5,6 +5,9 @@
 @Version :  V1.0
 @Desc    :  None
 """
+import inspect
+
+from loguru import logger
 
 from base.base import BaseClass
 from tools import handle_input, handle_data
@@ -19,7 +22,7 @@ class User(BaseClass):
         :return:
         """
         cmd = self.ssh_home + f"./srs-poad keys add {username}"
-
+        logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         self.channel.send(cmd + "\n")
         handle_input.input_password(self.channel)
         resp_info = handle_input.ready_info(self.channel)
@@ -33,7 +36,7 @@ class User(BaseClass):
     def keys_list(self):
         """查询用户列表 需要密码"""
         cmd = self.ssh_home + "./srs-poad keys list"
-
+        logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         self.channel.send(cmd + "\n")
         handle_input.input_password(self.channel)
 
@@ -48,6 +51,7 @@ class User(BaseClass):
         :return:
         """
         cmd = self.ssh_home + f"./srs-poad keys show {username}"
+        logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         self.channel.send(cmd + "\n")
         handle_input.input_password(self.channel)
         resp_info = handle_input.ready_info(self.channel)

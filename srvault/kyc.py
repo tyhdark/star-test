@@ -5,6 +5,10 @@
 @Version :  V1.0
 @Desc    :  None
 """
+import inspect
+
+from loguru import logger
+
 from base.base import BaseClass
 from tools import handle_data, calculate, handle_input
 
@@ -13,12 +17,14 @@ class KYC(BaseClass):
 
     def list_kyc(self):
         cmd = self.ssh_home + "./srs-poad query srvault list-kyc --chain-id srspoa"
+        logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         res = self.ssh_client.ssh(cmd)
         return handle_data.handle_yaml_to_dict(res)
 
     def show_kyc(self, addr):
         """查看地址是否为kyc用户，不是将返回错误"""
         cmd = self.ssh_home + f"./srs-poad query srvault show-kyc {addr}"
+        logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         res = self.ssh_client.ssh(cmd, strip=False)
         if res.stdout:
             return handle_data.handle_yaml_to_dict(res.stdout)
@@ -49,6 +55,7 @@ class KYC(BaseClass):
             # 区管理员 不能创建 KYC_ROlE_ADMIN
             assert "KYC_ROLE_USER" == role
 
+        logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         self.channel.send(cmd + "\n")
 
         handle_input.input_password(self.channel)

@@ -9,14 +9,14 @@ import yaml
 
 
 def handle_split_esc(data: str):
-    """列表格式数据"""
+    """切割控制台esc数据"""
     data_info = data.split("")
     _value = data_info[0]
     return yaml.load(_value, Loader=yaml.FullLoader)
 
 
-def handle_split_esc_re(data: str):
-    """列表格式数据"""
+def handle_split_esc_re_code(data: str):
+    """切割控制台esc数据 并按code 匹配"""
     data_info = data.split("")
     _value = data_info[0]
     value = 'code:' + _value.split('\r\ncode:')[-1]

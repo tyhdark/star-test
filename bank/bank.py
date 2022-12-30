@@ -5,6 +5,10 @@
 @Version :  V1.0
 @Desc    :  None
 """
+import inspect
+
+from loguru import logger
+
 from base.base import BaseClass
 from tools import handle_data, handle_input, calculate
 
@@ -14,6 +18,7 @@ class Bank(BaseClass):
     def query_balances(self, addr):
         """查询 addr 余额"""
         cmd = self.ssh_home + f"./srs-poad query bank balances {addr}"
+        logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         res = self.ssh_client.ssh(cmd)
         return handle_data.handle_yaml_to_dict(res)
 
@@ -25,9 +30,7 @@ class Bank(BaseClass):
         cmd = self.ssh_home + f"./srs-poad tx bank send {from_addr} {to_addr} {amount}src --fees={fees}src --chain-id=srspoa"
         if from_super:
             cmd += " --home node1"
-
-        print(f"cmd : {cmd}")
-
+        logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         self.channel.send(cmd + "\n")
         handle_input.input_password(self.channel)
         resp_info = handle_input.ready_info(self.channel)
