@@ -10,7 +10,7 @@ import inspect
 from loguru import logger
 
 from base.base import BaseClass
-from tools import handle_data
+from tools import handle_resp_data
 
 
 class Tx(BaseClass):
@@ -20,7 +20,7 @@ class Tx(BaseClass):
         cmd = self.ssh_home + f"./srs-poad query tx {tx_hash}"
         logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         res = self.ssh_client.ssh(cmd)
-        return handle_data.handle_yaml_to_dict(res)
+        return handle_resp_data.handle_yaml_to_dict(res)
 
 
 if __name__ == '__main__':

@@ -10,7 +10,7 @@ import inspect
 from loguru import logger
 
 from base.base import BaseClass
-from tools import handle_data, calculate, handle_input
+from tools import handle_resp_data, calculate, handle_console_input
 
 
 class KYC(BaseClass):
@@ -19,7 +19,7 @@ class KYC(BaseClass):
         cmd = self.ssh_home + "./srs-poad query srvault list-kyc --chain-id srspoa"
         logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         res = self.ssh_client.ssh(cmd)
-        return handle_data.handle_yaml_to_dict(res)
+        return handle_resp_data.handle_yaml_to_dict(res)
 
     def show_kyc(self, addr):
         """查看地址是否为kyc用户，不是将返回错误"""
@@ -27,7 +27,7 @@ class KYC(BaseClass):
         logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         res = self.ssh_client.ssh(cmd, strip=False)
         if res.stdout:
-            return handle_data.handle_yaml_to_dict(res.stdout)
+            return handle_resp_data.handle_yaml_to_dict(res.stdout)
         else:
             return res.stderr
 
@@ -58,10 +58,10 @@ class KYC(BaseClass):
         logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         self.channel.send(cmd + "\n")
 
-        handle_input.input_password(self.channel)
-        resp_info = handle_input.ready_info(self.channel)
+        handle_console_input.input_password(self.channel)
+        resp_info = handle_console_input.ready_info(self.channel)
 
-        return handle_data.handle_split_esc(resp_info)
+        return handle_resp_data.handle_split_esc(resp_info)
 
 
 if __name__ == '__main__':

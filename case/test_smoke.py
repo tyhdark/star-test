@@ -93,3 +93,19 @@ if __name__ == '__main__':
     region_admin_addr = "sil10s67dqj0ad6crd3vqz49zql4d7px9drc5m3jmc"
     region_id = "22398b92882311edaebd1e620a42e34a"
     test_do_fixed_deposit(region_admin_addr, region_id)
+    region_user_addr = "sil1h82xmex6lhk6e802a0vs6re7rwc0mvey64aykj"
+
+
+    # user_balance = 1087099740000
+    #
+    # 发送至 区管理员 = 10150130000
+    # 发送1src   fees: 100020000
+    #
+    # 期望： user_balance:    1086899720000
+    # 区管理： 10300140000
+    #
+    # 带备注发送1src  fees: 100020000
+    # 期望： user_balance:    1086699700000
+    # 区管理： 10450150000
+
+

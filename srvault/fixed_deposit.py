@@ -10,7 +10,7 @@ import inspect
 from loguru import logger
 
 from base.base import BaseClass
-from tools import handle_data, handle_input, calculate
+from tools import handle_resp_data, handle_console_input, calculate
 
 
 class Deposit(BaseClass):
@@ -18,17 +18,17 @@ class Deposit(BaseClass):
     def list_fixed_deposit(self):
         cmd = self.ssh_home + f"./srs-poad query srvault list-fixed-deposit --chain-id srspoa"
         logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-        return handle_data.handle_yaml_to_dict(self.ssh_client.ssh(cmd))
+        return handle_resp_data.handle_yaml_to_dict(self.ssh_client.ssh(cmd))
 
     def show_fixed_deposit_by_id(self, deposit_id):
         cmd = self.ssh_home + f"./srs-poad query srvault show-fixed-deposit {deposit_id} --chain-id srspoa"
         logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-        return handle_data.handle_yaml_to_dict(self.ssh_client.ssh(cmd))
+        return handle_resp_data.handle_yaml_to_dict(self.ssh_client.ssh(cmd))
 
     def show_fixed_deposit_by_addr(self, addr):
         cmd = self.ssh_home + f"./srs-poad query srvault show-fixed-deposit-by-acct {addr} --chain-id srspoa"
         logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-        return handle_data.handle_yaml_to_dict(self.ssh_client.ssh(cmd))
+        return handle_resp_data.handle_yaml_to_dict(self.ssh_client.ssh(cmd))
 
     def do_fixed_deposit(self, amount, period, from_addr, fees):
         amount = calculate.calculate_src(amount, reverse=True)
@@ -39,10 +39,10 @@ class Deposit(BaseClass):
 
         self.channel.send(cmd + "\n")
 
-        handle_input.input_password(self.channel)
-        resp_info = handle_input.ready_info(self.channel)
+        handle_console_input.input_password(self.channel)
+        resp_info = handle_console_input.ready_info(self.channel)
 
         if "confirm" in resp_info:
-            resp_info = handle_input.yes_or_no(self.channel)
+            resp_info = handle_console_input.yes_or_no(self.channel)
 
-        return handle_data.handle_split_esc(resp_info)
+        return handle_resp_data.handle_split_esc(resp_info)

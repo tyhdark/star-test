@@ -11,8 +11,8 @@ import time
 from loguru import logger
 
 from base.base import BaseClass
-from tools import handle_data, calculate, handle_input
-from tools.handle_data import HandleRespErrorInfo
+from tools import handle_resp_data, calculate, handle_console_input
+from tools.handle_resp_data import HandleRespErrorInfo
 
 
 class Region(BaseClass):
@@ -40,12 +40,12 @@ class Region(BaseClass):
                               f"--region-fee-rate={fee_rate} --from={from_addr} --fees={fees}src --chain-id=srspoa -y"
         logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         self.channel.send(cmd + "\n")
-        handle_input.input_password(self.channel)
+        handle_console_input.input_password(self.channel)
         time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
-        resp_info = handle_input.ready_info(self.channel)
+        resp_info = handle_console_input.ready_info(self.channel)
 
         try:
-            return handle_data.handle_split_esc_re_code(resp_info)
+            return handle_resp_data.handle_split_esc_re_code(resp_info)
         except Exception:
             error_info = HandleRespErrorInfo.handle_rpc_error(resp_info)
             return error_info
@@ -55,7 +55,7 @@ class Region(BaseClass):
         cmd = self.ssh_home + f"./srs-poad query srstaking list-region --chain-id=srspoa"
         logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         res = self.ssh_client.ssh(cmd)
-        return handle_data.handle_yaml_to_dict(res)
+        return handle_resp_data.handle_yaml_to_dict(res)
 
 
 if __name__ == '__main__':

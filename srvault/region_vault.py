@@ -10,7 +10,7 @@ import inspect
 from loguru import logger
 
 from base.base import BaseClass
-from tools import handle_data
+from tools import handle_resp_data
 
 
 class Vault(BaseClass):
@@ -19,12 +19,12 @@ class Vault(BaseClass):
         cmd = self.ssh_home + "./srs-poad query srvault list-region-vault --chain-id srspoa"
         logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         res = self.ssh_client.ssh(cmd)
-        return handle_data.handle_yaml_to_dict(res)
+        return handle_resp_data.handle_yaml_to_dict(res)
 
     def show_region_vault(self, region_id):
         cmd = self.ssh_home + f"./srs-poad query srvault show-region-vault {region_id} --chain-id srspoa"
         logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-        return handle_data.handle_yaml_to_dict(self.ssh_client.ssh(cmd))
+        return handle_resp_data.handle_yaml_to_dict(self.ssh_client.ssh(cmd))
 
 
 if __name__ == '__main__':

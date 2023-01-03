@@ -10,7 +10,7 @@ import inspect
 from loguru import logger
 
 from base.base import BaseClass
-from tools import handle_data, handle_input, calculate
+from tools import handle_resp_data, handle_console_input, calculate
 
 
 class Bank(BaseClass):
@@ -20,7 +20,7 @@ class Bank(BaseClass):
         cmd = self.ssh_home + f"./srs-poad query bank balances {addr}"
         logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         res = self.ssh_client.ssh(cmd)
-        return handle_data.handle_yaml_to_dict(res)
+        return handle_resp_data.handle_yaml_to_dict(res)
 
     def send_tx(self, from_addr, to_addr, amount, fees, from_super=False):
         """发送转账交易"""
@@ -32,13 +32,13 @@ class Bank(BaseClass):
             cmd += " --home node1"
         logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         self.channel.send(cmd + "\n")
-        handle_input.input_password(self.channel)
-        resp_info = handle_input.ready_info(self.channel)
+        handle_console_input.input_password(self.channel)
+        resp_info = handle_console_input.ready_info(self.channel)
 
         if "confirm" in resp_info:
-            resp_info = handle_input.yes_or_no(self.channel)
+            resp_info = handle_console_input.yes_or_no(self.channel)
 
-        return handle_data.handle_split_esc(resp_info)
+        return handle_resp_data.handle_split_esc(resp_info)
 
 
 if __name__ == '__main__':
