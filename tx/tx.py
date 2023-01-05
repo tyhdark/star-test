@@ -6,6 +6,7 @@
 @Desc    :  None
 """
 import inspect
+import time
 
 from loguru import logger
 
@@ -19,7 +20,9 @@ class Tx(BaseClass):
         """查询 tx_hash """
         cmd = self.ssh_home + f"./srs-poad query tx {tx_hash}"
         logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        time.sleep(5)
         res = self.ssh_client.ssh(cmd)
+        time.sleep(1)
         return handle_resp_data.handle_yaml_to_dict(res)
 
 

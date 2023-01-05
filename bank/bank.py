@@ -6,6 +6,7 @@
 @Desc    :  None
 """
 import inspect
+import time
 
 from loguru import logger
 
@@ -33,6 +34,7 @@ class Bank(BaseClass):
         logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         self.channel.send(cmd + "\n")
         handle_console_input.input_password(self.channel)
+        time.sleep(2)
         resp_info = handle_console_input.ready_info(self.channel)
 
         if "confirm" in resp_info:

@@ -18,5 +18,6 @@ def create_region_id_and_name():
 
 
 def random_username():
-    username = "user-" + ''.join(random.sample(string.printable, 12))
+    random_str = string.ascii_letters + string.digits
+    username = "user-" + ''.join(random.sample(random_str, 12))
     return username

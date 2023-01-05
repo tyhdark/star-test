@@ -6,6 +6,7 @@
 @Desc    :  None
 """
 import inspect
+import time
 
 from loguru import logger
 
@@ -25,6 +26,7 @@ class User(BaseClass):
         logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         self.channel.send(cmd + "\n")
         handle_console_input.input_password(self.channel)
+        time.sleep(1)
         resp_info = handle_console_input.ready_info(self.channel)
 
         if "existing" in resp_info:
@@ -57,14 +59,34 @@ class User(BaseClass):
         resp_info = handle_console_input.ready_info(self.channel)
         return handle_resp_data.handle_split_esc(resp_info)
 
+    def keys_private_export(self, username):
+        """
+        导出私钥
+        :param username:
+        :return:
+        """
+        cmd = self.ssh_home + f"./srs-poad keys export {username} --unsafe --unarmored-hex"
+        logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        self.channel.send(cmd + "\n")
+        time.sleep(3)
+        resp_info = handle_console_input.ready_info(self.channel)
+        if "private key will be exported" in resp_info:
+            resp_info = handle_console_input.yes_or_no(self.channel)
+
+        if "Enter keyring passphrase:" in resp_info:
+            self.channel.send("12345678" + "\n")
+        time.sleep(3)
+        resp_info = handle_console_input.ready_info(self.channel)
+        return handle_resp_data.handle_split_esc(resp_info)
+
 
 if __name__ == '__main__':
     obj = User()
     # a = obj.keys_list()
     # b = obj.keys_add("libai2")
     # c = obj.keys_list()
-    d = obj.keys_show("libai2")
+    d = obj.keys_private_export("user-sLyiQT5UKS4G")
     # print(a)
     # print(b)
     # print(c)
-    print(d)
+    print(d, type(d))
