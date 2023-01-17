@@ -16,13 +16,13 @@ from tools import handle_resp_data, calculate, handle_console_input
 
 class Delegate(BaseClass):
 
-    def create_delegate(self, from_addr, amount, belong_region_id, fees):
+    def create_delegate(self, from_addr, amount, region_id, fees):
         """创建活期质押"""
         amount = calculate.calculate_src(amount, reverse=True)
         fees = calculate.calculate_src(fees, reverse=True)
 
         cmd = self.ssh_home + f"./srs-poad tx srstaking create-delegate --from={from_addr} --amount={amount} " \
-                              f"--belong-region={belong_region_id} --fees={fees}src --chain-id=srspoa"
+                              f"--region-id={region_id} --fees={fees}src --chain-id=srspoa"
         logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         self.channel.send(cmd + "\n")
         handle_console_input.input_password(self.channel)

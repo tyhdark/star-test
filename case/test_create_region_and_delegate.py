@@ -22,9 +22,10 @@ from user.keys import User
 
 logger.remove()
 handler_id = logger.add(sys.stdout, level="INFO")
-logger.add("logs/case_{time}.log", rotation="500MB", level="DEBUG")
+# logger.add("logs/case_{time}.log", rotation="500MB", level="DEBUG")
+logger.add("logs-RT4/case_{time}.log", rotation="500MB", level="DEBUG")
 
-super_admin_addr = "sil17xneh8t87qy0z0z4kfx3ukjppqrnwpazwg83dc"
+super_admin_addr = "sil1jmmxpun4s3nd93fznc49dt3hwfdqawhl226fuq"
 
 user = User()
 kyc = KYC()
@@ -68,9 +69,9 @@ def test_create_region():
 
     # 创建区域  占比1%
     time.sleep(4)
-    region_info = region.create_region(region_name=region_name, region_id=_region_id, power_limit=200000,
+    region_info = region.create_region(region_name=region_name, region_id=_region_id, power_limit=2000000,
                                        delegators_limit=200, fee_rate=0.5, from_addr=_region_admin_addr,
-                                       stake_up=200000,
+                                       stake_up=2000000,
                                        fees=1)
     logger.info(f"创建区信息: {region_info}")
 
@@ -108,7 +109,7 @@ def super_admin_tx_user(region_user_addr):
 
 def main():
     region_admin_addr, region_id = test_create_region()
-    wait_block_height()
+    wait_block_height()  # 区金库没钱时 不能认证kyc
     region_user_addr = test_add_region_kyc(region_id, region_admin_addr)
     super_admin_tx_user(region_user_addr)
     del_info = delegate.create_delegate(region_user_addr, 10, region_id, 1)
@@ -135,7 +136,21 @@ if __name__ == '__main__':
     #                                "800b481c8b2c11eda4711e620a42e34a", 1)
     # print(res)
 
-    # main()
-    kyc_user02_addr = test_add_region_kyc(region_id='73685ac68b4c11ed99e21e620a42e34a', region_admin_addr='sil1c0t54fz5m5yc3jqrr7xvy6yeec70tgk6crs2pj')
-    print(kyc_user02_addr)
-    pass
+    main()
+    # kyc_user02_addr = test_add_region_kyc(region_id='73685ac68b4c11ed99e21e620a42e34a', region_admin_addr='sil1c0t54fz5m5yc3jqrr7xvy6yeec70tgk6crs2pj')
+    # print(kyc_user02_addr)
+
+    # ye
+    # user01 = test_add_region_kyc("2cfb26828d6c11ed8f731e620a42e34a", "sil1z7nmtdl8m8r08gwajldd80cclrw6fwa5m7eas0")
+    # user02 = test_add_region_kyc("2cfb26828d6c11ed8f731e620a42e34a", "sil1z7nmtdl8m8r08gwajldd80cclrw6fwa5m7eas0")
+    # print(f"user01:{user01}, user02:{user02}")
+
+    # tx
+    # super_admin_tx_user("sil1pkgz44we9w8qqk0gewxvnt3xphp7dwn7phgerj")
+    # super_admin_tx_user("sil1p03sewpcpay27gvmzzze46rtm7c76dd7v2dhz9")
+
+    # Jw
+    # user01 = test_add_region_kyc("82a844aa961011ed8a681e620a42e349", "sil1wqa9t5ncphs9ynhu46c7nvqfuc06elz3wtymez")
+    # super_admin_tx_user(user01)
+    # logger.info(f"jw_kyc_user: {user01}")
+    # pass

@@ -6,6 +6,7 @@
 @Desc    :  None
 """
 import inspect
+import time
 
 from loguru import logger
 
@@ -63,6 +64,30 @@ class KYC(BaseClass):
 
         return handle_resp_data.handle_split_esc(resp_info)
 
+    def kyc_bonus(self, addr):
+        """查询KYC用户注册所赠1src收益"""
+        cmd = self.ssh_home + f"./srs-poad query srstaking kyc-bonus {addr} --chain-id srspoa"
+        logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        res = self.ssh_client.ssh(cmd)
+        return handle_resp_data.handle_yaml_to_dict(res)
+
+    def kyc_withdraw_bonus(self, addr, fees):
+        """KYC用户提取注册所赠1src收益"""
+        fees = calculate.calculate_src(fees, reverse=True)
+
+        cmd = self.ssh_home + f"./srs-poad tx srstaking withdraw --from {addr} --fees={fees}src --chain-id srspoa"
+        logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        self.channel.send(cmd + "\n")
+
+        handle_console_input.input_password(self.channel)
+        time.sleep(3)
+        resp_info = handle_console_input.ready_info(self.channel)
+
+        if "confirm" in resp_info:
+            resp_info = handle_console_input.yes_or_no(self.channel)
+
+        return handle_resp_data.handle_split_esc(resp_info)
+
 
 if __name__ == '__main__':
     obj = KYC()
@@ -70,17 +95,21 @@ if __name__ == '__main__':
     # b = obj.show_kyc(addr="sil1mg4ls02vas8uj946kn0t9zta3nlrkwdy708d73")
     # print(a)
     # print(b)
-    from user.keys import User
+    # from user.keys import User
 
-    user = User()
+    # user = User()
+    #
+    # res1 = user.keys_add("zhang1")
+    # user_addr = res1[0][0]['address']
+    # print(user_addr)
+    # c = obj.new_kyc(addr=f"{user_addr}",
+    #                 region_id="huabei-03",
+    #                 role="KYC_ROLE_ADMIN",
+    #                 delegate_limit=100,
+    #                 from_addr="sil17xneh8t87qy0z0z4kfx3ukjppqrnwpazwg83dc",
+    #                 fees=1)
+    # print(c)
 
-    res1 = user.keys_add("zhang1")
-    user_addr = res1[0][0]['address']
-    print(user_addr)
-    c = obj.new_kyc(addr=f"{user_addr}",
-                    region_id="huabei-03",
-                    role="KYC_ROLE_ADMIN",
-                    delegate_limit=100,
-                    from_addr="sil17xneh8t87qy0z0z4kfx3ukjppqrnwpazwg83dc",
-                    fees=1)
-    print(c)
+    res = obj.kyc_bonus('sil1qczwjrz7mg7h8usfvtpushuvz0xslpa6jscx6y')
+    # res = obj.kyc_withdraw_bonus("sil10lkdty8nstfth9yyggaa4x0x2y7qnfr9n0duzq", 1)
+    print(res)

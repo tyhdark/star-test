@@ -31,8 +31,8 @@ def test_add_delegate(region_user_addr, ):
 
 
 if __name__ == '__main__':
-    kyc_user = "sil18vj3druvnwfmy03mxk0l7s9cuk0shscsx7qyaa"
+    # kyc_user = "sil18vj3druvnwfmy03mxk0l7s9cuk0shscsx7qyaa"
     # test_do_fixed_deposit("sil18vj3druvnwfmy03mxk0l7s9cuk0shscsx7qyaa")
-    # test_delegate("sil18vj3druvnwfmy03mxk0l7s9cuk0shscsx7qyaa", "73685ac68b4c11ed99e21e620a42e34a")
-    test_add_delegate(kyc_user)
+    # test_delegate("sil1qczwjrz7mg7h8usfvtpushuvz0xslpa6jscx6y", "2cfb26828d6c11ed8f731e620a42e34a")
+    test_add_delegate("sil1qczwjrz7mg7h8usfvtpushuvz0xslpa6jscx6y")
     pass

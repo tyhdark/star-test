@@ -26,7 +26,7 @@ class Bank(BaseClass):
     def send_tx(self, from_addr, to_addr, amount, fees, from_super=False):
         """发送转账交易"""
         amount = calculate.calculate_src(amount, reverse=True)
-        fees = calculate.calculate_src(fees, reverse=True)
+        fees = int(calculate.calculate_src(fees, reverse=True))
 
         cmd = self.ssh_home + f"./srs-poad tx bank send {from_addr} {to_addr} {amount}src --fees={fees}src --chain-id=srspoa"
         if from_super:

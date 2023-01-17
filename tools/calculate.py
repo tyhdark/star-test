@@ -53,6 +53,46 @@ def calculate_srg_to_src(number: int):
     pass
 
 
+def border_value():
+    """
+    测试示例： 在块高100进行委托，101在次委托
+    """
+    block = Block()
+    current = int(block.query_block())
+
+    num = 100 - (current % 100)
+
+    wait_for_block = current + num
+    while True:
+        _block_height = int(block.query_block())
+        logger.info(f"waitBlock:{_block_height}  ---->  {wait_for_block}")
+        if _block_height >= wait_for_block:
+            break
+        else:
+            time.sleep(0.5)
+            continue
+
+
+def border_value2():
+    """
+    测试示例： 在块高100进行委托，101在次委托
+    """
+    block = Block()
+    current = int(block.query_block())
+
+    num = 99 - (current % 100)
+
+    wait_for_block = current + num
+    while True:
+        _block_height = int(block.query_block())
+        logger.info(f"waitBlock:{_block_height}  ---->  {wait_for_block}")
+        if _block_height >= wait_for_block:
+            break
+        else:
+            time.sleep(0.5)
+            continue
+
+
 if __name__ == '__main__':
     a = calculate_srg_to_src(10000000200000068000)
     b = calculate_src(int(a))

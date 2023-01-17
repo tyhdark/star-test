@@ -5,6 +5,7 @@
 @Version :  V1.0
 @Desc    :  None
 """
+import time
 
 from loguru import logger
 
@@ -51,6 +52,7 @@ def yes_or_no(channel, boolean: bool = True):
         channel.send("n" + "\n")
     resp = ""
     while True:
+        time.sleep(0.5)
         if channel.recv_ready():
             stdout = channel.recv(9999)
             resp += stdout.decode('utf-8')
