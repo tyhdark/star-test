@@ -11,11 +11,11 @@ import uuid
 
 from loguru import logger
 
-from bank.bank import Bank
-from srstaking.region import Region
-from srvault.fixed_deposit import Deposit
-from srvault.kyc import KYC
-from user.keys import User
+from x.bank import Bank
+from x.region import Region
+from x.fixed_deposit import Deposit
+from x.kyc import KYC
+from x.keys import User
 
 logger.remove()
 handler_id = logger.add(sys.stdout, level="INFO")

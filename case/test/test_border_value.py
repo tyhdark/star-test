@@ -6,8 +6,8 @@
 @Version :  V1.0
 @Desc    :  None
 """
-from case.test_create_region_and_delegate import super_admin_tx_user, test_add_region_kyc, tx
-from case.test_fixed_deposit import delegate
+from case.test.test_create_region_and_delegate import super_admin_tx_user, test_add_region_kyc, tx
+from case.test.test_fixed_deposit import delegate
 from tools.calculate import border_value, border_value2
 
 region_admin_addr = 'sil1l5sewkftwcgacr66sty0j3v0xh857xlj09h9a6'

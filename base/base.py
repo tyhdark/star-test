@@ -5,12 +5,14 @@
 @Version :  V1.0
 @Desc    :  None
 """
+from config import chain
 from tools.host import Host
 
 
 class BaseClass(object):
-    ssh_info = dict(ip="192.168.0.206", port=22, username="xingdao", password="12345678")
+    ssh_info = chain.ssh_info["config"]
     ssh_client = Host(**ssh_info)
 
-    ssh_home = "cd /home/xingdao/chaintest && "
+    ssh_home = chain.ssh_info["home"]
+    chain_id = chain.chain_id
     channel = ssh_client.create_invoke_shell()

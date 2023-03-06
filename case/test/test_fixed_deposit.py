@@ -7,8 +7,8 @@
 """
 #  区管理员地址: sil1c0t54fz5m5yc3jqrr7xvy6yeec70tgk6crs2pj, 区ID: 73685ac68b4c11ed99e21e620a42e34a
 #  - name: user-sLyiQT5UKS4G         address: sil18vj3druvnwfmy03mxk0l7s9cuk0shscsx7qyaa
-from srstaking.delegate import Delegate
-from srvault.fixed_deposit import Deposit
+from x.delegate import Delegate
+from x.fixed_deposit import Deposit
 
 deposit = Deposit()
 delegate = Delegate()

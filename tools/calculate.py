@@ -10,10 +10,10 @@ import time
 
 from loguru import logger
 
-from block.block import Block
+from x.query import Query
 
 
-def calculate_src(number: int, reverse: bool = False):
+def to_usrc(number: int, reverse: bool = True):
     """
     计算代币SRC 《==》 USRC , (number * 10 ** 8)
     :param number:
@@ -31,7 +31,7 @@ def wait_block_height():
     """
     等待一个结算周期
     """
-    block = Block()
+    block = Query().block
     current = int(block.query_block())
 
     num = 101 - (current % 100)
@@ -57,7 +57,7 @@ def border_value():
     """
     测试示例： 在块高100进行委托，101在次委托
     """
-    block = Block()
+    block = Query().block
     current = int(block.query_block())
 
     num = 100 - (current % 100)
@@ -77,7 +77,7 @@ def border_value2():
     """
     测试示例： 在块高100进行委托，101在次委托
     """
-    block = Block()
+    block = Query().block
     current = int(block.query_block())
 
     num = 99 - (current % 100)

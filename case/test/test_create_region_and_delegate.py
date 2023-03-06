@@ -10,22 +10,22 @@ import time
 
 from loguru import logger
 
-from bank.bank import Bank
+from x.bank import Bank
 from data import test_data
-from srstaking.delegate import Delegate
-from srstaking.region import Region
-from srvault.fixed_deposit import Deposit
-from srvault.kyc import KYC
+from x.delegate import Delegate
+from x.region import Region
+from x.fixed_deposit import Deposit
+from x.kyc import KYC
 from tools.calculate import wait_block_height
-from tx.tx import Tx
-from user.keys import User
+from x.tx import Tx
+from x.keys import User
 
 logger.remove()
 handler_id = logger.add(sys.stdout, level="INFO")
 # logger.add("logs/case_{time}.log", rotation="500MB", level="DEBUG")
-logger.add("logs-RT4/case_{time}.log", rotation="500MB", level="DEBUG")
+logger.add("logs-RT1/case_{time}.log", rotation="500MB", level="DEBUG")
 
-super_admin_addr = "sil1jmmxpun4s3nd93fznc49dt3hwfdqawhl226fuq"
+super_admin_addr = "sil1uhml48eds6mev3jtp8qm3yl4357ryja8ua8dnn"
 
 user = User()
 kyc = KYC()

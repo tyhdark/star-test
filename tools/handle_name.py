@@ -2,7 +2,7 @@
 """
 @Author  :  Jw
 @Contact :  libai7236@gmail.com
-@Time    :  2023/1/3 13:57
+@Time    :  2023/3/6 16:47
 @Version :  V1.0
 @Desc    :  None
 """
@@ -30,7 +30,7 @@ def create_region_id_and_name():
     return _region_id, _region_name
 
 
-def random_username():
+def create_username():
     random_str = string.ascii_letters + string.digits
     username = "user-" + ''.join(random.sample(random_str, 12))
     return username
