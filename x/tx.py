@@ -10,8 +10,9 @@ import time
 
 from loguru import logger
 
-from base.base import BaseClass
+from config import chain
 from tools import handle_resp_data, handle_console_input
+from x.base import BaseClass
 
 
 class Tx(BaseClass):
@@ -28,7 +29,7 @@ class Tx(BaseClass):
             """发送转账交易"""
             cmd = Tx.ssh_home + f"./srs-poad tx bank send {from_addr} {to_addr} {amount}src --fees={fees}src {Tx.chain_id}"
             if from_super:
-                cmd += " --home node1"
+                cmd += chain.super_addr_home
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
             handle_console_input.input_password(Tx.channel)
@@ -43,7 +44,7 @@ class Tx(BaseClass):
     class Staking(object):
 
         @staticmethod
-        def ag_to_ac(ag_amount, fees, from_addr):
+        def ag_to_ac(ag_amount, from_addr, fees):
             cmd = Tx.ssh_home + f"./srs-poad tx srstaking ag-to-ac {ag_amount}srg --from={from_addr} --fees={fees}src {Tx.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
@@ -145,7 +146,7 @@ class Tx(BaseClass):
             cmd = Tx.ssh_home + f"./srs-poad tx srstaking create-validator --pubkey={pubkey} --moniker={moniker} " \
                                 f"--from={from_addr} --fees={fees}src {Tx.chain_id}"
             if from_super:
-                cmd += " --home node1"
+                cmd += chain.super_addr_home
 
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
@@ -168,7 +169,7 @@ class Tx(BaseClass):
             cmd = Tx.ssh_home + f"./srs-poad tx srstaking update-validator --validator-address={operator_address} " \
                                 f"--region-name={region_name} --from={from_addr} --fees={fees}src {Tx.chain_id}"
             if from_super:
-                cmd += " --home node1"
+                cmd += chain.super_addr_home
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
             handle_console_input.input_password(Tx.channel)
@@ -216,16 +217,19 @@ class Tx(BaseClass):
             return handle_resp_data.handle_split_esc(resp_info)
 
         @staticmethod
-        def exit_delegate(from_addr, delegator_address, fees):
+        def exit_delegate(from_addr, delegator_address, fees, from_super=False):
             """
-            退出活期质押  #TODO from_addr 是超管需要添加私钥目录地址
+            退出活期质押
             :param from_addr: 发起方地址  【超管、区管理员、用户自己】
             :param delegator_address: 被清退质押者地址
+            :param from_super: True from_addr是超管需要添加私钥目录地址
             :param fees:
             :return:
             """
             cmd = Tx.ssh_home + f"./srs-poad tx srstaking exit-delegate --from={from_addr} " \
                                 f"--delegator-address={delegator_address} --fees={fees}src {Tx.chain_id}"
+            if from_super:
+                cmd += chain.super_addr_home
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
             handle_console_input.input_password(Tx.channel)
@@ -297,9 +301,9 @@ class Tx(BaseClass):
             return handle_resp_data.handle_split_esc(resp_info)
 
         @staticmethod
-        def new_kyc(addr, region_id, role, from_addr, fees, from_super=True):
+        def new_kyc(addr, region_id, role, from_addr, fees, from_super=False):
             """
-            创建区管理员 和 创建区内KYC用户
+            创建KYC用户
             :param addr: kyc address
             :param region_id: 所绑定区域ID
             :param role: 区内角色  KYC_ROLE_USER  or KYC_ROLE_ADMIN
@@ -312,7 +316,7 @@ class Tx(BaseClass):
                                 f"--from {from_addr} -y --fees={fees}src {Tx.chain_id}"
 
             if from_super:
-                cmd += " --home node1"
+                cmd += chain.super_addr_home
             else:
                 # 区管理员 不能创建 KYC_ROlE_ADMIN
                 assert "KYC_ROLE_USER" == role
@@ -329,7 +333,7 @@ class Tx(BaseClass):
         def remove_kyc(addr, from_addr, fees, from_super=False):
             cmd = Tx.ssh_home + f"./srs-poad tx srstaking remove-kyc {addr} --from={from_addr} -y --fees={fees}src {Tx.chain_id}"
             if from_super:
-                cmd += " --home node1"
+                cmd += chain.super_addr_home
 
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
@@ -374,16 +378,16 @@ class Tx(BaseClass):
             return handle_resp_data.handle_yaml_to_dict(resp_info)
 
         @staticmethod
-        def show(username, superadmin=False):
+        def show(username, from_super=False):
             """
             查询用户信息
             :param username:
-            :param superadmin: 默认不是超管
+            :param from_super: 默认不是超管
             :return:
             """
             cmd = Tx.ssh_home + f"./srs-poad keys show {username}"
-            if superadmin:
-                cmd += " --home node1"
+            if from_super:
+                cmd += chain.super_addr_home
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
             handle_console_input.input_password(Tx.channel)
@@ -391,15 +395,16 @@ class Tx(BaseClass):
             return handle_resp_data.handle_split_esc(resp_info)
 
         @staticmethod
-        def private_export(username, superadmin=False):
+        def private_export(username, from_super=False):
             """
             导出私钥
             :param username:
+            :param from_super: 默认不是超管
             :return:
             """
             cmd = Tx.ssh_home + f"./srs-poad keys export {username} --unsafe --unarmored-hex"
-            if superadmin:
-                cmd += " --home node1"
+            if from_super:
+                cmd += chain.super_addr_home
 
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")

@@ -47,7 +47,7 @@ def wait_block_height():
             continue
 
 
-def calculate_srg_to_src(number: int):
+def ag_to_ac(number: int):
     """转换ag to ac"""
     return decimal.Decimal(number) / decimal.Decimal(400)
     pass
@@ -94,7 +94,7 @@ def border_value2():
 
 
 if __name__ == '__main__':
-    a = calculate_srg_to_src(10000000200000068000)
-    b = calculate_src(int(a))
+    a = ag_to_ac(10000000200000068000)
+    b = to_usrc(int(a), False)
     print(a)
     print(b)

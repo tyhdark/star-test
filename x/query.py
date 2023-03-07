@@ -4,8 +4,8 @@ import time
 
 from loguru import logger
 
-from base.base import BaseClass
 from tools import handle_resp_data
+from x.base import BaseClass
 
 
 class Query(BaseClass):
@@ -148,9 +148,9 @@ class Query(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 
+        # TODO validate 参数是什么
         @staticmethod
         def show_validator(validator):
-            # TODO validate 参数是什么
             cmd = Query.ssh_home + f"./srs-poad q srstaking show-validator {validator} {Query.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))

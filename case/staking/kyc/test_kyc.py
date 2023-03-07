@@ -40,7 +40,7 @@ class TestKyc:
 
         # 超管认证区域管理员为KYC-admin
         tx_info = self.tx.staking.new_kyc(addr=region_admin_addr, region_id=region_id, role=chain.role[0],
-                                          from_addr=chain.super_addr, fees=1)
+                                          from_addr=chain.super_addr, fees=1, from_super=True)
         logger.info(f"region_admin_addr kyc info: {tx_info}")
 
         resp = self.q.tx.query_tx(tx_info['txhash'])

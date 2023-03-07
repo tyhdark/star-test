@@ -24,8 +24,9 @@ def input_password(channel):
 
 def ready_info(channel):
     """
+    #TODO 这是一个固定的值，若终端展示数据量过大，可能导致读取不完整
     读取数据并返回
-        - channel.recv(9999)  #TODO 这是一个固定的值，若终端展示数据量过大，可能导致读取不完整
+        - channel.recv(9999)
     """
     resp2 = ""
     while True:
@@ -41,7 +42,7 @@ def ready_info(channel):
 
 def yes_or_no(channel, boolean: bool = True):
     """
-    # TODO 只对输入y的情况整理了数据，n的情况待处理
+    #TODO 只对输入y的情况整理了数据，n的情况待处理
     :param channel:
     :param boolean:
     :return:
