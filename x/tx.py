@@ -11,7 +11,7 @@ import time
 from loguru import logger
 
 from base.base import BaseClass
-from tools import handle_resp_data, calculate, handle_console_input
+from tools import handle_resp_data, handle_console_input
 
 
 class Tx(BaseClass):
@@ -41,6 +41,21 @@ class Tx(BaseClass):
             return handle_resp_data.handle_split_esc(resp_info)
 
     class Staking(object):
+
+        @staticmethod
+        def ag_to_ac(ag_amount, fees, from_addr):
+            cmd = Tx.ssh_home + f"./srs-poad tx srstaking ag-to-ac {ag_amount}srg --from={from_addr} --fees={fees}src {Tx.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+
+            handle_console_input.input_password(Tx.channel)
+            time.sleep(3)
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_split_esc(resp_info)
 
         @staticmethod
         def create_region(region_name, region_id, region_total_as, region_delegators_limit, region_income_rate,
@@ -81,6 +96,207 @@ class Tx(BaseClass):
                 return error_info
 
         @staticmethod
+        def update_region(region_id, from_addr, fees, region_name=None, region_delegators_limit=None,
+                          region_income_rate=None, region_totalStakeAllow=None, region_userMaxDelegateAC=None,
+                          region_userMinDelegateAC=None):
+            """
+            修改区信息
+            :param region_name: 区名称
+            :param region_id: 区ID
+            :param region_delegators_limit: 区内委托上限人数（-1表示没有限制，0表示不允许质押，其他数值表示人数限制）
+            :param region_income_rate: 区内KYC用户手续费比例
+            :param from_addr: 发起方地址
+            :param region_totalStakeAllow: 质押水位上限
+            :param region_userMaxDelegateAC: 区内用户最大质押额
+            :param region_userMinDelegateAC: 区内用户最小质押额
+            :param fees: Gas费用
+            :return:
+            """
+            cmd = Tx.ssh_home + f"./srs-poad tx srstaking update-region --from={from_addr} --region-id={region_id} " \
+                                f"--fees={fees}src {Tx.chain_id} "
+            if region_name:
+                region_name = f"--region-name={region_name} "
+                cmd += f"{region_name}"
+            if region_delegators_limit:
+                cmd += f"--region-delegators-limit={region_delegators_limit} "
+            if region_income_rate:
+                cmd += f"--region-income-rate={region_income_rate} "
+            if region_totalStakeAllow:
+                cmd += f"--region-totalStakeAllow={region_totalStakeAllow} "
+            if region_userMaxDelegateAC:
+                cmd += f"--region-userMaxDelegateAC={region_userMaxDelegateAC} "
+            if region_userMinDelegateAC:
+                cmd += f"--region-userMinDelegateAC={region_userMinDelegateAC} "
+
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+            handle_console_input.input_password(Tx.channel)
+            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            try:
+                return handle_resp_data.handle_split_esc_re_code(resp_info)
+            except Exception:
+                error_info = handle_resp_data.HandleRespErrorInfo.handle_rpc_error(resp_info)
+                return error_info
+
+        @staticmethod
+        def create_validator(pubkey, moniker, from_addr, fees, from_super=True):
+            cmd = Tx.ssh_home + f"./srs-poad tx srstaking create-validator --pubkey={pubkey} --moniker={moniker} " \
+                                f"--from={from_addr} --fees={fees}src {Tx.chain_id}"
+            if from_super:
+                cmd += " --home node1"
+
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+            handle_console_input.input_password(Tx.channel)
+            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            try:
+                return handle_resp_data.handle_split_esc_re_code(resp_info)
+            except Exception:
+                error_info = handle_resp_data.HandleRespErrorInfo.handle_rpc_error(resp_info)
+                return error_info
+
+        @staticmethod
+        def update_validator(operator_address, region_name, from_addr, fees, from_super=True):
+            """Only used to modify the Region ID of the verifier"""
+            cmd = Tx.ssh_home + f"./srs-poad tx srstaking update-validator --validator-address={operator_address} " \
+                                f"--region-name={region_name} --from={from_addr} --fees={fees}src {Tx.chain_id}"
+            if from_super:
+                cmd += " --home node1"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+            handle_console_input.input_password(Tx.channel)
+            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            try:
+                return handle_resp_data.handle_split_esc_re_code(resp_info)
+            except Exception:
+                error_info = handle_resp_data.HandleRespErrorInfo.handle_rpc_error(resp_info)
+                return error_info
+
+        @staticmethod
+        def delegate(from_addr, amount, fees):
+            """创建/追加 活期质押"""
+            cmd = Tx.ssh_home + f"./srs-poad tx srstaking delegate --from={from_addr} --amount={amount}src " \
+                                f"--fees={fees}src {Tx.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+            handle_console_input.input_password(Tx.channel)
+            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_split_esc(resp_info)
+
+        @staticmethod
+        def undelegate(from_addr, amount, fees):
+            """减少活期质押: 减少质押金额 >= 实际质押额 则按实际质押额兑付"""
+            cmd = Tx.ssh_home + f"./srs-poad tx srstaking undelegate --from={from_addr} --amount={amount}src --fees={fees}src {Tx.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+            handle_console_input.input_password(Tx.channel)
+            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_split_esc(resp_info)
+
+        @staticmethod
+        def exit_delegate(from_addr, delegator_address, fees):
+            """
+            退出活期质押  #TODO from_addr 是超管需要添加私钥目录地址
+            :param from_addr: 发起方地址  【超管、区管理员、用户自己】
+            :param delegator_address: 被清退质押者地址
+            :param fees:
+            :return:
+            """
+            cmd = Tx.ssh_home + f"./srs-poad tx srstaking exit-delegate --from={from_addr} " \
+                                f"--delegator-address={delegator_address} --fees={fees}src {Tx.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+            handle_console_input.input_password(Tx.channel)
+            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_split_esc(resp_info)
+
+        @staticmethod
+        def withdraw(addr, fees):
+            """KYC用户提取活期收益"""
+            cmd = Tx.ssh_home + f"./srs-poad tx srstaking withdraw --from={addr} --fees={fees}src {Tx.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+
+            handle_console_input.input_password(Tx.channel)
+            time.sleep(3)
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_split_esc(resp_info)
+
+        @staticmethod
+        def do_fixed_deposit(amount, period, from_addr, fees):
+            cmd = Tx.ssh_home + f"./srs-poad tx srstaking do-fixed-deposit {amount}src {period} --from={from_addr} --fees={fees}src {Tx.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+            handle_console_input.input_password(Tx.channel)
+            time.sleep(3)
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_split_esc(resp_info)
+
+        @staticmethod
+        def do_fixed_withdraw(deposit_id, from_addr, fees):
+            cmd = Tx.ssh_home + f"./srs-poad tx srstaking do-fixed-withdraw {deposit_id} --from={from_addr} --fees={fees}src {Tx.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+            handle_console_input.input_password(Tx.channel)
+            time.sleep(3)
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_split_esc(resp_info)
+
+        @staticmethod
+        def set_fixed_deposit_interest_rate(region_id, rate, period, from_addr, fees):
+            cmd = Tx.ssh_home + f"./srs-poad tx srstaking set-fixed-deposit-interest-rate {region_id} {rate} {period} " \
+                                f"--from={from_addr} --fees={fees}src {Tx.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+            handle_console_input.input_password(Tx.channel)
+            time.sleep(3)
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_split_esc(resp_info)
+
+        @staticmethod
         def new_kyc(addr, region_id, role, from_addr, fees, from_super=True):
             """
             创建区管理员 和 创建区内KYC用户
@@ -110,94 +326,16 @@ class Tx(BaseClass):
             return handle_resp_data.handle_split_esc(resp_info)
 
         @staticmethod
-        def kyc_withdraw_bonus(addr, fees):
-            """KYC用户提取注册所赠1src收益"""
-            fees = calculate.calculate_src(fees, reverse=True)
+        def remove_kyc(addr, from_addr, fees, from_super=False):
+            cmd = Tx.ssh_home + f"./srs-poad tx srstaking remove-kyc {addr} --from={from_addr} -y --fees={fees}src {Tx.chain_id}"
+            if from_super:
+                cmd += " --home node1"
 
-            cmd = Tx.ssh_home + f"./srs-poad tx srstaking withdraw --from {addr} --fees={fees}src {Tx.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
 
             handle_console_input.input_password(Tx.channel)
-            time.sleep(3)
             resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-
-            return handle_resp_data.handle_split_esc(resp_info)
-
-        @staticmethod
-        def ag_exchange_ac(ag_amount, fees, from_addr):
-            ag_amount = calculate.calculate_src(ag_amount, reverse=True)
-            fees = calculate.calculate_src(fees, reverse=True)
-
-            cmd = Tx.ssh_home + f"./srs-poad tx srstaking ag-to-ac {ag_amount} --from={from_addr} --fees={fees}src {Tx.chain_id}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-
-            handle_console_input.input_password(Tx.channel)
-            time.sleep(3)
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-
-            return handle_resp_data.handle_split_esc(resp_info)
-
-        @staticmethod
-        def do_fixed_deposit(amount, period, from_addr, fees):
-            amount = calculate.calculate_src(amount, reverse=True)
-            fees = calculate.calculate_src(fees, reverse=True)
-
-            cmd = Tx.ssh_home + f"./srs-poad tx srstaking do-fixed-deposit src {amount} {period} --from {from_addr} --fees={fees}src {Tx.chain_id}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-
-            Tx.channel.send(cmd + "\n")
-
-            handle_console_input.input_password(Tx.channel)
-            time.sleep(3)
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-
-            return handle_resp_data.handle_split_esc(resp_info)
-
-        @staticmethod
-        def create_delegate(from_addr, amount, region_id, fees):
-            """创建活期质押"""
-            amount = calculate.calculate_src(amount, reverse=True)
-            fees = calculate.calculate_src(fees, reverse=True)
-
-            cmd = Tx.ssh_home + f"./srs-poad tx srstaking create-delegate --from={from_addr} --amount={amount} " \
-                                f"--region-id={region_id} --fees={fees}src {Tx.chain_id}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-            handle_console_input.input_password(Tx.channel)
-            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-
-            return handle_resp_data.handle_split_esc(resp_info)
-
-        @staticmethod
-        def add_delegate(from_addr, amount, fees):
-            """追加活期质押"""
-            amount = calculate.calculate_src(amount, reverse=True)
-            fees = calculate.calculate_src(fees, reverse=True)
-
-            cmd = Tx.ssh_home + f"./srs-poad tx srstaking add-delegate --from={from_addr} --amount={amount} --fees={fees}src {Tx.chain_id}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-            handle_console_input.input_password(Tx.channel)
-            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
 
             return handle_resp_data.handle_split_esc(resp_info)
 
@@ -236,13 +374,16 @@ class Tx(BaseClass):
             return handle_resp_data.handle_yaml_to_dict(resp_info)
 
         @staticmethod
-        def show(username):
+        def show(username, superadmin=False):
             """
             查询用户信息
             :param username:
+            :param superadmin: 默认不是超管
             :return:
             """
             cmd = Tx.ssh_home + f"./srs-poad keys show {username}"
+            if superadmin:
+                cmd += " --home node1"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
             handle_console_input.input_password(Tx.channel)
@@ -250,13 +391,16 @@ class Tx(BaseClass):
             return handle_resp_data.handle_split_esc(resp_info)
 
         @staticmethod
-        def private_export(username):
+        def private_export(username, superadmin=False):
             """
             导出私钥
             :param username:
             :return:
             """
             cmd = Tx.ssh_home + f"./srs-poad keys export {username} --unsafe --unarmored-hex"
+            if superadmin:
+                cmd += " --home node1"
+
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
             time.sleep(3)
@@ -272,5 +416,13 @@ class Tx(BaseClass):
 
 
 if __name__ == '__main__':
-    py_01 = Tx().keys.add("py-01")
-    print(py_01)
+    # py_01 = Tx().staking.remove_kyc("sil1jqjtm7dge0ja64spr3wfgs8f6rnfg9ayj0lu6x",
+    #                                 "sil1xxvavly4p87d6t3jkktp6pvt0jhystt48kwglh", 1, True)
+    # print(py_01)
+    pub = '\'{"type": "tendermint/PubKeyEd25519","value": "a9UxLb0DuMJ0Y584VjSe+FWvJiglV4STErFSfT0Cd0Q="}\''
+
+    # res = Tx().staking.create_validator(pub, "node2", "sil1xxvavly4p87d6t3jkktp6pvt0jhystt48kwglh", 1)
+    # res = Tx().staking.update_validator("silvaloper1jxrauca2fdrwyvtzmelv5td84wpjqd9f6rks4c", "CZE",
+    #                                     "sil1xxvavly4p87d6t3jkktp6pvt0jhystt48kwglh", 1)
+    res = Tx().staking.do_fixed_deposit(10, "PERIOD_3_MONTHS", "sil155mv39aqtl234twde44wrjdd5phxx28mg46u3p", 1)
+    print(res)

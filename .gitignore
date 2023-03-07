@@ -127,6 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-*/logs
-/case/*/logs/
-/case/test
+
+# logs and config files
+.logs/
+/case/staking/*/logs/
+/case/bank/logs/
+/case/keys/logs/
+config/chain.py

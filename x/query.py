@@ -1,11 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-@Author  :  Jw
-@Contact :  libai7236@gmail.com
-@Time    :  2023/3/6 14:33
-@Version :  V1.0
-@Desc    :  None
-"""
 import inspect
 import time
 
@@ -21,7 +14,8 @@ class Query(BaseClass):
         self.block = self.Block()
         self.tx = self.Tx()
         self.bank = self.Bank()
-        self.region = self.Staking()
+        self.staking = self.Staking()
+        self.mint = self.Mint()
 
     class Block(object):
 
@@ -62,19 +56,46 @@ class Query(BaseClass):
     class Staking(object):
 
         @staticmethod
-        def query_list_region():
-            """查询区域列表"""
-            cmd = Query.ssh_home + f"./srs-poad q srstaking list-region {Query.chain_id}"
+        def show_delegation(addr):
+            """查询活期质押"""
+            cmd = Query.ssh_home + f"./srs-poad q srstaking show-delegation {addr} {Query.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             res = Query.ssh_client.ssh(cmd)
             return handle_resp_data.handle_yaml_to_dict(res)
 
         @staticmethod
-        def show_region_vault(region_id):
-            """区金库信息"""
-            cmd = Query.ssh_home + f"./srs-poad q srstaking show-region {region_id} {Query.chain_id}"
+        def list_delegation():
+            """所有活期质押信息"""
+            cmd = Query.ssh_home + f"./srs-poad q srstaking list-delegation {Query.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            res = Query.ssh_client.ssh(cmd)
+            return handle_resp_data.handle_yaml_to_dict(res)
+
+        @staticmethod
+        def kyc_by_region(region_id):
+            """查询区域KYC列表"""
+            cmd = Query.ssh_home + f"./srs-poad q srstaking kyc-by-region {region_id} {Query.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            res = Query.ssh_client.ssh(cmd)
+            return handle_resp_data.handle_yaml_to_dict(res)
+
+        @staticmethod
+        def show_kyc(addr):
+            """查看地址是否为kyc用户，不是将返回错误"""
+            cmd = Query.ssh_home + f"./srs-poad q srstaking show-kyc {addr} {Query.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            res = Query.ssh_client.ssh(cmd, strip=False)
+            if res.stdout:
+                return handle_resp_data.handle_yaml_to_dict(res.stdout)
+            else:
+                return res.stderr
+
+        @staticmethod
+        def list_kyc():
+            cmd = Query.ssh_home + f"./srs-poad q srstaking list-kyc {Query.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            res = Query.ssh_client.ssh(cmd)
+            return handle_resp_data.handle_yaml_to_dict(res)
 
         @staticmethod
         def list_fixed_deposit():
@@ -95,41 +116,68 @@ class Query(BaseClass):
             return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
-        def list_kyc():
-            cmd = Query.ssh_home + f"./srs-poad q srstaking list-kyc {Query.chain_id}"
+        def show_fixed_deposit_by_region(region_id, query_type):
+            cmd = Query.ssh_home + f"./srs-poad q srstaking show-fixed-deposit-by-acct {region_id} {query_type} {Query.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+
+        @staticmethod
+        def list_region():
+            """查询区域列表"""
+            cmd = Query.ssh_home + f"./srs-poad q srstaking list-region {Query.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             res = Query.ssh_client.ssh(cmd)
             return handle_resp_data.handle_yaml_to_dict(res)
 
         @staticmethod
-        def show_kyc(addr):
-            """查看地址是否为kyc用户，不是将返回错误"""
-            cmd = Query.ssh_home + f"./srs-poad q srstaking show-kyc {addr} {Query.chain_id}"
+        def show_region(region_id):
+            """区金库信息"""
+            cmd = Query.ssh_home + f"./srs-poad q srstaking show-region {region_id} {Query.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            res = Query.ssh_client.ssh(cmd, strip=False)
-            if res.stdout:
-                return handle_resp_data.handle_yaml_to_dict(res.stdout)
-            else:
-                return res.stderr
+            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
-        def kyc_bonus(addr):
-            """查询KYC用户注册所赠1src收益  可能在region 里面"""
-            cmd = Query.ssh_home + f"./srs-poad q srstaking kyc-bonus {addr} {Query.chain_id}"
+        def show_region_by_name(region_name):
+            cmd = Query.ssh_home + f"./srs-poad q srstaking show-region-by-name {region_name} {Query.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            res = Query.ssh_client.ssh(cmd)
-            return handle_resp_data.handle_yaml_to_dict(res)
+            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
-        def list_region_vault():
-            """所有区金库信息  已重构 这个命令不确定是否还存在"""
-            cmd = Query.ssh_home + f"./srs-poad q srvault list-region-vault {Query.chain_id}"
+        def list_validator():
+            cmd = Query.ssh_home + f"./srs-poad q srstaking list-validator {Query.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            res = Query.ssh_client.ssh(cmd)
-            return handle_resp_data.handle_yaml_to_dict(res)
+            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+
+        @staticmethod
+        def show_validator(validator):
+            # TODO validate 参数是什么
+            cmd = Query.ssh_home + f"./srs-poad q srstaking show-validator {validator} {Query.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+
+        @staticmethod
+        def params():
+            cmd = Query.ssh_home + f"./srs-poad q srstaking params {Query.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+
+    class Mint(object):
+
+        @staticmethod
+        def params():
+            """Query the current minting parameters"""
+            cmd = Query.ssh_home + f"./srs-poad q mint params {Query.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 
 
 if __name__ == '__main__':
     q = Query()
-    r = q.block.query_block()
-    print(r)
+    r = q.staking.show_region("bfdf8d44bc9211ed83a91e620a42e349")
+    r1 = q.staking.show_region_by_name("CZE")
+    from deepdiff import DeepDiff
+
+    res = DeepDiff(r, r1)
+    r2 = q.staking.params()
+    r3 = q.mint.params()
+    print(r3)
