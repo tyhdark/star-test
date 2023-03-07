@@ -133,4 +133,4 @@ dmypy.json
 /case/staking/*/logs/
 /case/bank/logs/
 /case/keys/logs/
-config/chain.py
+config
