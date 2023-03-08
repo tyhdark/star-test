@@ -129,8 +129,6 @@ dmypy.json
 .pyre/
 
 # logs and config files
-.logs/
-/case/staking/*/logs/
-/case/bank/logs/
-/case/keys/logs/
+logs/
 config
+allure**/

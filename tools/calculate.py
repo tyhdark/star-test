@@ -23,8 +23,27 @@ def to_usrc(number: int, reverse: bool = True):
     :return:
     """
     if reverse:
-        return number * (10 ** 8)
-    return decimal.Decimal(number) / decimal.Decimal(10 ** 8)
+        return number * (10 ** 6)
+    return decimal.Decimal(number) / decimal.Decimal(10 ** 6)
+
+
+def subtraction(total, pay, fees):
+    """
+    用于计算账户余额 传入src 返回 usrc
+    :return usrc
+    """
+    total = to_usrc(total)
+    pay = to_usrc(pay)
+    fees = to_usrc(fees)
+    return total - pay - fees
+
+
+def add(numbers: list):
+    """
+    用于计算各金额相加
+    :return:
+    """
+    return sum([to_usrc(i) for i in numbers])
 
 
 def wait_block_height():

@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import time
 
+import pytest
+
+from config import test_data
 from tools import handle_name
 from x.query import Query
 from x.tx import Tx
@@ -24,14 +27,16 @@ class TestKeys:
         time.sleep(1)
         assert type(kyc_list) == list
 
-    def test_show(self):
-        res1 = self.tx.keys.show("wang", True)
+    @pytest.mark.parametrize("data", test_data.Key.user_info)
+    def test_show(self, data):
+        res1 = self.tx.keys.show(f"{data['superadmin']}", True)
         assert type(res1[0]) == dict
-        res2 = self.tx.keys.show("user-ry2kCtxpJmY9", False)
+        res2 = self.tx.keys.show(f"{data['username']}", False)
         assert type(res2[0]) == dict
 
-    def test_private_export(self):
-        res1 = self.tx.keys.private_export("wang", True)
+    @pytest.mark.parametrize("data", test_data.Key.user_info)
+    def test_private_export(self, data):
+        res1 = self.tx.keys.private_export(f"{data['superadmin']}", True)
         assert type(res1) == str
-        res2 = self.tx.keys.private_export("user-ry2kCtxpJmY9", False)
+        res2 = self.tx.keys.private_export(f"{data['username']}", False)
         assert type(res2) == str

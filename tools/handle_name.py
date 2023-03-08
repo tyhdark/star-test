@@ -1,12 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-@Author  :  Jw
-@Contact :  libai7236@gmail.com
-@Time    :  2023/3/6 16:47
-@Version :  V1.0
-@Desc    :  None
-"""
-
 import random
 import string
 import uuid

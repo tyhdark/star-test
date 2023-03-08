@@ -135,6 +135,9 @@ class Tx(BaseClass):
             time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
             resp_info = handle_console_input.ready_info(Tx.channel)
 
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
             try:
                 return handle_resp_data.handle_split_esc_re_code(resp_info)
             except Exception:
@@ -373,9 +376,10 @@ class Tx(BaseClass):
             Tx.channel.send(cmd + "\n")
             handle_console_input.input_password(Tx.channel)
 
+            time.sleep(4)
             resp_info = handle_console_input.ready_info(Tx.channel)
 
-            return handle_resp_data.handle_yaml_to_dict(resp_info)
+            return handle_resp_data.handle_split_esc(resp_info)
 
         @staticmethod
         def show(username, from_super=False):

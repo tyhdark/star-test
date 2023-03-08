@@ -173,11 +173,14 @@ class Query(BaseClass):
 
 if __name__ == '__main__':
     q = Query()
-    r = q.staking.show_region("bfdf8d44bc9211ed83a91e620a42e349")
-    r1 = q.staking.show_region_by_name("CZE")
-    from deepdiff import DeepDiff
+    # r = q.staking.show_region("bfdf8d44bc9211ed83a91e620a42e349")
+    # r1 = q.staking.show_region_by_name("CZE")
+    # from deepdiff import DeepDiff
+    #
+    # res = DeepDiff(r, r1)
+    # r2 = q.staking.params()
+    # r3 = q.mint.params()
+    # print(r3)
 
-    res = DeepDiff(r, r1)
-    r2 = q.staking.params()
-    r3 = q.mint.params()
-    print(r3)
+    res = q.Bank.query_balances("sil1wkfh3qsy0u4hv4mm7402m5ddh54l8jhayuwuck")
+    pass

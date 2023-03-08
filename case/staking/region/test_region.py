@@ -12,11 +12,9 @@ import pytest
 from loguru import logger
 
 from case.staking.kyc.test_kyc import TestKyc
-from config import chain
+from config import chain, test_data
 from x.query import Query
 from x.tx import Tx
-
-logger.add("logs/case_{time}.log", rotation="500MB")
 
 
 @pytest.mark.P1
@@ -45,15 +43,16 @@ class TestRegion:
         tx_resp = self.q.tx.query_tx(region_info['txhash'])
         time.sleep(4)
         assert tx_resp['code'] == 0
-        logger.info(f"region_admin_addr:{region_admin_addr}, region_id:{region_id}, region_name:{region_name}")
+        region_info = dict(region_admin_addr=region_admin_addr, region_id=region_id, region_name=region_name)
+        logger.info(f"{region_info}")
+        # 动态修改测试数据,测试数据管理可优化方案: 存储至db 或者 将动态数据回写至文件
+        region_id_list = [i["region_id"] for i in test_data.Region.region_list]
+        test_data.Region.region_list.append(region_info) if region_id not in region_id_list else "region_id is exist"
         return region_admin_addr, region_id
 
-    @pytest.mark.parametrize("data", [
-        dict(region_id="bfdf8d44bc9211ed83a91e620a42e349", from_addr="sil1quqx4dqd3e7qsv9wnufnqdkgmuks5xxn8qzag8",
-             fees="1", region_income_rate="0.1")])
+    @pytest.mark.parametrize("data", test_data.Region.update_region)
     def test_update_region(self, data):
-        tx_resp = self.tx.staking.update_region(data["region_id"], data["from_addr"], data["fees"],
-                                                region_income_rate=data["region_income_rate"])
-        time.sleep(4)
+        tx_resp = self.tx.staking.update_region(**data)
+        time.sleep(5)
         assert tx_resp.get("code") == 0
         logger.info(f"Updated region tx_resp:{tx_resp}")
