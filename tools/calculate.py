@@ -13,7 +13,7 @@ from loguru import logger
 from x.query import Query
 
 
-def to_usrc(number: int, reverse: bool = True):
+def to_usrc(number, reverse: bool = True):
     """
     计算代币SRC 《==》 USRC , (number * 10 ** 8)
     :param number:
@@ -40,8 +40,8 @@ def subtraction(total, pay, fees):
 
 def add(numbers: list):
     """
-    用于计算各金额相加
-    :return:
+    用于计算各金额相加  numbers中参数单位为src
+    :return: usrc
     """
     return sum([to_usrc(i) for i in numbers])
 

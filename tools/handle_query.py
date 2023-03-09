@@ -14,11 +14,21 @@ class HandleQuery(object):
     @classmethod
     def get_region(cls, region_id):
         region_info = cls.q.staking.show_region(region_id)
-        pass
+        return region_info
 
+    @classmethod
+    def get_delegate(cls, user_addr):
+        del_info = cls.q.staking.show_delegation(user_addr)
+        return del_info
 
+    @classmethod
+    def get_regin_list(cls):
+        region_list = cls.q.staking.list_region()
+        return region_list
 
 
 if __name__ == '__main__':
     q1 = HandleQuery()
-    q1.get_region("2357c5d4bd9311ed84f61e620a42e349")
+    # q1.get_region("b99bd980be6b11eda4291e620a42e349")
+    q1.get_delegate("sil13htu9zqv8nfzdx0939qd6g3u2x582tmneer6xw")
+    # q1.get_regin_list()

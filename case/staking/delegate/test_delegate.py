@@ -16,14 +16,14 @@ class TestDelegate:
 
     @pytest.mark.parametrize("data", test_data.Delegate.region_user_list)
     def test_delegate(self, data):
-        del_info = self.tx.staking.delegate(data["region_user_addr"], data["del_amt"], data["fees"])
+        del_info = self.tx.staking.delegate(data["region_user_addr"], data["amount"], data["fees"])
         logger.info(f"delegate tx_info :{del_info}")
         resp = self.q.tx.query_tx(del_info['txhash'])
         assert resp['code'] == 0
 
     @pytest.mark.parametrize("data", test_data.Delegate.region_user_list)
     def test_undelegate(self, data):
-        del_info = self.tx.staking.undelegate(data["region_user_addr"], 2, 1)
+        del_info = self.tx.staking.undelegate(data["region_user_addr"], data["amount"], data["fees"])
         logger.info(f"undelegate tx_info :{del_info}")
         resp = self.q.tx.query_tx(del_info['txhash'])
         time.sleep(1)
@@ -31,7 +31,7 @@ class TestDelegate:
 
     @pytest.mark.parametrize("data", test_data.Delegate.exit_delegate_list)
     def test_exit_delegate(self, data):
-        del_info = self.tx.staking.exit_delegate(data["from_addr"], data["delegator_address"], 1)
+        del_info = self.tx.staking.exit_delegate(data["from_addr"], data["delegator_address"], data["fees"], data['from_super'])
         logger.info(f"undelegate tx_info :{del_info}")
         resp = self.q.tx.query_tx(del_info['txhash'])
         assert resp['code'] == 0

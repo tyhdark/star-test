@@ -33,11 +33,12 @@ class TestRegion:
 
         # 创建区域
         time.sleep(5)
+        # as总量:200 00000
         region_info = self.tx.staking.create_region(region_name=region_name, region_id=region_id,
-                                                    region_total_as=1000000, region_delegators_limit=200,
-                                                    region_income_rate=0.5, from_addr=region_admin_addr,
-                                                    region_totalStakeAllow=1000000, region_userMaxDelegateAC=100000,
-                                                    region_userMinDelegateAC=1, fees=1)
+                                                    total_as=100000, delegators_limit=200,
+                                                    fee_rate=0.5, from_addr=region_admin_addr,
+                                                    totalStakeAllow=100000, userMaxDelegateAC=100000,
+                                                    userMinDelegateAC=1, fees=1)
         logger.info(f"create_region_info: {region_info}")
 
         tx_resp = self.q.tx.query_tx(region_info['txhash'])

@@ -59,30 +59,30 @@ class Tx(BaseClass):
             return handle_resp_data.handle_split_esc(resp_info)
 
         @staticmethod
-        def create_region(region_name, region_id, region_total_as, region_delegators_limit, region_income_rate,
-                          from_addr, region_totalStakeAllow, region_userMaxDelegateAC, region_userMinDelegateAC, fees):
+        def create_region(region_name, region_id, total_as, delegators_limit, fee_rate,
+                          from_addr, totalStakeAllow, userMaxDelegateAC, userMinDelegateAC, fees):
             """
             创建区
             :param region_name: 区名称
             :param region_id: 区ID
-            :param region_total_as: 区所占AS权重
-            :param region_delegators_limit: 区内委托上限人数（-1表示没有限制，0表示不允许质押，其他数值表示人数限制）
-            :param region_income_rate: 区内KYC用户手续费比例
+            :param total_as: 区所占AS权重
+            :param delegators_limit: 区内委托上限人数（-1表示没有限制，0表示不允许质押，其他数值表示人数限制）
+            :param fee_rate: 区内KYC用户手续费比例
             :param from_addr: 发起方地址
-            :param region_totalStakeAllow: 质押水位上限
-            :param region_userMaxDelegateAC: 区内用户最大质押额
-            :param region_userMinDelegateAC: 区内用户最小质押额
+            :param totalStakeAllow: 质押水位上限
+            :param userMaxDelegateAC: 区内用户最大质押额
+            :param userMinDelegateAC: 区内用户最小质押额
             :param fees: Gas费用
             :return:
             """
 
             cmd = Tx.ssh_home + f"./srs-poad tx srstaking create-region --region-name={region_name} " \
-                                f"--region-id={region_id} --region-total-as={region_total_as} " \
-                                f"--region-delegators-limit={region_delegators_limit} " \
-                                f"--region-totalStakeAllow={region_totalStakeAllow} " \
-                                f"--region-income-rate={region_income_rate} " \
-                                f"--region-userMaxDelegateAC={region_userMaxDelegateAC} " \
-                                f"--region-userMinDelegateAC={region_userMinDelegateAC} " \
+                                f"--region-id={region_id} --total-as={total_as} " \
+                                f"--delegators-limit={delegators_limit} " \
+                                f"--totalStakeAllow={totalStakeAllow} " \
+                                f"--fee-rate={fee_rate} " \
+                                f"--userMaxDelegateAC={userMaxDelegateAC} " \
+                                f"--userMinDelegateAC={userMinDelegateAC} " \
                                 f"--from={from_addr} --fees={fees}src {Tx.chain_id} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
@@ -304,9 +304,10 @@ class Tx(BaseClass):
             return handle_resp_data.handle_split_esc(resp_info)
 
         @staticmethod
-        def new_kyc(addr, region_id, role, from_addr, fees, from_super=False):
+        def new_kyc(addr, region_id, role, from_addr, fees=1, gas=200000, from_super=False):
             """
             创建KYC用户
+            :param gas: gas限制 默认200000
             :param addr: kyc address
             :param region_id: 所绑定区域ID
             :param role: 区内角色  KYC_ROLE_USER  or KYC_ROLE_ADMIN
@@ -316,7 +317,7 @@ class Tx(BaseClass):
             :return: tx Hash
             """
             cmd = Tx.ssh_home + f"./srs-poad tx srstaking new-kyc {addr} {region_id} {role}  " \
-                                f"--from {from_addr} -y --fees={fees}src {Tx.chain_id}"
+                                f"--from {from_addr} -y --fees={fees}src --gas={gas} {Tx.chain_id}"
 
             if from_super:
                 cmd += chain.super_addr_home

@@ -61,6 +61,7 @@ class Query(BaseClass):
             cmd = Query.ssh_home + f"./srs-poad q srstaking show-delegation {addr} {Query.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             res = Query.ssh_client.ssh(cmd)
+            time.sleep(2)
             return handle_resp_data.handle_yaml_to_dict(res)
 
         @staticmethod
