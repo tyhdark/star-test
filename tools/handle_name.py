@@ -16,7 +16,7 @@ def handle_region_name():
 
 
 def _chain_region_name_list():
-    regin_list = HandleQuery().get_regin_list()
+    regin_list = HandleQuery.get_regin_list()
     regin_name_list = [i['regionName'] for i in regin_list["region"]]
     return regin_name_list
 

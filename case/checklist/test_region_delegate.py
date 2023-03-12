@@ -140,7 +140,7 @@ class TestRegionDelegate(object):
 
         logger.info(f'{"- user2 调用exit退出活期质押":*^50s}')
         del_data = dict(region_id=f"{region_id}", delegator_address=f"{user_addr2}",
-                        from_addr=f"{user_addr2}", fees="1")
+                        from_addr=f"{user_addr2}", fees="1", from_super=False)
         self.test_del.test_exit_delegate(del_data)
 
         resp_balance_5 = int(self.handle_q.get_balance(user_addr2, 'usrc')['amount'])

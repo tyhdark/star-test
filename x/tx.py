@@ -261,8 +261,8 @@ class Tx(BaseClass):
             return handle_resp_data.handle_split_esc(resp_info)
 
         @staticmethod
-        def do_fixed_deposit(amount, period, from_addr, fees):
-            cmd = Tx.ssh_home + f"./srs-poad tx srstaking do-fixed-deposit {amount}src {period} --from={from_addr} --fees={fees}src {Tx.chain_id}"
+        def do_fixed_deposit(amount, period, from_addr, fees=1, gas=200000):
+            cmd = Tx.ssh_home + f"./srs-poad tx srstaking do-fixed-deposit {amount}src {period} --from={from_addr} --fees={fees}src --gas={gas} {Tx.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
             handle_console_input.input_password(Tx.channel)
@@ -275,8 +275,8 @@ class Tx(BaseClass):
             return handle_resp_data.handle_split_esc(resp_info)
 
         @staticmethod
-        def do_fixed_withdraw(deposit_id, from_addr, fees):
-            cmd = Tx.ssh_home + f"./srs-poad tx srstaking do-fixed-withdraw {deposit_id} --from={from_addr} --fees={fees}src {Tx.chain_id}"
+        def do_fixed_withdraw(deposit_id, from_addr, fees=1, gas=200000):
+            cmd = Tx.ssh_home + f"./srs-poad tx srstaking do-fixed-withdraw {deposit_id} --from={from_addr} --fees={fees}src {gas} {Tx.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
             handle_console_input.input_password(Tx.channel)
@@ -434,5 +434,7 @@ if __name__ == '__main__':
     # res = Tx().staking.create_validator(pub, "node2", "sil1xxvavly4p87d6t3jkktp6pvt0jhystt48kwglh", 1)
     # res = Tx().staking.update_validator("silvaloper1jxrauca2fdrwyvtzmelv5td84wpjqd9f6rks4c", "CZE",
     #                                     "sil1xxvavly4p87d6t3jkktp6pvt0jhystt48kwglh", 1)
-    res = Tx().staking.do_fixed_deposit(10, "PERIOD_3_MONTHS", "sil155mv39aqtl234twde44wrjdd5phxx28mg46u3p", 1)
+    # res = Tx().staking.do_fixed_deposit(10, "PERIOD_3_MONTHS", "sil155mv39aqtl234twde44wrjdd5phxx28mg46u3p", 1)
+    # print(res)
+    res = Tx().keys.private_export("user-ElznPKTwH9Aj")
     print(res)

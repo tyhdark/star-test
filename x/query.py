@@ -40,7 +40,7 @@ class Query(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             time.sleep(5)
             res = Query.ssh_client.ssh(cmd)
-            time.sleep(1)
+            time.sleep(2)
             return handle_resp_data.handle_yaml_to_dict(res)
 
     class Bank(object):
@@ -61,7 +61,7 @@ class Query(BaseClass):
             cmd = Query.ssh_home + f"./srs-poad q srstaking show-delegation {addr} {Query.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             res = Query.ssh_client.ssh(cmd)
-            time.sleep(2)
+            time.sleep(3)
             return handle_resp_data.handle_yaml_to_dict(res)
 
         @staticmethod
@@ -111,8 +111,8 @@ class Query(BaseClass):
             return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
-        def show_fixed_deposit_by_addr(addr):
-            cmd = Query.ssh_home + f"./srs-poad q srstaking show-fixed-deposit-by-acct {addr} {Query.chain_id}"
+        def show_fixed_deposit_by_addr(addr, query_type):
+            cmd = Query.ssh_home + f"./srs-poad q srstaking show-fixed-deposit-by-acct {addr} {query_type} {Query.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 

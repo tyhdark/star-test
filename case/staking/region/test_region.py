@@ -1,11 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-@Author  :  Jw
-@Contact :  libai7236@gmail.com
-@Time    :  2023/3/6 16:28
-@Version :  V1.0
-@Desc    :  None
-"""
 import time
 
 import pytest
@@ -40,9 +33,10 @@ class TestRegion:
                                                     totalStakeAllow=100000, userMaxDelegateAC=100000,
                                                     userMinDelegateAC=1, fees=1)
         logger.info(f"create_region_info: {region_info}")
-
         tx_resp = self.q.tx.query_tx(region_info['txhash'])
-        time.sleep(4)
+        # 等待块高 确保区域内有足够钱用于new-kyc 25ac * 1 / 200 = 0.125ac = 125000usrc 8个块 = 1000000usrc
+        logger.info(f"Make sure there is enough money in the area to spend new-kyc")
+        time.sleep((5 * 8) * 2)
         assert tx_resp['code'] == 0
         region_info = dict(region_admin_addr=region_admin_addr, region_id=region_id, region_name=region_name)
         logger.info(f"{region_info}")

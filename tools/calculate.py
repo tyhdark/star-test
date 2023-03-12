@@ -10,6 +10,7 @@ import time
 
 from loguru import logger
 
+from tools.handle_query import HandleQuery
 from x.query import Query
 
 
@@ -46,20 +47,29 @@ def add(numbers: list):
     return sum([to_usrc(i) for i in numbers])
 
 
-def wait_block_height():
-    """
-    等待一个结算周期
-    """
-    block = Query().block
-    current = int(block.query_block())
+def period_wait_block():
+    for_year = HandleQuery.get_mint_params()
 
-    num = 101 - (current % 100)
+    period_block = {
+        1: for_year / 12,
+        3: for_year / 12 * 3,
+        6: for_year / 12 * 6,
+        12: for_year,
+        24: for_year * 2,
+        48: for_year * 4,
+    }
+    return period_block
 
-    wait_for_block = current + num
+
+def wait_block_for_height(height):
+    """等待块高"""
+    current = HandleQuery.get_block()
+    if height < current:
+        return "wait_block_for_height < current_block"
     while True:
-        _block_height = int(block.query_block())
-        logger.info(f"waitBlock:{_block_height}  ---->  {wait_for_block}")
-        if _block_height > wait_for_block:
+        _current = int(HandleQuery.get_block())
+        logger.info(f"waitBlock:{_current}  ---->  {height}")
+        if _current > height:
             break
         else:
             time.sleep(10)
@@ -114,6 +124,6 @@ def border_value2():
 
 if __name__ == '__main__':
     a = ag_to_ac(10000000200000068000)
-    b = to_usrc(int(a), False)
+    b = str(to_usrc(10))
     print(a)
-    print(b)
+    print(b, type(b))
