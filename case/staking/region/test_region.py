@@ -31,13 +31,13 @@ class TestRegion:
                                                     total_as=100000, delegators_limit=200,
                                                     fee_rate=0.5, from_addr=region_admin_addr,
                                                     totalStakeAllow=100000, userMaxDelegateAC=100000,
-                                                    userMinDelegateAC=1, fees=1)
+                                                    userMinDelegateAC=1, fees=2, gas=400000)
         logger.info(f"create_region_info: {region_info}")
         tx_resp = self.q.tx.query_tx(region_info['txhash'])
+        assert tx_resp['code'] == 0
         # 等待块高 确保区域内有足够钱用于new-kyc 25ac * 1 / 200 = 0.125ac = 125000usrc 8个块 = 1000000usrc
         logger.info(f"Make sure there is enough money in the area to spend new-kyc")
         time.sleep((5 * 8) * 2)
-        assert tx_resp['code'] == 0
         region_info = dict(region_admin_addr=region_admin_addr, region_id=region_id, region_name=region_name)
         logger.info(f"{region_info}")
         # 动态修改测试数据,测试数据管理可优化方案: 存储至db 或者 将动态数据回写至文件

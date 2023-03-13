@@ -64,12 +64,12 @@ def period_wait_block():
 def wait_block_for_height(height):
     """等待块高"""
     current = HandleQuery.get_block()
-    if height < current:
+    if int(height) < current:
         return "wait_block_for_height < current_block"
     while True:
-        _current = int(HandleQuery.get_block())
+        _current = HandleQuery.get_block()
         logger.info(f"waitBlock:{_current}  ---->  {height}")
-        if _current > height:
+        if _current > int(height):
             break
         else:
             time.sleep(10)
@@ -127,3 +127,5 @@ if __name__ == '__main__':
     b = str(to_usrc(10))
     print(a)
     print(b, type(b))
+    wait_block_for_height(60850)
+    print(type(HandleQuery.get_block()))

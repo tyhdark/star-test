@@ -30,6 +30,7 @@ def ready_info(channel):
     """
     resp2 = ""
     while True:
+        time.sleep(1)
         if channel.recv_ready():
             stdout = channel.recv(9999)
             resp2 += stdout.decode('utf-8')

@@ -102,6 +102,8 @@ class TestRegionFixed(object):
         user2_fixed_id = user2_fixed_info['id']
         user2_fixed_end_height = user2_fixed_info['end_height']
         assert str(calculate.to_usrc(10)) == user2_fixed_info['amount']
+        logger.info(f"fixed_info:{region_admin_addr}, {region_id}, {user_addr1}, "
+                    f"{user_addr2}, {user1_fixed_id}, {user2_fixed_id}, {user2_fixed_end_height}")
         return region_admin_addr, region_id, user_addr1, user_addr2, user1_fixed_id, user2_fixed_id, user2_fixed_end_height
 
     def test_region_more_fixed_withdraw(self):
@@ -125,7 +127,7 @@ class TestRegionFixed(object):
         logger.info(f'{"+ expect: user1 无定期质押,返回质押本金":*^50s}')
         u_fees = calculate.to_usrc(2)
         resp_balance1 = self.handle_q.get_balance(user_addr1, 'usrc')
-        assert resp_balance1['amount'] == str(int(user1_balance_uc) + calculate.to_usrc(10) - u_fees)
+        assert resp_balance1['amount'] == str(int(user1_balance_uc['amount']) + calculate.to_usrc(10) - u_fees)
 
         # 验证区金库信息
         region_info = self.handle_q.get_region(region_id)
@@ -146,6 +148,6 @@ class TestRegionFixed(object):
         self.test_fixed.test_fixed_withdraw(fixed_data)
         logger.info(f'{"+ expect: user2 无定期质押,返回质押本金+定期收益":*^50s}')
         resp_user2_usrc = self.handle_q.get_balance(user_addr2, 'usrc')
-        assert resp_user2_usrc['amount'] == str(int(user2_balance_uc) + calculate.to_usrc(10) - u_fees)
+        assert resp_user2_usrc['amount'] == str(int(user2_balance_uc['amount']) + calculate.to_usrc(10) - u_fees)
         resp_user2_usrg = self.handle_q.get_balance(user_addr2, 'usrg')
-        assert resp_user2_usrg['amount'] == calculate.to_usrc(20)
+        assert resp_user2_usrg['amount'] == str(calculate.to_usrc(20))

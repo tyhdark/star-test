@@ -60,7 +60,7 @@ class Tx(BaseClass):
 
         @staticmethod
         def create_region(region_name, region_id, total_as, delegators_limit, fee_rate,
-                          from_addr, totalStakeAllow, userMaxDelegateAC, userMinDelegateAC, fees):
+                          from_addr, totalStakeAllow, userMaxDelegateAC, userMinDelegateAC, fees, gas):
             """
             创建区
             :param region_name: 区名称
@@ -73,6 +73,7 @@ class Tx(BaseClass):
             :param userMaxDelegateAC: 区内用户最大质押额
             :param userMinDelegateAC: 区内用户最小质押额
             :param fees: Gas费用
+            :param gas: gas 默认为 200000
             :return:
             """
 
@@ -83,7 +84,7 @@ class Tx(BaseClass):
                                 f"--fee-rate={fee_rate} " \
                                 f"--userMaxDelegateAC={userMaxDelegateAC} " \
                                 f"--userMinDelegateAC={userMinDelegateAC} " \
-                                f"--from={from_addr} --fees={fees}src {Tx.chain_id} -y"
+                                f"--from={from_addr} --fees={fees}src --gas={gas} {Tx.chain_id} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
             handle_console_input.input_password(Tx.channel)
@@ -276,7 +277,7 @@ class Tx(BaseClass):
 
         @staticmethod
         def do_fixed_withdraw(deposit_id, from_addr, fees=1, gas=200000):
-            cmd = Tx.ssh_home + f"./srs-poad tx srstaking do-fixed-withdraw {deposit_id} --from={from_addr} --fees={fees}src {gas} {Tx.chain_id}"
+            cmd = Tx.ssh_home + f"./srs-poad tx srstaking do-fixed-withdraw {deposit_id} --from={from_addr} --fees={fees}src --gas={gas} {Tx.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
             handle_console_input.input_password(Tx.channel)
