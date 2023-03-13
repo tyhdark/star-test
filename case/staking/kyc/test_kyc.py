@@ -3,18 +3,19 @@ import pytest
 from loguru import logger
 
 from case.keys.test_keys import TestKeys
-from config import chain, test_data
+from config import chain
 from tools import handle_name
 from x.query import Query
 from x.tx import Tx
 
 
+@pytest.mark.P1
 class TestKyc:
     tx = Tx()
     q = Query()
     test_keys = TestKeys()
 
-    @pytest.mark.parametrize("data", test_data.Kyc.new_kyc)
+    # @pytest.mark.parametrize("data", test_data.Kyc.new_kyc)
     def test_new_kyc_user(self, data):
         # 新创建区 需要等待一个块高才能认证KYC，即区金库要有余额
         region_id, region_admin_addr = data['region_id'], data['region_admin_addr']

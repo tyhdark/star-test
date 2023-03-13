@@ -105,8 +105,8 @@ class Query(BaseClass):
             return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
-        def show_fixed_deposit_by_id(deposit_id):
-            cmd = Query.ssh_home + f"./srs-poad q srstaking show-fixed-deposit {deposit_id} {Query.chain_id}"
+        def show_fixed_deposit_by_id(addr, deposit_id):
+            cmd = Query.ssh_home + f"./srs-poad q srstaking show-fixed-deposit {addr} {deposit_id} {Query.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 
@@ -118,7 +118,7 @@ class Query(BaseClass):
 
         @staticmethod
         def show_fixed_deposit_by_region(region_id, query_type):
-            cmd = Query.ssh_home + f"./srs-poad q srstaking show-fixed-deposit-by-acct {region_id} {query_type} {Query.chain_id}"
+            cmd = Query.ssh_home + f"./srs-poad q srstaking show-fixed-deposit-by-region {region_id} {query_type} {Query.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 

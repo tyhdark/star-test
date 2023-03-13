@@ -3,12 +3,12 @@ import time
 
 import pytest
 
-from config import test_data
 from tools import handle_name
 from x.query import Query
 from x.tx import Tx
 
 
+@pytest.mark.P1
 class TestKeys:
     tx = Tx()
     q = Query()
@@ -22,19 +22,14 @@ class TestKeys:
         assert res.get('balances') == list()
         return user_addr
 
-    def test_list(self):
-        kyc_list = self.tx.keys.list()
-        time.sleep(1)
-        assert type(kyc_list) == list
-
-    @pytest.mark.parametrize("data", test_data.Key.user_info)
+    # @pytest.mark.parametrize("data", test_data.Key.user_info)
     def test_show(self, data):
         res1 = self.tx.keys.show(f"{data['superadmin']}", True)
         assert type(res1[0]) == dict
         res2 = self.tx.keys.show(f"{data['username']}", False)
         assert type(res2[0]) == dict
 
-    @pytest.mark.parametrize("data", test_data.Key.user_info)
+    # @pytest.mark.parametrize("data", test_data.Key.user_info)
     def test_private_export(self, data):
         res1 = self.tx.keys.private_export(f"{data['superadmin']}", True)
         assert type(res1) == str

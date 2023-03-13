@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from config import chain
 from x.query import Query
 
 
@@ -38,8 +39,18 @@ class HandleQuery(object):
 
     @classmethod
     def get_fixed_deposit_by_addr(cls, addr, fixed_type):
-        kyc_info = cls.q.staking.show_fixed_deposit_by_addr(addr, fixed_type)
-        return kyc_info
+        fixed_info = cls.q.staking.show_fixed_deposit_by_addr(addr, fixed_type)
+        return fixed_info
+
+    @classmethod
+    def get_fixed_deposit_by_region(cls, region_id, fixed_type):
+        fixed_info = cls.q.staking.show_fixed_deposit_by_region(region_id, fixed_type)
+        return fixed_info
+
+    @classmethod
+    def get_fixed_deposit_by_id(cls, addr, deposit_id):
+        fixed_info = cls.q.staking.show_fixed_deposit_by_id(addr, deposit_id)
+        return fixed_info
 
     @classmethod
     def get_mint_params(cls):
@@ -55,4 +66,4 @@ if __name__ == '__main__':
     # q1.get_delegate("sil13htu9zqv8nfzdx0939qd6g3u2x582tmneer6xw")
     # q1.get_regin_list()
     # q1.get_fixed_deposit_by_addr("sil1f85whrg3zsyhe2d52zt0utjx7mh6vepqnhgwll", chain.fixed_type[0])
-    q1.get_mint_params()
+    q1.get_fixed_deposit_by_addr("sil1c4smuqu9f5pv0gsyz89nvglafsud4c02nf6lyq", chain.fixed_type[0])

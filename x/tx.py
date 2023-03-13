@@ -1,10 +1,4 @@
-"""
-@Author  :  Jw
-@Contact :  libai7236@gmail.com
-@Time    :  2022/12/30 10:38
-@Version :  V1.0
-@Desc    :  None
-"""
+# -*- coding: utf-8 -*-
 import inspect
 import time
 
@@ -98,19 +92,19 @@ class Tx(BaseClass):
                 return error_info
 
         @staticmethod
-        def update_region(region_id, from_addr, fees, region_name=None, region_delegators_limit=None,
-                          region_income_rate=None, region_totalStakeAllow=None, region_userMaxDelegateAC=None,
-                          region_userMinDelegateAC=None):
+        def update_region(region_id, from_addr, fees, region_name=None, delegators_limit=None,
+                          fee_rate=None, totalStakeAllow=None, userMaxDelegateAC=None,
+                          userMinDelegateAC=None):
             """
             修改区信息
             :param region_name: 区名称
             :param region_id: 区ID
-            :param region_delegators_limit: 区内委托上限人数（-1表示没有限制，0表示不允许质押，其他数值表示人数限制）
-            :param region_income_rate: 区内KYC用户手续费比例
+            :param delegators_limit: 区内委托上限人数（-1表示没有限制，0表示不允许质押，其他数值表示人数限制）
+            :param fee_rate: 区内KYC用户手续费比例
             :param from_addr: 发起方地址
-            :param region_totalStakeAllow: 质押水位上限
-            :param region_userMaxDelegateAC: 区内用户最大质押额
-            :param region_userMinDelegateAC: 区内用户最小质押额
+            :param totalStakeAllow: 质押水位上限
+            :param userMaxDelegateAC: 区内用户最大质押额
+            :param userMinDelegateAC: 区内用户最小质押额
             :param fees: Gas费用
             :return:
             """
@@ -119,16 +113,16 @@ class Tx(BaseClass):
             if region_name:
                 region_name = f"--region-name={region_name} "
                 cmd += f"{region_name}"
-            if region_delegators_limit:
-                cmd += f"--region-delegators-limit={region_delegators_limit} "
-            if region_income_rate:
-                cmd += f"--region-income-rate={region_income_rate} "
-            if region_totalStakeAllow:
-                cmd += f"--region-totalStakeAllow={region_totalStakeAllow} "
-            if region_userMaxDelegateAC:
-                cmd += f"--region-userMaxDelegateAC={region_userMaxDelegateAC} "
-            if region_userMinDelegateAC:
-                cmd += f"--region-userMinDelegateAC={region_userMinDelegateAC} "
+            if delegators_limit:
+                cmd += f"--delegators-limit={delegators_limit} "
+            if fee_rate:
+                cmd += f"--fee-rate={fee_rate} "
+            if totalStakeAllow:
+                cmd += f"--totalStakeAllow={totalStakeAllow} "
+            if userMaxDelegateAC:
+                cmd += f"--userMaxDelegateAC={userMaxDelegateAC} "
+            if userMinDelegateAC:
+                cmd += f"--userMinDelegateAC={userMinDelegateAC} "
 
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
@@ -246,9 +240,9 @@ class Tx(BaseClass):
             return handle_resp_data.handle_split_esc(resp_info)
 
         @staticmethod
-        def withdraw(addr, fees):
+        def withdraw(addr, fees, gas):
             """KYC用户提取活期收益"""
-            cmd = Tx.ssh_home + f"./srs-poad tx srstaking withdraw --from={addr} --fees={fees}src {Tx.chain_id}"
+            cmd = Tx.ssh_home + f"./srs-poad tx srstaking withdraw --from={addr} --fees={fees}src --gas={gas} {Tx.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
 
@@ -371,7 +365,7 @@ class Tx(BaseClass):
                 return handle_resp_data.handle_add_user(resp_info)
 
         @staticmethod
-        def list():
+        def lists():
             """查询用户列表 需要密码"""
             cmd = Tx.ssh_home + "./srs-poad keys list"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
@@ -437,5 +431,5 @@ if __name__ == '__main__':
     #                                     "sil1xxvavly4p87d6t3jkktp6pvt0jhystt48kwglh", 1)
     # res = Tx().staking.do_fixed_deposit(10, "PERIOD_3_MONTHS", "sil155mv39aqtl234twde44wrjdd5phxx28mg46u3p", 1)
     # print(res)
-    res = Tx().keys.private_export("user-ElznPKTwH9Aj")
+    res = Tx().keys.private_export("user-8syBmpAvn6EL")
     print(res)

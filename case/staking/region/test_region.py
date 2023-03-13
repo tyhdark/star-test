@@ -5,7 +5,7 @@ import pytest
 from loguru import logger
 
 from case.staking.kyc.test_kyc import TestKyc
-from config import chain, test_data
+from config import chain
 from x.query import Query
 from x.tx import Tx
 
@@ -41,11 +41,11 @@ class TestRegion:
         region_info = dict(region_admin_addr=region_admin_addr, region_id=region_id, region_name=region_name)
         logger.info(f"{region_info}")
         # 动态修改测试数据,测试数据管理可优化方案: 存储至db 或者 将动态数据回写至文件
-        region_id_list = [i["region_id"] for i in test_data.Region.region_list]
-        test_data.Region.region_list.append(region_info) if region_id not in region_id_list else "region_id is exist"
+        # region_id_list = [i["region_id"] for i in test_data.Region.region_list]
+        # test_data.Region.region_list.append(region_info) if region_id not in region_id_list else "region_id is exist"
         return region_admin_addr, region_id
 
-    @pytest.mark.parametrize("data", test_data.Region.update_region)
+    # @pytest.mark.parametrize("data", test_data.Region.update_region)
     def test_update_region(self, data):
         tx_resp = self.tx.staking.update_region(**data)
         time.sleep(5)

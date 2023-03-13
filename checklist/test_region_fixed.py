@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import pytest
 from loguru import logger
 
 from case.bank.test_tx import TestBank
@@ -8,9 +9,8 @@ from case.staking.region.test_region import TestRegion
 from config import chain
 from tools import handle_query, calculate
 
-logger.add("logs/case_{time}.log", rotation="500MB")
 
-
+@pytest.mark.P0
 class TestRegionFixed(object):
     test_region = TestRegion()
     test_fixed = TestFixed()
@@ -20,6 +20,7 @@ class TestRegionFixed(object):
 
     def test_region_fixed(self):
         """测试新创建区域并定期质押"""
+        logger.info("TestRegionFixed/test_region_fixed")
         region_admin_addr, region_id = self.test_region.test_create_region()
 
         new_kyc_data = dict(region_id=f"{region_id}", region_admin_addr=f"{region_admin_addr}")
@@ -34,7 +35,7 @@ class TestRegionFixed(object):
         fixed_usrg_balance = self.handle_q.get_balance(region_fixed_addr, 'usrg')
         logger.info(f"fixed_usrc_balance:{fixed_usrc_balance}, fixed_usrg_balance:{fixed_usrg_balance}")
 
-        fixed_data = dict(amount="10", period=f"{chain.period[1]}", from_addr=f"{user_addr}", fees="1")
+        fixed_data = dict(amount="10", period=f"{chain.period[1]}", from_addr=f"{user_addr}", fees="1", gas=200000)
         self.test_fixed.test_fixed(fixed_data)
 
         # 验证用户余额
@@ -56,6 +57,7 @@ class TestRegionFixed(object):
 
     def test_region_more_fixed(self):
         """测试新创建区域多用户定期质押"""
+        logger.info("TestRegionFixed/test_region_more_fixed")
         region_admin_addr, region_id = self.test_region.test_create_region()
 
         new_kyc_data = dict(region_id=f"{region_id}", region_admin_addr=f"{region_admin_addr}")
@@ -116,6 +118,7 @@ class TestRegionFixed(object):
             - user2 到期赎回质押
             + expect: user2 无定期质押,返回质押本金+定期收益
         """
+        logger.info("TestRegionFixed/test_region_more_fixed_withdraw")
         region_admin_addr, region_id, user_addr1, user_addr2, user1_fixed_id, user2_fixed_id, user2_fixed_end_height = self.test_region_more_fixed()
         user1_balance_uc = self.handle_q.get_balance(user_addr1, 'usrc')
         user2_balance_uc = self.handle_q.get_balance(user_addr2, 'usrc')

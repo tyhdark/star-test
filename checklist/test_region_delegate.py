@@ -11,9 +11,8 @@ from case.staking.region.test_region import TestRegion
 from config import chain
 from tools import calculate, handle_query
 
-logger.add("logs/case_{time}.log", rotation="500MB")
 
-
+@pytest.mark.P0
 class TestRegionDelegate(object):
     test_region = TestRegion()
     test_del = TestDelegate()
@@ -23,6 +22,7 @@ class TestRegionDelegate(object):
 
     def test_region_delegate(self):
         """测试新创建区域并质押"""
+        logger.info("TestRegionDelegate/test_region_delegate")
         region_admin_addr, region_id = self.test_region.test_create_region()
 
         new_kyc_data = dict(region_id=f"{region_id}", region_admin_addr=f"{region_admin_addr}")
@@ -47,6 +47,7 @@ class TestRegionDelegate(object):
 
     def test_region_more_delegate(self):
         """多用户质押"""
+        logger.info("TestRegionDelegate/test_region_more_delegate")
         region_admin_addr, region_id, user_addr1 = self.test_region_delegate()
         logger.info(f'{"setup test_region_delegate finish":*^50s}')
 
@@ -83,6 +84,7 @@ class TestRegionDelegate(object):
             - user2 调用exit退出活期质押
             + expect: user2 无活期质押,还存在KYC赠送质押
         """
+        logger.info("TestRegionDelegate/test_region_more_undelegate")
         region_admin_addr, region_id, user_addr1, user_addr2 = self.test_region_more_delegate()
         logger.info(f'{"setup test_region_more_delegate finish":*^50s}')
 
@@ -165,6 +167,7 @@ class TestRegionDelegate(object):
             - user2 regionAmin多次发起清退
             + expect: 无效清退 error_code: 2097
         """
+        logger.info("TestRegionDelegate/test_region_more_exit_delegate")
         region_admin_addr, region_id, user_addr1, user_addr2 = self.test_region_more_delegate()
         logger.info(f'{"setup test_region_more_delegate finish":*^50s}')
 
