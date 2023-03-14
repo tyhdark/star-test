@@ -14,7 +14,7 @@ pip install -r requirements.txt
 
 ## Setup
 
-- need preparation config/chain.py    (Detailed information viewing  [example]() )
+- need preparation config/chain.py    (Detailed information viewing  [example](https://github.com/JW-Zhang001/srs-poa-test/tree/main/example) )
 
   
 
