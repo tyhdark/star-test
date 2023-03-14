@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import httpx
+
 from config import chain
 from x.query import Query
 
@@ -29,8 +31,8 @@ class HandleQuery(object):
 
     @classmethod
     def get_regin_list(cls):
-        region_list = cls.q.staking.list_region()
-        return region_list
+        region_list = httpx.request(**chain.api['list_region'])
+        return region_list.json()
 
     @classmethod
     def get_kyc_by_region(cls, region_id):
@@ -64,6 +66,6 @@ if __name__ == '__main__':
     q1 = HandleQuery()
     # q1.get_region("49b7bc6abeed11ed9fc31e620a42e349")
     # q1.get_delegate("sil13htu9zqv8nfzdx0939qd6g3u2x582tmneer6xw")
-    # q1.get_regin_list()
+    q1.get_regin_list()
     # q1.get_fixed_deposit_by_addr("sil1f85whrg3zsyhe2d52zt0utjx7mh6vepqnhgwll", chain.fixed_type[0])
-    q1.get_fixed_deposit_by_addr("sil1c4smuqu9f5pv0gsyz89nvglafsud4c02nf6lyq", chain.fixed_type[0])
+    # q1.get_fixed_deposit_by_addr("sil1c4smuqu9f5pv0gsyz89nvglafsud4c02nf6lyq", chain.fixed_type[0])

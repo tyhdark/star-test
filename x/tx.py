@@ -431,5 +431,5 @@ if __name__ == '__main__':
     #                                     "sil1xxvavly4p87d6t3jkktp6pvt0jhystt48kwglh", 1)
     # res = Tx().staking.do_fixed_deposit(10, "PERIOD_3_MONTHS", "sil155mv39aqtl234twde44wrjdd5phxx28mg46u3p", 1)
     # print(res)
-    res = Tx().keys.private_export("user-8syBmpAvn6EL")
+    res = Tx().keys.private_export("user-Bm4Wk3JfrAHV")
     print(res)

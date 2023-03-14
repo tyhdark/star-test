@@ -14,7 +14,7 @@ def handle_region_name():
                   '"\nBIH":"波黑","\nBLM":"圣巴泰勒米","\nBLR":"白俄罗斯","\nBLZ":"伯利兹"\nBRA":"巴西","\nBRB":"巴巴多斯",' \
                   '"\nBRN":"文莱","\nBTN":"不丹","\nBVT":"布韦岛","\nBWA":"博茨瓦纳","\nCAF":"中非","\nCAN":"加拿大",' \
                   '"\nCCK":"科科斯群岛","\nCHN":"中国","\nCIV":"科特迪瓦","\nCMR":"喀麦隆","\nCOD":"刚果民主共和国",' \
-                  '"\nCOG":"刚果共和国","\nCOK":"库克群岛","\nCOL":"哥伦比亚","\nCOM":"科摩罗","\nC":"古巴","\nCUW":"库拉索",' \
+                  '"\nCOG":"刚果共和国","\nCOK":"库克群岛","\nCOL":"哥伦比亚","\nCOM":"科摩罗","\nCUB":"古巴","\nCUW":"库拉索",' \
                   '"\nCXR":"圣诞岛","\nCYM":"开曼群岛","\nCYP":"塞浦路斯","\nCZE":"捷克","\nDEU":"德国","\nDJI":"吉布提",' \
                   '"\nDMA":"多米尼克","\nDNK"":"阿尔及利亚","\nECU":"厄瓜多尔","\nEGY":"埃及","\nERI":"厄立特里亚",' \
                   '"\nESH":"西撒哈拉","\nESP":"西班牙","\nEST":"爱沙尼亚","\nETH":"埃塞俄比亚","\nFIN":","\nFRA":"法国",' \
@@ -47,12 +47,13 @@ def handle_region_name():
                   '"\nZWE":"津巴布韦","\nABW":"阿鲁巴"'
     region_name_list = region_name.replace('\n', '').replace('"', '').split(',')
     region_name_item = [i.split(":") for i in region_name_list]
-    region_name_dict = {i[0]: i[-1] for i in region_name_item}
-    region_name_key = [i for i in region_name_dict]
+    region_name_dict = {item[0]: item[-1] for item in region_name_item}
+    region_name_key = [j for j in region_name_dict]
     return region_name_key, region_name_dict
 
 
 def _chain_region_name_list():
+    """获取链上已存在的region-name"""
     regin_list = HandleQuery.get_regin_list()
     regin_name_list = [i['regionName'] for i in regin_list["region"]]
     return regin_name_list
@@ -60,8 +61,8 @@ def _chain_region_name_list():
 
 def create_region_id_and_name():
     region_id = uuid.uuid1().hex
-    region_name_key, region_name_dict = handle_region_name()
-    if True:
+    region_name_key, _ = handle_region_name()
+    while True:
         region_name = random.choice(region_name_key)
         chain_region_name_list = _chain_region_name_list()
         if region_name not in chain_region_name_list:
@@ -75,4 +76,6 @@ def create_username():
 
 
 if __name__ == '__main__':
-    print(create_region_id_and_name())
+    for index in range(200):
+        r1 = create_region_id_and_name()
+        print(r1)
