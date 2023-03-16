@@ -13,6 +13,7 @@ class TestBank:
 
     # @pytest.mark.parametrize("data", test_data.Bank.tx_info)
     def test_send(self, data):
+        """默认使用超管在发送"""
         logger.info("TestBank/test_send")
         tx_info = self.tx.bank.send_tx(data["from_addr"], data["to_addr"], data["amount"], data["fees"], True)
         logger.info(f"Sent transaction:{tx_info}")

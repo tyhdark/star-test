@@ -21,7 +21,7 @@ class TestRegionFixed(object):
     def test_region_fixed(self):
         """测试新创建区域并定期质押"""
         logger.info("TestRegionFixed/test_region_fixed")
-        region_admin_addr, region_id = self.test_region.test_create_region()
+        region_admin_addr, region_id, _ = self.test_region.test_create_region()
 
         new_kyc_data = dict(region_id=f"{region_id}", region_admin_addr=f"{region_admin_addr}")
         user_addr = self.test_kyc.test_new_kyc_user(new_kyc_data)
@@ -58,7 +58,7 @@ class TestRegionFixed(object):
     def test_region_more_fixed(self):
         """测试新创建区域多用户定期质押"""
         logger.info("TestRegionFixed/test_region_more_fixed")
-        region_admin_addr, region_id = self.test_region.test_create_region()
+        region_admin_addr, region_id, _ = self.test_region.test_create_region()
 
         new_kyc_data = dict(region_id=f"{region_id}", region_admin_addr=f"{region_admin_addr}")
         user_addr1 = self.test_kyc.test_new_kyc_user(new_kyc_data)

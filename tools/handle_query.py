@@ -35,6 +35,11 @@ class HandleQuery(object):
         return region_list.json()
 
     @classmethod
+    def get_validator_list(cls):
+        region_list = httpx.request(**chain.api['list_validator'])
+        return region_list.json()
+
+    @classmethod
     def get_kyc_by_region(cls, region_id):
         kyc_info = cls.q.staking.kyc_by_region(region_id)
         return kyc_info

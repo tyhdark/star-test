@@ -3,6 +3,7 @@ import pytest
 from loguru import logger
 
 from case.bank.test_tx import TestBank
+from case.keys.test_keys import TestKeys
 from case.staking.fixed.test_fixed import TestFixed
 from case.staking.kyc.test_kyc import TestKyc
 from case.staking.region.test_region import TestRegion
@@ -16,12 +17,13 @@ class TestSendCoin(object):
     test_fixed = TestFixed()
     test_kyc = TestKyc()
     test_bank = TestBank()
+    test_keys = TestKeys()
     handle_q = handle_query.HandleQuery()
 
     def test_ag_to_ac(self):
         """测试ag兑换ac"""
         logger.info("TestSendCoin/test_ag_to_ac")
-        region_admin_addr, region_id = self.test_region.test_create_region()
+        region_admin_addr, region_id, _ = self.test_region.test_create_region()
 
         new_kyc_data = dict(region_id=f"{region_id}", region_admin_addr=f"{region_admin_addr}")
         user_addr = self.test_kyc.test_new_kyc_user(new_kyc_data)
@@ -80,3 +82,24 @@ class TestSendCoin(object):
         # check balances
         resp2_user_usrc = self.handle_q.get_balance(user_addr, 'usrc')
         assert resp2_user_usrc['amount'] == str(int(resp_user_usrc['amount']) - u_fees + to_uac)
+
+    def test_transfer(self, setup_create_region):
+        logger.info("TestSendCoin/test_transfer")
+        region_admin_addr, region_id, region_name, _ = setup_create_region
+
+        user_addr = self.test_keys.test_add()
+
+        region_admin_balance = self.handle_q.get_balance(region_admin_addr, 'usrc')
+
+        data = dict(from_addr=f"{region_admin_addr}", to_addr=f"{user_addr}", amount="10", fees="1", from_super=False)
+        tx_info = self.test_bank.tx.bank.send_tx(**data)
+        logger.info(f"Sent transaction:{tx_info}")
+        resp = self.test_bank.q.tx.query_tx(tx_info['txhash'])
+        assert resp['code'] == 0
+
+        region_admin_balance2 = self.handle_q.get_balance(region_admin_addr, 'usrc')
+        expect_data = int(region_admin_balance['amount']) - calculate.to_usrc(10) - (calculate.to_usrc(1) * 0.5)
+        assert region_admin_balance2['amount'] == str(int(expect_data))
+
+        user_balance2 = self.handle_q.get_balance(user_addr, 'usrc')
+        assert user_balance2['amount'] == str(calculate.to_usrc(10))
