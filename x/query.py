@@ -149,7 +149,7 @@ class Query(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 
-        # TODO validate 参数是什么
+        # validate 参数是 operator_address
         @staticmethod
         def show_validator(validator):
             cmd = Query.ssh_home + f"./srs-poad q srstaking show-validator {validator} {Query.chain_id}"
