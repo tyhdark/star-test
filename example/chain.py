@@ -26,3 +26,12 @@ fixed_type = {
     1: "NOT_EXPIRED",
     2: "EXPIRED"
 }
+
+base_url = "XXXX"
+
+api = {
+    "list_region": dict(method="GET", url=base_url + "XXXX/v1beta1/list-region"),
+    "balances": dict(method="GET", url=base_url + "XXXX/v1beta1/balances/"),
+    "show_region": dict(method="GET", url=base_url + "XXXX/v1beta1/balances/"),
+    "list_validator": dict(method="GET", url=base_url + "XXXX/v1beta1/list-validator")
+}
