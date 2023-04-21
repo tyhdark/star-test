@@ -20,8 +20,7 @@ class TestRegion:
         region_admin_addr, region_id, region_name = self.test_kyc.test_new_kyc_admin()
         time.sleep(5)
         # 使用SuperAdmin给区管理转账
-        send_tx_info = self.tx.bank.send_tx(from_addr=chain.super_addr, to_addr=region_admin_addr, amount=100,
-                                            fees=1, from_super=True)
+        send_tx_info = self.tx.bank.send_tx(from_addr=chain.super_addr, to_addr=region_admin_addr, amount=100, fees=1)
         logger.info(f"send_tx_info: {send_tx_info}")
 
         # 创建区域
@@ -40,12 +39,8 @@ class TestRegion:
         time.sleep((5 * 8) * 2)
         region_info = dict(region_admin_addr=region_admin_addr, region_id=region_id, region_name=region_name)
         logger.info(f"{region_info}")
-        # 动态修改测试数据,测试数据管理可优化方案: 存储至db 或者 将动态数据回写至文件
-        # region_id_list = [i["region_id"] for i in test_data.Region.region_list]
-        # test_data.Region.region_list.append(region_info) if region_id not in region_id_list else "region_id is exist"
         return region_admin_addr, region_id, region_name
 
-    # @pytest.mark.parametrize("data", test_data.Region.update_region)
     def test_update_region(self, data):
         tx_resp = self.tx.staking.update_region(**data)
         time.sleep(5)

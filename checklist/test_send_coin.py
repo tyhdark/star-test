@@ -33,21 +33,21 @@ class TestSendCoin(object):
         # 计算定期收益 0.06 * 1 / 12 * (200 * 1000000) * 400 = 400000000usrg  区金库:1100000000usrg
         region_info = self.handle_q.get_region(region_id)
         region_fixed_addr = region_info['region']['baseAccountAddr']
-        fixed_usrc_balance = self.handle_q.get_balance(region_fixed_addr, 'usrc')
-        fixed_usrg_balance = self.handle_q.get_balance(region_fixed_addr, 'usrg')
+        fixed_usrc_balance = self.handle_q.get_balance(region_fixed_addr, chain.coin['uc'])
+        fixed_usrg_balance = self.handle_q.get_balance(region_fixed_addr, chain.coin['ug'])
         logger.info(f"fixed_usrc_balance:{fixed_usrc_balance}, fixed_usrg_balance:{fixed_usrg_balance}")
 
         fixed_data = dict(amount="200", period=f"{chain.period[1]}", from_addr=f"{user_addr}", fees=2, gas=400000)
-        self.test_fixed.test_fixed(fixed_data)
+        self.test_fixed.test_create_fixed_deposit(fixed_data)
 
         # 验证用户余额
-        user_balance = self.handle_q.get_balance(user_addr, 'usrc')
+        user_balance = self.handle_q.get_balance(user_addr, chain.coin['uc'])
         assert user_balance['amount'] == str(calculate.subtraction(500, 200, 2))
 
         # 验证区金库信息
         region_info = self.handle_q.get_region(region_id)
         region_fixed_addr = region_info['region']['fixedDepositAccountAddr']
-        fixed_addr_balance = self.handle_q.get_balance(region_fixed_addr, 'usrc')
+        fixed_addr_balance = self.handle_q.get_balance(region_fixed_addr, chain.coin['uc'])
         assert fixed_addr_balance['amount'] == str(calculate.to_usrc(200))
 
         # 查用户定期信息
@@ -65,11 +65,11 @@ class TestSendCoin(object):
         u_fees = calculate.to_usrc(2)
 
         fixed_data = dict(deposit_id=f'{_fixed_id}', from_addr=f"{user_addr}", fees=2, gas=400000)
-        self.test_fixed.test_fixed_withdraw(fixed_data)
+        self.test_fixed.test_withdraw_fixed_deposit(fixed_data)
         logger.info(f'{"无定期质押,返回质押本金+定期收益":*^50s}')
-        resp_user_usrc = self.handle_q.get_balance(user_addr, 'usrc')
+        resp_user_usrc = self.handle_q.get_balance(user_addr, chain.coin['uc'])
         assert resp_user_usrc['amount'] == str(int(user_balance['amount']) + calculate.to_usrc(200) - u_fees)
-        resp_user_usrg = self.handle_q.get_balance(user_addr, 'usrg')
+        resp_user_usrg = self.handle_q.get_balance(user_addr, chain.coin['ug'])
         assert resp_user_usrg['amount'] == str(calculate.to_usrc(400))
 
         # ag to ac
@@ -80,7 +80,7 @@ class TestSendCoin(object):
         u_fees = calculate.to_usrc(1)
         to_uac = calculate.ag_to_ac(uag_balance)
         # check balances
-        resp2_user_usrc = self.handle_q.get_balance(user_addr, 'usrc')
+        resp2_user_usrc = self.handle_q.get_balance(user_addr, chain.coin['uc'])
         assert resp2_user_usrc['amount'] == str(int(resp_user_usrc['amount']) - u_fees + to_uac)
 
     def test_transfer(self, setup_create_region):
@@ -89,17 +89,17 @@ class TestSendCoin(object):
 
         user_addr = self.test_keys.test_add()
 
-        region_admin_balance = self.handle_q.get_balance(region_admin_addr, 'usrc')
+        region_admin_balance = self.handle_q.get_balance(region_admin_addr, chain.coin['uc'])
 
-        data = dict(from_addr=f"{region_admin_addr}", to_addr=f"{user_addr}", amount="10", fees="1", from_super=False)
+        data = dict(from_addr=f"{region_admin_addr}", to_addr=f"{user_addr}", amount="10", fees="1")
         tx_info = self.test_bank.tx.bank.send_tx(**data)
         logger.info(f"Sent transaction:{tx_info}")
         resp = self.test_bank.q.tx.query_tx(tx_info['txhash'])
         assert resp['code'] == 0
 
-        region_admin_balance2 = self.handle_q.get_balance(region_admin_addr, 'usrc')
+        region_admin_balance2 = self.handle_q.get_balance(region_admin_addr, chain.coin['uc'])
         expect_data = int(region_admin_balance['amount']) - calculate.to_usrc(10) - (calculate.to_usrc(1) * 0.5)
         assert region_admin_balance2['amount'] == str(int(expect_data))
 
-        user_balance2 = self.handle_q.get_balance(user_addr, 'usrc')
+        user_balance2 = self.handle_q.get_balance(user_addr, chain.coin['uc'])
         assert user_balance2['amount'] == str(calculate.to_usrc(10))

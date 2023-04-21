@@ -31,21 +31,21 @@ class TestRegionFixed(object):
         # 计算定期收益 0.06 * 1 / 12 * (10 * 1000000) * 400 = 20000000usrg  1100000000
         region_info = self.handle_q.get_region(region_id)
         region_fixed_addr = region_info['region']['baseAccountAddr']
-        fixed_usrc_balance = self.handle_q.get_balance(region_fixed_addr, 'usrc')
-        fixed_usrg_balance = self.handle_q.get_balance(region_fixed_addr, 'usrg')
+        fixed_usrc_balance = self.handle_q.get_balance(region_fixed_addr, chain.coin['uc'])
+        fixed_usrg_balance = self.handle_q.get_balance(region_fixed_addr, chain.coin['ug'])
         logger.info(f"fixed_usrc_balance:{fixed_usrc_balance}, fixed_usrg_balance:{fixed_usrg_balance}")
 
         fixed_data = dict(amount="10", period=f"{chain.period[1]}", from_addr=f"{user_addr}", fees="1", gas=200000)
-        self.test_fixed.test_fixed(fixed_data)
+        self.test_fixed.test_create_fixed_deposit(fixed_data)
 
         # 验证用户余额
-        user_balance = self.handle_q.get_balance(user_addr, 'usrc')
+        user_balance = self.handle_q.get_balance(user_addr, chain.coin['uc'])
         assert user_balance['amount'] == str(calculate.subtraction(100, 10, 1))
 
         # 验证区金库信息
         region_info = self.handle_q.get_region(region_id)
         region_fixed_addr = region_info['region']['fixedDepositAccountAddr']
-        fixed_addr_balance = self.handle_q.get_balance(region_fixed_addr, 'usrc')
+        fixed_addr_balance = self.handle_q.get_balance(region_fixed_addr, chain.coin['uc'])
         assert fixed_addr_balance['amount'] == str(calculate.to_usrc(10))
 
         # 查用户定期信息
@@ -71,25 +71,25 @@ class TestRegionFixed(object):
         # 计算定期收益 0.06 * 1 / 12 * (10 * 1000000) * 400 = 20000000usrg  1100000000
         region_info = self.handle_q.get_region(region_id)
         region_fixed_addr = region_info['region']['baseAccountAddr']
-        fixed_usrc_balance = self.handle_q.get_balance(region_fixed_addr, 'usrc')
-        fixed_usrg_balance = self.handle_q.get_balance(region_fixed_addr, 'usrg')
+        fixed_usrc_balance = self.handle_q.get_balance(region_fixed_addr, chain.coin['uc'])
+        fixed_usrg_balance = self.handle_q.get_balance(region_fixed_addr, chain.coin['ug'])
         logger.info(f"fixed_usrc_balance:{fixed_usrc_balance}, fixed_usrg_balance:{fixed_usrg_balance}")
 
         fixed_data = dict(amount="10", period=f"{chain.period[1]}", from_addr=f"{user_addr1}", fees=2, gas=400000)
-        self.test_fixed.test_fixed(fixed_data)
+        self.test_fixed.test_create_fixed_deposit(fixed_data)
         fixed_data = dict(amount="10", period=f"{chain.period[1]}", from_addr=f"{user_addr2}", fees=2, gas=400000)
-        self.test_fixed.test_fixed(fixed_data)
+        self.test_fixed.test_create_fixed_deposit(fixed_data)
 
         # 验证用户余额
-        user_balance1 = self.handle_q.get_balance(user_addr1, 'usrc')
+        user_balance1 = self.handle_q.get_balance(user_addr1, chain.coin['uc'])
         assert user_balance1['amount'] == str(calculate.subtraction(100, 10, 2))
-        user_balance2 = self.handle_q.get_balance(user_addr2, 'usrc')
+        user_balance2 = self.handle_q.get_balance(user_addr2, chain.coin['uc'])
         assert user_balance2['amount'] == str(calculate.subtraction(100, 10, 2))
 
         # 验证区金库信息
         region_info = self.handle_q.get_region(region_id)
         region_fixed_addr = region_info['region']['fixedDepositAccountAddr']
-        fixed_addr_balance = self.handle_q.get_balance(region_fixed_addr, 'usrc')
+        fixed_addr_balance = self.handle_q.get_balance(region_fixed_addr, chain.coin['uc'])
         assert fixed_addr_balance['amount'] == str(calculate.to_usrc(10 * 2))
 
         # 查用户定期信息
@@ -120,22 +120,22 @@ class TestRegionFixed(object):
         """
         logger.info("TestRegionFixed/test_region_more_fixed_withdraw")
         region_admin_addr, region_id, user_addr1, user_addr2, user1_fixed_id, user2_fixed_id, user2_fixed_end_height = self.test_region_more_fixed()
-        user1_balance_uc = self.handle_q.get_balance(user_addr1, 'usrc')
-        user2_balance_uc = self.handle_q.get_balance(user_addr2, 'usrc')
+        user1_balance_uc = self.handle_q.get_balance(user_addr1, chain.coin['uc'])
+        user2_balance_uc = self.handle_q.get_balance(user_addr2, chain.coin['uc'])
 
         logger.info(f'{"- user1 未到期赎回质押":*^50s}')
         fixed_data = dict(deposit_id=f'{user1_fixed_id}', from_addr=f"{user_addr1}", fees=2, gas=400000)
-        self.test_fixed.test_fixed_withdraw(fixed_data)
+        self.test_fixed.test_withdraw_fixed_deposit(fixed_data)
 
         logger.info(f'{"+ expect: user1 无定期质押,返回质押本金":*^50s}')
         u_fees = calculate.to_usrc(2)
-        resp_balance1 = self.handle_q.get_balance(user_addr1, 'usrc')
+        resp_balance1 = self.handle_q.get_balance(user_addr1, chain.coin['uc'])
         assert resp_balance1['amount'] == str(int(user1_balance_uc['amount']) + calculate.to_usrc(10) - u_fees)
 
         # 验证区金库信息
         region_info = self.handle_q.get_region(region_id)
         region_fixed_addr = region_info['region']['fixedDepositAccountAddr']
-        fixed_addr_balance = self.handle_q.get_balance(region_fixed_addr, 'usrc')
+        fixed_addr_balance = self.handle_q.get_balance(region_fixed_addr, chain.coin['uc'])
         assert fixed_addr_balance['amount'] == str(calculate.to_usrc(10))
 
         # 查用户定期信息
@@ -148,9 +148,9 @@ class TestRegionFixed(object):
         calculate.wait_block_for_height(height=user2_fixed_end_height)
 
         fixed_data = dict(deposit_id=f'{user2_fixed_id}', from_addr=f"{user_addr2}", fees=2, gas=400000)
-        self.test_fixed.test_fixed_withdraw(fixed_data)
+        self.test_fixed.test_withdraw_fixed_deposit(fixed_data)
         logger.info(f'{"+ expect: user2 无定期质押,返回质押本金+定期收益":*^50s}')
-        resp_user2_usrc = self.handle_q.get_balance(user_addr2, 'usrc')
+        resp_user2_usrc = self.handle_q.get_balance(user_addr2, chain.coin['uc'])
         assert resp_user2_usrc['amount'] == str(int(user2_balance_uc['amount']) + calculate.to_usrc(10) - u_fees)
-        resp_user2_usrg = self.handle_q.get_balance(user_addr2, 'usrg')
+        resp_user2_usrg = self.handle_q.get_balance(user_addr2, chain.coin['ug'])
         assert resp_user2_usrg['amount'] == str(calculate.to_usrc(20))

@@ -22,4 +22,4 @@ class TestRegionInfo(object):
         for i in update_region_data:
             logger.info(f"request: {i}")
             self.test_region.test_update_region(i)
-        pass
+        # TODO assert

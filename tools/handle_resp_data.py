@@ -18,6 +18,14 @@ def handle_split_esc(data: str):
 def handle_split_esc_re_code(data: str):
     """切割控制台esc数据 并按code 匹配"""
     data_info = data.split("")
+    _value = data_info[1]
+    value = 'code:' + _value.split('\rcode:')[-1]
+    return yaml.load(value, Loader=yaml.FullLoader)
+
+
+def handle_input_y_split_esc_re_code(data: str):
+    """input_y 后切割控制台esc数据 并按code 匹配"""
+    data_info = data.split("")
     _value = data_info[0]
     value = 'code:' + _value.split('\r\ncode:')[-1]
     return yaml.load(value, Loader=yaml.FullLoader)
@@ -30,7 +38,7 @@ def handle_add_user(data: str):
     mnemonic = data_info[1]
 
     dict_value = yaml.load(_value, Loader=yaml.FullLoader)
-    return dict_value, mnemonic
+    return dict_value[0], mnemonic
 
 
 def handle_yaml_to_dict(yaml_path: str, is_file=False):

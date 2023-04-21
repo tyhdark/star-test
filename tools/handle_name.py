@@ -27,7 +27,7 @@ def handle_region_name():
                   '"\nJPN":"日本","\nKAZ":"哈萨克吉尔吉斯斯坦","\nKHM":"柬埔寨","\nKIR":"基里巴斯","\nKNA":"圣基茨和尼维斯",' \
                   '"\nKOR":"韩国","\nKWT":"科威特","\nLAO":"老挝","\nLBN":"黎巴嫩","\nLBR":"利比","\nLIE":"列支敦士登",' \
                   '"\nLKA":"斯里兰卡","\nLSO":"莱索托","\nLTU":"立陶宛","\nLUX":"卢森堡","\nLVA":"拉脱维亚",' \
-                  '"\nMAF":"法属圣马丁","\nMAR":"摩洛哥","\nMG":"马达加斯加","\nMDV":"马尔代夫","\nMEX":"墨西哥",' \
+                  '"\nMAF":"法属圣马丁","\nMAR":"摩洛哥","\nMDG":"马达加斯加","\nMDV":"马尔代夫","\nMEX":"墨西哥",' \
                   '"\nMHL":"马绍尔群岛","\nMKD":"北马其顿","\nMLI":"马里","\nMLT":"马耳他","\nMMR":"缅甸","\nMNE":"黑山",' \
                   '"\nMOZ":"莫桑比克","\nMRT":"毛里塔尼亚","\nMSR":"蒙特塞拉特","\nMTQ":"马提尼克","\nMUS":"毛里求斯",' \
                   '"\nMWI":"马拉维","\nMYS":"马来西亚","\nMYT":"马约特","\nNER":"尼日尔","\nNFK":"诺福克岛","\nNGA":"尼日利亚",' \
@@ -35,7 +35,7 @@ def handle_region_name():
                   '"\nPAK":"巴基斯坦","\nPAN":"巴拿马","\nPCN":"皮特凯恩群岛","\nPER":"秘鲁","\nPHL":"菲律宾","\nPLW":"帕劳",' \
                   '"\nPNG":"巴布亚新几内亚","\nPOL":"波兰","\nPRI":"波多黎各","\nPRY":"巴拉圭","\nPSE":"巴勒斯坦",' \
                   '"\nPYF":"法属波利尼西亚","\nQAT":"卡塔尔","\nREU":"留尼汪","\nROU":"罗马尼亚","\nRUS":"俄罗斯",' \
-                  '"\nRWA":"卢旺达","\nSN":"塞内加尔","\nSGP":"新加坡","\nSGS":"南乔治亚和南桑威奇群岛",' \
+                  '"\nRWA":"卢旺达","\nSEN":"塞内加尔","\nSGP":"新加坡","\nSGS":"南乔治亚和南桑威奇群岛",' \
                   '"\nSHN":"圣赫勒拿阿森松和特里斯坦","\nSJM":"斯瓦尔巴和扬马延","\nSLB":"所罗门群岛","\nSLE:"索马里",' \
                   '"\nSPM":"圣皮埃尔和密克隆","\nSRB":"塞尔维亚","\nSSD":"南苏丹","\nSTP":"圣多美和普林西比","\nSUR":"苏里南",' \
                   '"\nSVK":"斯洛伐克","\nSVN":"斯洛文尼","\nSYC":"塞舌尔","\nSYR":"叙利亚",' \
@@ -60,6 +60,7 @@ def _chain_region_name_list():
 
 
 def create_region_id_and_name():
+    """创建region-id和region-name(链上不存在的region—name)"""
     region_id = uuid.uuid1().hex
     region_name_key, _ = handle_region_name()
     while True:
@@ -71,7 +72,7 @@ def create_region_id_and_name():
 
 def create_username():
     random_str = string.ascii_letters + string.digits
-    username = "user-" + ''.join(random.sample(random_str, 12))
+    username = "user" + ''.join(random.sample(random_str, 12))
     return username
 
 

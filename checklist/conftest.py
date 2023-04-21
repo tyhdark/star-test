@@ -8,7 +8,7 @@ from tools import handle_name
 
 @pytest.fixture(scope="session")
 def setup_create_region():
-    logger.info("setup_update_region_data")
+    logger.info("fixture: setup_create_region")
     region = test_region.TestRegion()
     region_admin_addr, region_id, region_name = region.test_create_region()
 
