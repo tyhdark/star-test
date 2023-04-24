@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import math
+
 import httpx
 
 from config import chain
@@ -60,11 +62,17 @@ class HandleQuery(object):
         return fixed_info
 
     @classmethod
-    def get_mint_params(cls):
+    def get_test_blocks_per_year(cls):
         mint_info = cls.q.mint.params()
         blocks_per_year = int(mint_info['blocks_per_year'])
         blocks_per_year /= 43800
         return blocks_per_year
+
+    @classmethod
+    def get_block_reward(cls):
+        block_number = cls.q.mint.params()
+        block_rewards = math.ceil(chain.FIRST_FIVE_YEARS / int(block_number['blocks_per_year']))
+        return block_rewards
 
 
 if __name__ == '__main__':

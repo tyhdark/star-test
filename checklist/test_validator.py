@@ -18,13 +18,9 @@ class TestRegionInfo(object):
     q = Query()
     handle_q = handle_query.HandleQuery()
 
-    def test_create_validator(self):
-        # pubkey = '\'{"type": "tendermint/PubKeyEd25519","value": "vsepa+cmIHDaBsrLJ3kcqIt8zAiKDrvlroTJhvLXGuA="}\''
-        pubkey2 = '\'{"type": "tendermint/PubKeyEd25519","value": "+vzd+sKBnI0OWSRJciAyeXFwDtif0L6XNxKj3edOLw0="}\''
-        moniker = "node3"
-        from_addr = chain.super_addr
-        validator_data = dict(pubkey=pubkey2, moniker=moniker, from_addr=from_addr, fees=1, from_super=True)
-        tx_resp = self.tx.staking.create_validator(**validator_data)
+    @pytest.mark.parametrize("data", chain.validator_data)
+    def test_create_validator(self, data):
+        tx_resp = self.tx.staking.create_validator(**data)
         logger.info(f"create_validator tx_resp: {tx_resp}")
         tx_resp = self.q.tx.query_tx(tx_resp['txhash'])
         assert tx_resp['code'] == 0
@@ -43,8 +39,8 @@ class TestRegionInfo(object):
                 raise RuntimeError('query validator_list not find valid RegionName')
 
         operator_address = validator_info["operator_address"]
-        validator_data = dict(operator_address=operator_address, region_name=region_name, from_addr=chain.super_addr,
-                              fees=1, from_super=True)
+        validator_data = dict(operator_address=operator_address, region_name=region_name,
+                              from_addr=chain.super_addr, fees=1)
         tx_resp = self.tx.staking.update_validator(**validator_data)
         logger.info(f"update_validator tx_resp: {tx_resp}")
         tx_resp = self.q.tx.query_tx(tx_resp['txhash'])

@@ -48,7 +48,7 @@ def add(numbers: list):
 
 
 def period_wait_block():
-    for_year = HandleQuery.get_mint_params()
+    for_year = HandleQuery.get_test_blocks_per_year()
 
     period_block = {
         1: for_year / 12,
@@ -123,9 +123,7 @@ def border_value2():
 
 
 if __name__ == '__main__':
-    a = ag_to_ac(10000000200000068000)
-    b = str(to_usrc(10))
-    print(a)
-    print(b, type(b))
-    wait_block_for_height(60850)
-    print(type(HandleQuery.get_block()))
+
+    a = decimal.Decimal(10) / decimal.Decimal(400) / decimal.Decimal(100000)
+    a_str = '{:.20f}'.format(a)
+    print(a_str)

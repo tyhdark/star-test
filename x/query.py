@@ -60,9 +60,8 @@ class Query(BaseClass):
             """查询活期质押"""
             cmd = Query.ssh_home + f"{Query.chain_bin} q srstaking show-delegation {addr} {Query.chain_id} {Query.custom_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            res = Query.ssh_client.ssh(cmd)
-            time.sleep(3)
-            return handle_resp_data.handle_yaml_to_dict(res)
+            time.sleep(5)
+            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def list_delegation():
@@ -71,6 +70,20 @@ class Query(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             res = Query.ssh_client.ssh(cmd)
             return handle_resp_data.handle_yaml_to_dict(res)
+
+        @staticmethod
+        def list_fixed_delegation():
+            """所有活期内周期质押信息"""
+            cmd = Query.ssh_home + f"{Query.chain_bin} q srstaking list-fixed-delegation {Query.chain_id} {Query.custom_node}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+
+        @staticmethod
+        def show_fixed_delegation(addr):
+            """活期内周期质押信息"""
+            cmd = Query.ssh_home + f"{Query.chain_bin} q srstaking show-fixed-delegation {addr} {Query.chain_id} {Query.custom_node}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def kyc_by_region(region_id):

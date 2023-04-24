@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import decimal
 import time
 
 import pytest
@@ -10,6 +11,8 @@ from case.staking.kyc.test_kyc import TestKyc
 from case.staking.region.test_region import TestRegion
 from config import chain
 from tools import calculate, handle_query
+
+logger.add("logs/case_{time}.log", rotation="500MB")
 
 
 @pytest.mark.P0
@@ -215,3 +218,100 @@ class TestRegionDelegate(object):
 
         resp_balance2 = int(self.handle_q.get_balance(user_addr2, chain.coin['uc'])['amount'])
         assert resp_balance2 == user2_balance2
+
+    def test_delegate_fixed(self, setup_create_region):
+        """
+        活期内周期质押
+        :param setup_create_region:
+        :Desc
+            - user1 申请kyc,发送100 coin
+            - user1 活期质押内周期质押 10 coin + fees 1 coin
+            + expect: user1 余额 89 coin
+        """
+        region_admin_addr, region_id, region_name, _ = setup_create_region
+        logger.info("TestRegionDelegate/test_delegate_fixed")
+        new_kyc_data = dict(region_id=f"{region_id}", region_admin_addr=f"{region_admin_addr}")
+        user_addr = self.test_kyc.test_new_kyc_user(new_kyc_data)
+
+        send_data = dict(from_addr=f"{chain.super_addr}", to_addr=f"{user_addr}", amount="100", fees="1")
+        self.test_bank.test_send(send_data)
+
+        del_data = dict(region_user_addr=f"{user_addr}", amount=10, term=chain.delegate_term[1], fees=1)
+        self.test_del.test_delegate_fixed(del_data)
+
+        user_addr_balance = int(self.handle_q.get_balance(user_addr, chain.coin['uc'])["amount"])
+
+        assert user_addr_balance == calculate.to_usrc(100) - calculate.to_usrc(10) - calculate.to_usrc(1)
+        delegate_info = self.handle_q.get_delegate(user_addr)['delegation']
+        assert delegate_info["fixedAmount"] == str(calculate.to_usrc(10))
+        x = decimal.Decimal(10) / decimal.Decimal(400) / decimal.Decimal(chain.REGION_AS)
+        assert delegate_info["fixedASRate"] == '{:.18f}'.format(x)
+
+        resp = self.handle_q.q.staking.show_fixed_delegation(user_addr)
+        assert len(resp['items']) == 1
+        assert resp['items'][0]['amount']['amount'] == str(calculate.to_usrc(10))
+
+        # Calculate revenue over the period
+        interests = set([i['amount'] for i in resp['items'][0]['interests']])
+        assert len(interests) == 1
+        y = chain.annualRate[1] * 1 / 12 * calculate.to_usrc(10)
+        assert int(interests.pop()) == y
+
+    def test_delegate_infinite(self, setup_create_region):
+        region_admin_addr, region_id, region_name, _ = setup_create_region
+        logger.info("TestRegionDelegate/test_delegate_infinite")
+        new_kyc_data = dict(region_id=f"{region_id}", region_admin_addr=f"{region_admin_addr}")
+        user_addr = self.test_kyc.test_new_kyc_user(new_kyc_data)
+
+        send_data = dict(from_addr=f"{chain.super_addr}", to_addr=f"{user_addr}", amount="100", fees="1")
+        self.test_bank.test_send(send_data)
+
+        del_data = dict(region_user_addr=f"{user_addr}", amount=10, fees=1)
+        self.test_del.test_delegate_infinite(del_data)
+
+        user_addr_balance = int(self.handle_q.get_balance(user_addr, chain.coin['uc'])["amount"])
+
+        assert user_addr_balance == calculate.to_usrc(100) - calculate.to_usrc(10) - calculate.to_usrc(1)
+        delegate_info = self.handle_q.get_delegate(user_addr)['delegation']
+        # 包含new-kyc的 1coin
+        assert delegate_info["unmovableAmount"] == str(calculate.to_usrc(10) + calculate.to_usrc(1))
+        x = decimal.Decimal(11) / decimal.Decimal(400) / decimal.Decimal(chain.REGION_AS)
+        assert delegate_info["unmovableASRate"] == '{:.18f}'.format(x)
+
+        return user_addr, region_admin_addr, region_id
+
+    def test_undelegate_infinite(self, setup_create_region):
+        """
+        测试提取永久委托
+            - 未修改区属性,不可提取
+            - 修改区属性,可提取
+                - 区管理员不可修改
+                - 超级管理员可修改
+        """
+        user_addr, region_admin_addr, region_id = self.test_delegate_infinite(setup_create_region)
+        logger.info("TestRegionDelegate/test_undelegate_infinite")
+        del_data = dict(region_user_addr=user_addr, amount=2, fees=1)
+        with pytest.raises(AssertionError) as ex:
+            self.test_del.test_undelegate_infinite(del_data)
+        assert str(ex.value) == 'assert 2098 == 0'
+
+        # region_admin update region info
+        # region_data = dict(region_id=f"{region_id}", from_addr=f"{region_admin_addr}", isUndelegate=True, fees="1")
+
+        # superadmin update region info
+        region_data = dict(region_id=f"{region_id}", from_addr=f"{chain.super_addr}", isUndelegate=True, fees="1")
+
+        self.test_region.test_update_region(region_data)
+
+        # query region info
+        region_info = self.handle_q.get_region(region_id)
+        assert region_info['region']['isUndelegate'] is True
+
+        # query user_addr balance
+        start_user_addr_balance = int(self.handle_q.get_balance(user_addr, chain.coin['uc'])["amount"])
+
+        self.test_del.test_undelegate_infinite(del_data)
+
+        end_user_addr_balance = int(self.handle_q.get_balance(user_addr, chain.coin['uc'])["amount"])
+
+        assert end_user_addr_balance == start_user_addr_balance + calculate.to_usrc(2) - calculate.to_usrc(1)

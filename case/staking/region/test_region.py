@@ -27,16 +27,16 @@ class TestRegion:
         time.sleep(5)
         # as总量:200 00000
         region_info = self.tx.staking.create_region(region_name=region_name, region_id=region_id,
-                                                    total_as=100000, delegators_limit=200,
+                                                    total_as=chain.REGION_AS, delegators_limit=200,
                                                     fee_rate=0.5, from_addr=region_admin_addr,
-                                                    totalStakeAllow=100000, userMaxDelegateAC=100000,
+                                                    totalStakeAllow=chain.REGION_AS, userMaxDelegateAC=100000,
                                                     userMinDelegateAC=1, fees=2, gas=400000)
         logger.info(f"create_region_info: {region_info}")
         tx_resp = self.q.tx.query_tx(region_info['txhash'])
         assert tx_resp['code'] == 0
-        # 等待块高 确保区域内有足够钱用于new-kyc 25ac * 1 / 200 = 0.125ac = 125000usrc 8个块 = 1000000usrc
+        # 等待块高 确保区域内有足够钱用于new-kyc 64ac * 1 / 200 = 0.32ac = 320000usrc、 newkyc至少需要1000000usrc、三个块才能有1AC
         logger.info(f"Make sure there is enough money in the area to spend new-kyc")
-        time.sleep((5 * 8) * 2)
+        time.sleep((5 * 3) * 2)
         region_info = dict(region_admin_addr=region_admin_addr, region_id=region_id, region_name=region_name)
         logger.info(f"{region_info}")
         return region_admin_addr, region_id, region_name

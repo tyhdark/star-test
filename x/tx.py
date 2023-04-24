@@ -4,7 +4,6 @@ import time
 
 from loguru import logger
 
-from config import chain
 from tools import handle_resp_data, handle_console_input
 from x.base import BaseClass
 
@@ -91,7 +90,7 @@ class Tx(BaseClass):
         @staticmethod
         def update_region(region_id, from_addr, fees, region_name=None, delegators_limit=None,
                           fee_rate=None, totalStakeAllow=None, userMaxDelegateAC=None,
-                          userMinDelegateAC=None):
+                          userMinDelegateAC=None, isUndelegate=None):
             """
             修改区信息
             :param region_name: 区名称
@@ -120,6 +119,8 @@ class Tx(BaseClass):
                 cmd += f"--userMaxDelegateAC={userMaxDelegateAC} "
             if userMinDelegateAC:
                 cmd += f"--userMinDelegateAC={userMinDelegateAC} "
+            if isUndelegate:
+                cmd += f"--isUndelegate={isUndelegate} "
 
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
@@ -136,15 +137,12 @@ class Tx(BaseClass):
                 return error_info
 
         @staticmethod
-        def create_validator(pubkey, moniker, from_addr, fees, from_super=True):
+        def create_validator(pubkey, moniker, from_addr, fees):
             cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking create-validator --pubkey={pubkey} --moniker={moniker} " \
-                                f"--from={from_addr} --fees={fees}{Tx.coin['c']} {Tx.chain_id}"
-            if from_super:
-                cmd += chain.super_addr_home
-
+                                f"--from={from_addr} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend} "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
-            handle_console_input.input_password(Tx.channel)
+
             time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
             resp_info = handle_console_input.ready_info(Tx.channel)
 
@@ -158,15 +156,14 @@ class Tx(BaseClass):
                 return error_info
 
         @staticmethod
-        def update_validator(operator_address, region_name, from_addr, fees, from_super=True):
+        def update_validator(operator_address, region_name, from_addr, fees):
             """Only used to modify the Region ID of the verifier"""
             cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking update-validator --validator-address={operator_address} " \
-                                f"--region-name={region_name} --from={from_addr} --fees={fees}{Tx.coin['c']} {Tx.chain_id}"
-            if from_super:
-                cmd += chain.super_addr_home
+                                f"--region-name={region_name} --from={from_addr} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend} "
+
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
-            handle_console_input.input_password(Tx.channel)
+
             time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
             resp_info = handle_console_input.ready_info(Tx.channel)
 
@@ -231,6 +228,66 @@ class Tx(BaseClass):
             Tx.channel.send(cmd + "\n")
 
             time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
+        @staticmethod
+        def delegate_fixed(from_addr, amount, term, fees):
+            """创建活期周期质押"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking delegate-fixed --from={from_addr} --amount={amount}{Tx.coin['c']} --fixed_delegation_term={term} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+
+            time.sleep(1)
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
+        @staticmethod
+        def delegate_infinite(from_addr, amount, fees):
+            """创建活期永久质押"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking delegate-infinite --from={from_addr} --amount={amount}{Tx.coin['c']} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+
+            time.sleep(1)
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
+        @staticmethod
+        def undelegate_fixed(from_addr, fixed_delegation_id, fees):
+            """减少活期周期质押"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking undelegate-fixed --from={from_addr} --fixed_delegation_id={fixed_delegation_id} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+
+            time.sleep(1)
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
+        @staticmethod
+        def undelegate_infinite(from_addr, amount, fees):
+            """减少活期永久质押"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking undelegate-infinite --from={from_addr} --amount={amount}{Tx.coin['c']} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+
+            time.sleep(1)
             resp_info = handle_console_input.ready_info(Tx.channel)
 
             if "confirm" in resp_info:
