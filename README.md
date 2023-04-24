@@ -1,5 +1,5 @@
-# srs-poa-test
-This is the srspoa(CLI) automated testing framework
+# star-test
+This is the blockchain(CLI) automated testing framework
 
 
 
@@ -14,7 +14,7 @@ pip install -r requirements.txt
 
 ## Setup
 
-- need preparation config/chain.py    (Detailed information viewing  [example](https://github.com/JW-Zhang001/srs-poa-test/tree/main/example) )
+- need preparation config/chain.py   
 
   
 
