@@ -21,8 +21,7 @@ class TestDelegate:
         assert resp['code'] == 0
 
     def test_withdraw(self, data):
-        time.sleep(5)
-        withdraw_info = self.tx.staking.withdraw(data["region_user_addr"], data["fees"], data["gas"])
+        withdraw_info = self.tx.staking.withdraw(data["region_user_addr"], data["fees"])
         logger.info(f"withdraw_info :{withdraw_info}")
         resp = self.q.tx.query_tx(withdraw_info['txhash'])
         assert resp['code'] == 0
@@ -57,10 +56,10 @@ class TestDelegate:
         assert resp['code'] == 0
 
     @pytest.mark.parametrize("data",
-                             [dict(from_addr="gea1s66z7rt39jxywu0y4742rq3y4p8f2sx2p46fvh", fixed_delegation_id=3,
+                             [dict(from_addr="gea1ls3p7ygf4082uyma98aamkyqeft3r7pp2mmmvx", fixed_delegation_id=0,
                                    fees=1)])
     def test_undelegate_fixed(self, data):
-        """TODO 提取命令失败"""
+        """提取定期内周期质押"""
         del_info = self.tx.staking.undelegate_fixed(data["from_addr"], data["fixed_delegation_id"], data["fees"])
         logger.info(f"delegate tx_info :{del_info}")
         resp = self.q.tx.query_tx(del_info['txhash'])

@@ -296,13 +296,13 @@ class Tx(BaseClass):
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
         @staticmethod
-        def withdraw(addr, fees, gas):
+        def withdraw(addr, fees, gas=200000):
             """KYC用户提取活期收益"""
             cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking withdraw --from={addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
 
-            time.sleep(3)
+            time.sleep(1)
             resp_info = handle_console_input.ready_info(Tx.channel)
 
             if "confirm" in resp_info:

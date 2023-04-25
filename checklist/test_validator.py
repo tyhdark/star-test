@@ -45,4 +45,7 @@ class TestRegionInfo(object):
         logger.info(f"update_validator tx_resp: {tx_resp}")
         tx_resp = self.q.tx.query_tx(tx_resp['txhash'])
         assert tx_resp['code'] == 0
-        pass
+
+    # TODO
+    #  1.节点异常作弊场景
+    #  2.各节点手续费收费标准不一致

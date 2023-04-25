@@ -23,3 +23,5 @@ class TestRegionInfo(object):
             logger.info(f"request: {i}")
             self.test_region.test_update_region(i)
         # TODO assert
+
+    # TODO 水位异常场景测试
