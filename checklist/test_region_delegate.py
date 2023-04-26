@@ -399,13 +399,13 @@ class TestRegionDelegate(object):
         start_user_addr_balance = int(self.handle_q.get_balance(user_addr, chain.coin['uc'])["amount"])
         assert start_user_addr_balance == calculate.to_usrc(100 - (10 * 3) - (1 * 3))
 
-        time.sleep(30)
+        time.sleep(15)
 
         interest_amount = float(self.handle_q.get_delegate(user_addr)['delegation']['interestAmount'])
         logger.info(f"interest_amount: {interest_amount}")
         x = math.floor(interest_amount) if interest_amount >= 1 else 0
         # 提取活期收益
-        self.test_del.test_withdraw(dict(region_user_addr=user_addr, fees=1))
+        self.test_del.test_withdraw(dict(region_user_addr=user_addr, fees=2, gas=400000))
 
         end_user_addr_balance = int(self.handle_q.get_balance(user_addr, chain.coin['uc'])["amount"])
-        assert end_user_addr_balance == start_user_addr_balance - calculate.to_usrc(1) + x
+        assert end_user_addr_balance == start_user_addr_balance - calculate.to_usrc(2) + x

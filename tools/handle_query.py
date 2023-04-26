@@ -11,7 +11,7 @@ class HandleQuery(object):
     q = Query()
 
     @classmethod
-    def get_block(cls):
+    def get_block(cls) -> int:
         current_block = int(cls.q.block.query_block())
         return current_block
 

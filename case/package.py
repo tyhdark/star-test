@@ -58,7 +58,7 @@ class DelegatePackage(BaseClass):
         assert resp['code'] == 0, f"error_code: {resp['code']} != 0"
 
     def test_withdraw(self, data):
-        withdraw_info = self.tx.staking.withdraw(data["region_user_addr"], data["fees"])
+        withdraw_info = self.tx.staking.withdraw(data["region_user_addr"], data["fees"], data['gas'])
         logger.info(f"withdraw_info :{withdraw_info}")
         resp = self.q.tx.query_tx(withdraw_info['txhash'])
         assert resp['code'] == 0, f"error_code: {resp['code']} != 0"
