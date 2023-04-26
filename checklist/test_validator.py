@@ -9,7 +9,8 @@ from tools import handle_query
 from x.query import Query
 from x.tx import Tx
 
-logger.add("logs/case_{time}.log", rotation="500MB")
+
+# logger.add("logs/case_{time}.log", rotation="500MB")
 
 
 @pytest.mark.P0

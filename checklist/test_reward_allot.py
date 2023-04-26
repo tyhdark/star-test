@@ -4,20 +4,17 @@ import time
 
 import pytest
 
-from case.bank.test_tx import TestBank
-from case.staking.delegate.test_delegate import TestDelegate
-from case.staking.kyc.test_kyc import TestKyc
+from case import package
 from config import chain
 from tools import handle_query, calculate
-from x.tx import Tx
 
 
 @pytest.mark.P0
 class TestMint(object):
-    tx = Tx()
-    test_del = TestDelegate()
-    test_kyc = TestKyc()
-    test_bank = TestBank()
+    test_region = package.RegionPackage()
+    test_del = package.DelegatePackage()
+    test_kyc = package.KycPackage()
+    test_bank = package.BankPackage()
     handle_q = handle_query.HandleQuery()
 
     one_block_reward = handle_q.get_block_reward()
@@ -56,8 +53,9 @@ class TestMint(object):
     #  1.活期各类场景叠加 计算收益
     #         -.单独kyc收益
     #         -.正常活期委托
-    #         -.周期活期委托 -> 质押有id 到期后提取 需确定只返回本金 + 利率算出来的金额 不包含活期收益
-    #         -.永久活期委托
+    #         -.周期活期委托 -> 质押有id 到期后提取 需确定只返回本金 + 利率算出来的金额 不包含活期收益   x + 10收益+1kyc
+    #                      -> 到期之后 根据利率算钱的那部分结束了，不提取的话 那质押的本金还享受活期收益
+    #         -.永久活期委托 + 1kyc
     #         -.主动提取收益(tx withdraw) 和 被动提取
     #  2.出块减产逻辑
 

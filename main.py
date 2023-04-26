@@ -12,5 +12,4 @@ if __name__ == '__main__':
     -s: 显示程序中的print/logging输出
     '''
     # '--clean-alluredir',
-    pytest.main(['-s', "checklist/", '-m', 'P0', '--reruns', '1', '--reruns-delay', '3',
-                 '--alluredir=./allure-results'])
+    pytest.main(['-s', "checklist/test_region_delegate.py", '--alluredir=./allure-results'])

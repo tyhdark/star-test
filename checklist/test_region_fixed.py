@@ -2,20 +2,17 @@
 import pytest
 from loguru import logger
 
-from case.bank.test_tx import TestBank
-from case.staking.fixed.test_fixed import TestFixed
-from case.staking.kyc.test_kyc import TestKyc
-from case.staking.region.test_region import TestRegion
+from case import package
 from config import chain
 from tools import handle_query, calculate
 
 
 @pytest.mark.P0
 class TestRegionFixed(object):
-    test_region = TestRegion()
-    test_fixed = TestFixed()
-    test_kyc = TestKyc()
-    test_bank = TestBank()
+    test_region = package.RegionPackage()
+    test_del = package.DelegatePackage()
+    test_kyc = package.KycPackage()
+    test_bank = package.BankPackage()
     handle_q = handle_query.HandleQuery()
 
     def test_region_fixed(self):

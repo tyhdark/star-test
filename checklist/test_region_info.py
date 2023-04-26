@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
-
 import pytest
 from loguru import logger
 
-from case.staking.region.test_region import TestRegion
+from case import package
 from tools import handle_query
 
-logger.add("logs/case_{time}.log", rotation="500MB")
+
+# logger.add("logs/case_{time}.log", rotation="500MB")
 
 
 @pytest.mark.P0
 class TestRegionInfo(object):
-    test_region = TestRegion()
+    test_region = package.RegionPackage()
     handle_q = handle_query.HandleQuery()
 
     def test_update_region(self, setup_create_region):

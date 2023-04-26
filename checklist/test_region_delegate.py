@@ -6,22 +6,20 @@ import time
 import pytest
 from loguru import logger
 
-from case.bank.test_tx import TestBank
-from case.staking.delegate.test_delegate import TestDelegate
-from case.staking.kyc.test_kyc import TestKyc
-from case.staking.region.test_region import TestRegion
+from case import package
 from config import chain
 from tools import calculate, handle_query
 
-logger.add("logs/case_{time}.log", rotation="500MB")
+
+# logger.add("logs/case_{time}.log", rotation="500MB")
 
 
 @pytest.mark.P0
 class TestRegionDelegate(object):
-    test_region = TestRegion()
-    test_del = TestDelegate()
-    test_kyc = TestKyc()
-    test_bank = TestBank()
+    test_region = package.RegionPackage()
+    test_del = package.DelegatePackage()
+    test_kyc = package.KycPackage()
+    test_bank = package.BankPackage()
     handle_q = handle_query.HandleQuery()
 
     def test_region_delegate(self):
@@ -215,7 +213,7 @@ class TestRegionDelegate(object):
         logger.info(f'{"+ expect: 无效清退 error_code: 2097"}')
         with pytest.raises(AssertionError) as ex:
             self.test_del.test_exit_delegate(del_data)
-        assert str(ex.value) == 'assert 2097 == 0'
+        assert str(ex.value) == 'error_code: 2097 != 0'
 
         resp_balance2 = int(self.handle_q.get_balance(user_addr2, chain.coin['uc'])['amount'])
         assert resp_balance2 == user2_balance2
@@ -262,15 +260,24 @@ class TestRegionDelegate(object):
 
     def test_undelegate_fixed(self, setup_create_region):
         """提取活期内周期质押"""
-        region_admin_addr, region_id, region_name, user_addr = self.test_delegate_fixed(setup_create_region)
         logger.info("TestRegionDelegate/test_undelegate_fixed")
+        region_admin_addr, region_id, region_name, _ = setup_create_region
+
+        new_kyc_data = dict(region_id=f"{region_id}", region_admin_addr=f"{region_admin_addr}")
+        user_addr = self.test_kyc.test_new_kyc_user(new_kyc_data)
+
+        send_data = dict(from_addr=f"{chain.super_addr}", to_addr=f"{user_addr}", amount="100", fees="1")
+        self.test_bank.test_send(send_data)
+
+        del_data = dict(region_user_addr=f"{user_addr}", amount=10, term=chain.delegate_term[1], fees=1)
+        self.test_del.test_delegate_fixed(del_data)
 
         fixed_delegate_info = self.handle_q.q.staking.show_fixed_delegation(user_addr)
         fixed_delegation_id = fixed_delegate_info['items'][0]['id']
         undelegate_fixed_data = dict(from_addr=user_addr, fixed_delegation_id=fixed_delegation_id, fees=1)
         with pytest.raises(AssertionError) as ex:
             self.test_del.test_undelegate_fixed(undelegate_fixed_data)
-        assert str(ex.value) == 'assert 2161 == 0'  # fixed delegation not reach deadline
+        assert str(ex.value) == 'error_code: 2161 != 0'  # fixed delegation not reach deadline
 
         time.sleep(30)  # 30s is equal to one month
         self.test_del.test_undelegate_fixed(undelegate_fixed_data)
@@ -311,7 +318,7 @@ class TestRegionDelegate(object):
         del_data = dict(region_user_addr=user_addr, amount=2, fees=1)
         with pytest.raises(AssertionError) as ex:
             self.test_del.test_undelegate_infinite(del_data)
-        assert str(ex.value) == 'assert 2098 == 0'
+        assert str(ex.value) == 'error_code: 2098 != 0'
 
         # region_admin update region info
         region_data = dict(region_id=f"{region_id}", from_addr=f"{region_admin_addr}", isUndelegate=True, fees="1")
@@ -345,7 +352,7 @@ class TestRegionDelegate(object):
         assert region_info['region']['isUndelegate'] is False
         with pytest.raises(AssertionError) as ex:
             self.test_del.test_undelegate_infinite(del_data)
-        assert str(ex.value) == 'assert 2098 == 0'
+        assert str(ex.value) == 'error_code: 2098 != 0'
 
         # isUndelegate is True
         region_data = dict(region_id=f"{region_id}", from_addr=f"{chain.super_addr}", isUndelegate=True, fees="1")
@@ -392,7 +399,7 @@ class TestRegionDelegate(object):
         start_user_addr_balance = int(self.handle_q.get_balance(user_addr, chain.coin['uc'])["amount"])
         assert start_user_addr_balance == x
 
-        time.sleep(10)
+        time.sleep(15)
 
         interest_amount = float(self.handle_q.get_delegate(user_addr)['delegation']['interestAmount'])
         y = math.floor(interest_amount) if interest_amount >= 1 else 0

@@ -2,14 +2,14 @@
 import pytest
 from loguru import logger
 
-from case.staking.region import test_region
+from case import package
 from tools import handle_name
 
 
 @pytest.fixture(scope="session")
 def setup_create_region():
     logger.info("fixture: setup_create_region")
-    region = test_region.TestRegion()
+    region = package.RegionPackage()
     region_admin_addr, region_id, region_name = region.test_create_region()
 
     # 更新一个不存在的region_name

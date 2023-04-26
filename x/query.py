@@ -39,9 +39,7 @@ class Query(BaseClass):
             cmd = Query.ssh_home + f"{Query.chain_bin} q tx {tx_hash} {Query.custom_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             time.sleep(5)
-            res = Query.ssh_client.ssh(cmd)
-            time.sleep(2)
-            return handle_resp_data.handle_yaml_to_dict(res)
+            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 
     class Bank(object):
 
