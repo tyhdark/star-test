@@ -399,7 +399,7 @@ class TestRegionDelegate(object):
         start_user_addr_balance = int(self.handle_q.get_balance(user_addr, chain.coin['uc'])["amount"])
         assert start_user_addr_balance == x
 
-        time.sleep(15)
+        time.sleep(30)
 
         interest_amount = float(self.handle_q.get_delegate(user_addr)['delegation']['interestAmount'])
         y = math.floor(interest_amount) if interest_amount >= 1 else 0
