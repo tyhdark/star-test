@@ -296,10 +296,10 @@ class TestRegionDelegate(object):
 
         user_addr_balance = int(self.handle_q.get_balance(user_addr, chain.coin['uc'])["amount"])
 
-        assert user_addr_balance == calculate.to_usrc(100) - calculate.to_usrc(10) - calculate.to_usrc(1)
+        assert user_addr_balance == calculate.to_usrc(100 - 10 - 1)
         delegate_info = self.handle_q.get_delegate(user_addr)['delegation']
         # 包含new-kyc的 1coin
-        assert delegate_info["unmovableAmount"] == str(calculate.to_usrc(10) + calculate.to_usrc(1))
+        assert delegate_info["unmovableAmount"] == str(calculate.to_usrc(10 + 1))
         x = decimal.Decimal(11) / decimal.Decimal(400) / decimal.Decimal(chain.REGION_AS)
         assert delegate_info["unmovableASRate"] == '{:.18f}'.format(x)
 
@@ -315,7 +315,7 @@ class TestRegionDelegate(object):
         """
         user_addr, region_admin_addr, region_id = self.test_delegate_infinite(setup_create_region)
         logger.info("TestRegionDelegate/test_undelegate_infinite")
-        del_data = dict(region_user_addr=user_addr, amount=2, fees=1)
+        del_data = dict(region_user_addr=user_addr, amount=5, fees=1)
         with pytest.raises(AssertionError) as ex:
             self.test_del.test_undelegate_infinite(del_data)
         assert str(ex.value) == 'error_code: 2098 != 0'
@@ -328,7 +328,6 @@ class TestRegionDelegate(object):
 
         # superadmin update region info
         region_data = dict(region_id=f"{region_id}", from_addr=f"{chain.super_addr}", isUndelegate=True, fees="1")
-
         self.test_region.test_update_region(region_data)
 
         # query region info
@@ -337,13 +336,11 @@ class TestRegionDelegate(object):
 
         # query user_addr balance
         start_user_addr_balance = int(self.handle_q.get_balance(user_addr, chain.coin['uc'])["amount"])
-
         self.test_del.test_undelegate_infinite(del_data)
-
         end_user_addr_balance = int(self.handle_q.get_balance(user_addr, chain.coin['uc'])["amount"])
+        assert end_user_addr_balance == start_user_addr_balance + calculate.to_usrc(5 - 1)
 
-        assert end_user_addr_balance == start_user_addr_balance + calculate.to_usrc(2) - calculate.to_usrc(1)
-
+        # update isUndelegate to False
         region_data = dict(region_id=f"{region_id}", from_addr=f"{chain.super_addr}", isUndelegate=False, fees="1")
         self.test_region.test_update_region(region_data)
 
@@ -354,6 +351,11 @@ class TestRegionDelegate(object):
             self.test_del.test_undelegate_infinite(del_data)
         assert str(ex.value) == 'error_code: 2098 != 0'
 
+    def test_undelegate_infinite_excess(self, setup_create_region):
+        """活期永久质押 超额提取"""
+        user_addr, region_admin_addr, region_id = self.test_delegate_infinite(setup_create_region)
+        logger.info("TestRegionDelegate/test_undelegate_infinite_excess")
+
         # isUndelegate is True
         region_data = dict(region_id=f"{region_id}", from_addr=f"{chain.super_addr}", isUndelegate=True, fees="1")
         self.test_region.test_update_region(region_data)
@@ -363,16 +365,15 @@ class TestRegionDelegate(object):
         # 提取所有永久质押金额 -> 返回永久质押本金+活期所得收益
         start_user_addr_balance2 = int(self.handle_q.get_balance(user_addr, chain.coin['uc'])["amount"])
 
+        # 查询活期收益 和 提取活期 !应该保证其在同一个区块内,目前代码无法保证
         interest_amount = float(self.handle_q.get_delegate(user_addr)['delegation']['interestAmount'])
-        # math.floor() 向下取整
+        logger.info(f"interest_amount: {interest_amount}")
         x = math.floor(interest_amount) if interest_amount >= 1 else 0
-
-        del_data2 = dict(region_user_addr=user_addr, amount=10, fees=1)
-        self.test_del.test_undelegate_infinite(del_data2)
+        self.test_del.test_undelegate_infinite(dict(region_user_addr=user_addr, amount=100, fees=1))
 
         end_user_addr_balance2 = int(self.handle_q.get_balance(user_addr, chain.coin['uc'])["amount"])
         # 剩余8本金 - 1手续费 + 活期收益(手动永久质押+kyc收益)
-        assert end_user_addr_balance2 == start_user_addr_balance2 + calculate.to_usrc(8 - 1) + x
+        assert end_user_addr_balance2 == start_user_addr_balance2 + calculate.to_usrc(10 - 1) + x
 
     def test_withdraw(self, setup_create_region):
         """活期收益提取"""
@@ -395,16 +396,16 @@ class TestRegionDelegate(object):
         del_data = dict(region_user_addr=f"{user_addr}", amount=10, term=chain.delegate_term[1], fees=1)
         self.test_del.test_delegate_fixed(del_data)
 
-        x = calculate.to_usrc(100 - (10 * 3) - (1 * 3))
         start_user_addr_balance = int(self.handle_q.get_balance(user_addr, chain.coin['uc'])["amount"])
-        assert start_user_addr_balance == x
+        assert start_user_addr_balance == calculate.to_usrc(100 - (10 * 3) - (1 * 3))
 
         time.sleep(30)
 
         interest_amount = float(self.handle_q.get_delegate(user_addr)['delegation']['interestAmount'])
-        y = math.floor(interest_amount) if interest_amount >= 1 else 0
+        logger.info(f"interest_amount: {interest_amount}")
+        x = math.floor(interest_amount) if interest_amount >= 1 else 0
         # 提取活期收益
         self.test_del.test_withdraw(dict(region_user_addr=user_addr, fees=1))
 
         end_user_addr_balance = int(self.handle_q.get_balance(user_addr, chain.coin['uc'])["amount"])
-        assert end_user_addr_balance == start_user_addr_balance - calculate.to_usrc(1) + y
+        assert end_user_addr_balance == start_user_addr_balance - calculate.to_usrc(1) + x

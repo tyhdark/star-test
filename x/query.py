@@ -36,9 +36,9 @@ class Query(BaseClass):
         @staticmethod
         def query_tx(tx_hash):
             """查询 tx_hash """
+            time.sleep(5)
             cmd = Query.ssh_home + f"{Query.chain_bin} q tx {tx_hash} {Query.custom_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            time.sleep(5)
             return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 
     class Bank(object):
@@ -48,17 +48,16 @@ class Query(BaseClass):
             """查询 addr 余额"""
             cmd = Query.ssh_home + f"{Query.chain_bin} q bank balances {addr} {Query.custom_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            res = Query.ssh_client.ssh(cmd)
-            return handle_resp_data.handle_yaml_to_dict(res)
+            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 
     class Staking(object):
 
         @staticmethod
         def show_delegation(addr):
             """查询活期质押"""
+            time.sleep(5)
             cmd = Query.ssh_home + f"{Query.chain_bin} q srstaking show-delegation {addr} {Query.chain_id} {Query.custom_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            time.sleep(5)
             return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
@@ -66,8 +65,7 @@ class Query(BaseClass):
             """所有活期质押信息"""
             cmd = Query.ssh_home + f"{Query.chain_bin} q srstaking list-delegation {Query.chain_id} {Query.custom_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            res = Query.ssh_client.ssh(cmd)
-            return handle_resp_data.handle_yaml_to_dict(res)
+            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def list_fixed_delegation():

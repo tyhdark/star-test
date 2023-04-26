@@ -217,7 +217,6 @@ class Tx(BaseClass):
             退出活期质押
             :param from_addr: 发起方地址  【超管、区管理员、用户自己】
             :param delegator_address: 被清退质押者地址
-            :param from_super: True from_addr是超管需要添加私钥目录地址
             :param fees:
             :return:
             """
