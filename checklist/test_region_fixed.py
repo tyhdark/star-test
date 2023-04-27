@@ -13,6 +13,7 @@ class TestRegionFixed(object):
     test_del = package.DelegatePackage()
     test_kyc = package.KycPackage()
     test_bank = package.BankPackage()
+    test_fixed = package.FixedPackage()
     handle_q = handle_query.HandleQuery()
 
     def test_region_fixed(self):

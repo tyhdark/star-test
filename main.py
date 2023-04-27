@@ -15,6 +15,6 @@ if __name__ == '__main__':
     '''
     start_time = time.time()
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    pytest.main(['-s', "checklist/test_region_delegate.py", f'--alluredir={BASE_DIR}/allure-results'])
+    pytest.main(['-s', "checklist/", 'lf', f'--alluredir={BASE_DIR}/allure-results'])
     elapsed_time = (time.time() - start_time) / 60 / 60  # 计算时间差
     logger.info(f"Elapsed time: {elapsed_time} hours")
