@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import math
+import time
 
 import httpx
 
@@ -28,8 +29,12 @@ class HandleQuery(object):
 
     @classmethod
     def get_delegate(cls, user_addr):
-        del_info = cls.q.staking.show_delegation(user_addr)
-        return del_info
+        # del_info = cls.q.staking.show_delegation(user_addr)
+        data = chain.api['show_delegation']
+        url = data["url"] + user_addr
+        time.sleep(2)
+        def_info = httpx.request(method=data["method"], url=url, )
+        return def_info.json()
 
     @classmethod
     def get_regin_list(cls):

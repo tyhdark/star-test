@@ -36,7 +36,7 @@ class Query(BaseClass):
         @staticmethod
         def query_tx(tx_hash):
             """查询 tx_hash """
-            time.sleep(5)
+            time.sleep(8)
             cmd = Query.ssh_home + f"{Query.chain_bin} q tx {tx_hash} {Query.custom_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))

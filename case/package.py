@@ -56,12 +56,14 @@ class DelegatePackage(BaseClass):
         logger.info(f"delegate tx_info :{del_info}")
         resp = self.q.tx.query_tx(del_info['txhash'])
         assert resp['code'] == 0, f"error_code: {resp['code']} != 0"
+        return resp
 
     def test_withdraw(self, data):
-        withdraw_info = self.tx.staking.withdraw(data["region_user_addr"], data["fees"], data['gas'])
+        withdraw_info = self.tx.staking.withdraw(data["user_addr"], data["fees"], data['gas'])
         logger.info(f"withdraw_info :{withdraw_info}")
         resp = self.q.tx.query_tx(withdraw_info['txhash'])
         assert resp['code'] == 0, f"error_code: {resp['code']} != 0"
+        return resp
 
     def test_undelegate(self, data):
         del_info = self.tx.staking.undelegate(data["region_user_addr"], data["amount"], data["fees"])
@@ -80,12 +82,14 @@ class DelegatePackage(BaseClass):
         logger.info(f"delegate tx_info :{del_info}")
         resp = self.q.tx.query_tx(del_info['txhash'])
         assert resp['code'] == 0, f"error_code: {resp['code']} != 0"
+        return resp
 
     def test_delegate_infinite(self, data):
         del_info = self.tx.staking.delegate_infinite(data["region_user_addr"], data["amount"], data["fees"])
         logger.info(f"delegate tx_info :{del_info}")
         resp = self.q.tx.query_tx(del_info['txhash'])
         assert resp['code'] == 0, f"error_code: {resp['code']} != 0"
+        return resp
 
     def test_undelegate_fixed(self, data):
         """提取定期内周期质押"""
@@ -155,7 +159,7 @@ class RegionPackage(BaseClass):
 
     def test_create_region(self):
         region_admin_addr, region_id, region_name = self.test_kyc.test_new_kyc_admin()
-        time.sleep(5)
+
         # 使用SuperAdmin给区管理转账
         send_tx_info = self.tx.bank.send_tx(from_addr=chain.super_addr, to_addr=region_admin_addr, amount=100, fees=1)
         logger.info(f"send_tx_info: {send_tx_info}")

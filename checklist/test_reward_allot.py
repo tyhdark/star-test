@@ -51,8 +51,7 @@ class TestMint(object):
         assert end_balance_ug - superadmin_balance_ug == (end_block_height - start_block_height) * superadmin_amt_ug
 
     # TODO
-    #  1.主动提取收益(tx withdraw) 和 被动提取
-    #  2.出块减产逻辑
+    #  2.出块减产逻辑 - 5年后才减产,临时版本的项目生命周期预计不到5年,用例优先级不高
 
     def test_kyc_reward(self, setup_create_region):
         """单独kyc收益"""
@@ -318,3 +317,38 @@ class TestMint(object):
 
         assert user_addr_balance_uc == calculate.to_usrc(100 - 1 - 1) + int(accrual) + int(reward)
         assert user_addr_balance_ug == int(accrual) + int(reward)
+
+    def test_tx_withdraw(self, setup_create_region):
+        """主动提取收益(tx withdraw) """
+        region_admin_addr, region_id, region_name, _ = setup_create_region
+        user_addr = self.test_kyc.test_new_kyc_user(dict(region_id=region_id, region_admin_addr=region_admin_addr))
+        send_data = dict(from_addr=f"{chain.super_addr}", to_addr=f"{user_addr}", amount=1000000, fees="1")
+        self.test_bank.test_send(send_data)
+
+        kyc_start_height = int(self.handle_q.get_delegate(user_addr)['delegation']['startHeight'])
+        logger.info(f"kyc_start_height: {kyc_start_height}")  # 4958
+
+        del_data = dict(region_user_addr=f"{user_addr}", amount=20000, fees="1")
+        resp1 = self.test_del.test_delegate(del_data)
+        resp2 = self.test_del.test_delegate_infinite(del_data)
+        logger.info(f"resp1: {resp1},\n resp2: {resp2}")  # 4962/4964
+
+        time.sleep(10)
+
+        resp3 = self.test_del.test_withdraw(dict(user_addr=user_addr, fees=2, gas=400000))
+        logger.info(f"resp3: {resp3}")  # 4967
+
+        stage1_amt = (int(resp1['height']) - kyc_start_height) * 0.008
+        stage2_amt = (int(resp2['height']) - 1 - int(resp1['height'])) * \
+                     (0.008 * 20001 * chain.float_precision) / chain.float_precision
+        stage3_amt = (int(resp3['height']) - 1 - int(resp2['height'])) * \
+                     (0.008 * 40001 * chain.float_precision) / chain.float_precision
+        reward = (stage1_amt * chain.float_precision + stage2_amt * chain.float_precision
+                  + stage3_amt * chain.float_precision) / chain.float_precision
+
+        user_addr_balance_uc = int(self.handle_q.get_balance(user_addr, chain.coin['uc'])["amount"])
+        logger.info(f"user_addr_balance_uc: {user_addr_balance_uc}")
+        user_addr_balance_ug = int(self.handle_q.get_balance(user_addr, chain.coin['ug'])["amount"])
+        logger.info(f"user_addr_balance_ug: {user_addr_balance_ug}")
+        assert user_addr_balance_uc == calculate.to_usrc(1000000 - (20000 * 2 + 4)) + int(reward)
+        assert user_addr_balance_ug == int(reward)

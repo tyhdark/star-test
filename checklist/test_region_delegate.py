@@ -405,7 +405,7 @@ class TestRegionDelegate(object):
         logger.info(f"interest_amount: {interest_amount}")
         x = math.floor(interest_amount) if interest_amount >= 1 else 0
         # 提取活期收益
-        self.test_del.test_withdraw(dict(region_user_addr=user_addr, fees=2, gas=400000))
+        self.test_del.test_withdraw(dict(user_addr=user_addr, fees=2, gas=400000))
 
         end_user_addr_balance = int(self.handle_q.get_balance(user_addr, chain.coin['uc'])["amount"])
         assert end_user_addr_balance == start_user_addr_balance - calculate.to_usrc(2) + x
