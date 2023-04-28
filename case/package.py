@@ -18,8 +18,12 @@ class BankPackage(BaseClass):
 
     def test_send(self, data):
         """默认使用超管在发送"""
-        logger.info("TestBank/test_send")
-        tx_info = self.tx.bank.send_tx(data["from_addr"], data["to_addr"], data["amount"], data["fees"])
+        if data.get("gas"):
+            tx_info = self.tx.bank.send_tx(data["from_addr"], data["to_addr"], data["amount"], data["fees"],
+                                           data["gas"])
+        else:
+            tx_info = self.tx.bank.send_tx(data["from_addr"], data["to_addr"], data["amount"], data["fees"])
+
         logger.info(f"Sent transaction:{tx_info}")
         resp = self.q.tx.query_tx(tx_info['txhash'])
         assert resp['code'] == 0, f"error_code: {resp['code']} != 0"
@@ -93,7 +97,12 @@ class DelegatePackage(BaseClass):
 
     def test_undelegate_fixed(self, data):
         """提取定期内周期质押"""
-        del_info = self.tx.staking.undelegate_fixed(data["from_addr"], data["fixed_delegation_id"], data["fees"])
+        if data.get("gas"):
+            del_info = self.tx.staking.undelegate_fixed(data["from_addr"], data["fixed_delegation_id"],
+                                                        data["fees"], data["gas"])
+        else:
+            del_info = self.tx.staking.undelegate_fixed(data["from_addr"], data["fixed_delegation_id"], data["fees"])
+
         logger.info(f"delegate tx_info :{del_info}")
         resp = self.q.tx.query_tx(del_info['txhash'])
         assert resp['code'] == 0, f"error_code: {resp['code']} != 0"

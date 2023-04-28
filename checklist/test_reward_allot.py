@@ -296,7 +296,7 @@ class TestMint(object):
 
         fixed_delegate_info = self.handle_q.q.staking.show_fixed_delegation(user_addr)
         fixed_delegation_id = fixed_delegate_info['items'][0]['id']
-        undelegate_fixed_data = dict(from_addr=user_addr, fixed_delegation_id=fixed_delegation_id, fees=1)
+        undelegate_fixed_data = dict(from_addr=user_addr, fixed_delegation_id=fixed_delegation_id, fees=2, gas=400000)
         self.test_del.test_undelegate_fixed(undelegate_fixed_data)
         end_height = self.handle_q.get_block()
         logger.info(f"stage2_start_height: {stage2_start_height}, end_height: {end_height}, interestAmount: {interest}")
@@ -315,14 +315,14 @@ class TestMint(object):
 
         logger.info(f"user_addr_balance_uc: {user_addr_balance_uc}, user_addr_balance_ug: {user_addr_balance_ug}")
 
-        assert user_addr_balance_uc == calculate.to_usrc(100 - 1 - 1) + int(accrual) + int(reward)
+        assert user_addr_balance_uc == calculate.to_usrc(100 - 1 - 2) + int(accrual) + int(reward)
         assert user_addr_balance_ug == int(accrual) + int(reward)
 
     def test_tx_withdraw(self, setup_create_region):
         """主动提取收益(tx withdraw) """
         region_admin_addr, region_id, region_name, _ = setup_create_region
         user_addr = self.test_kyc.test_new_kyc_user(dict(region_id=region_id, region_admin_addr=region_admin_addr))
-        send_data = dict(from_addr=f"{chain.super_addr}", to_addr=f"{user_addr}", amount=1000000, fees="1")
+        send_data = dict(from_addr=chain.super_addr, to_addr=user_addr, amount=1000000, fees=101, gas=20200000)
         self.test_bank.test_send(send_data)
 
         kyc_start_height = int(self.handle_q.get_delegate(user_addr)['delegation']['startHeight'])

@@ -18,9 +18,9 @@ class Tx(BaseClass):
     class Bank(object):
 
         @staticmethod
-        def send_tx(from_addr, to_addr, amount, fees=0):
+        def send_tx(from_addr, to_addr, amount, fees=0, gas=200000):
             """发送转账交易"""
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank send {from_addr} {to_addr} {amount}{Tx.coin['c']} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank send {from_addr} {to_addr} {amount}{Tx.coin['c']} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend}"
 
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
@@ -265,9 +265,9 @@ class Tx(BaseClass):
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
         @staticmethod
-        def undelegate_fixed(from_addr, fixed_delegation_id, fees):
+        def undelegate_fixed(from_addr, fixed_delegation_id, fees, gas=200000):
             """减少活期周期质押"""
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking undelegate-fixed --from={from_addr} --fixed_delegation_id={fixed_delegation_id} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking undelegate-fixed --from={from_addr} --fixed_delegation_id={fixed_delegation_id} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
 
