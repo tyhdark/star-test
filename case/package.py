@@ -24,7 +24,7 @@ class BankPackage(BaseClass):
         else:
             tx_info = self.tx.bank.send_tx(data["from_addr"], data["to_addr"], data["amount"], data["fees"])
 
-        logger.info(f"Sent transaction:{tx_info}")
+        logger.info(f"Send transaction:{tx_info}")
         resp = self.q.tx.query_tx(tx_info['txhash'])
         assert resp['code'] == 0, f"error_code: {resp['code']} != 0"
 

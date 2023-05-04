@@ -99,3 +99,24 @@ class TestSendCoin(object):
 
         user_balance2 = self.handle_q.get_balance(user_addr, chain.coin['uc'])
         assert user_balance2['amount'] == str(calculate.to_usrc(10))
+
+    def test_fee_rate(self):
+        """测试交易手续费收取比例"""
+        region_admin_addr, region_id, _ = self.test_region.test_create_region()
+
+        new_kyc_data = dict(region_id=f"{region_id}", region_admin_addr=f"{region_admin_addr}")
+        user_addr = self.test_kyc.test_new_kyc_user(new_kyc_data)
+
+        send_data = dict(from_addr=f"{chain.super_addr}", to_addr=f"{user_addr}", amount="500", fees="1")
+        self.test_bank.test_send(send_data)
+
+        start_region = self.handle_q.get_balance(region_admin_addr, chain.coin['uc'])
+
+        send_data = dict(from_addr=user_addr, to_addr=region_admin_addr, amount=100, fees=1)
+        self.test_bank.test_send(send_data)
+
+        end_region = self.handle_q.get_balance(region_admin_addr, chain.coin['uc'])
+        user_balance = self.handle_q.get_balance(user_addr, chain.coin['uc'])
+
+        assert int(end_region['amount']) - int(start_region['amount']) == calculate.to_usrc(1) / 2 + calculate.to_usrc(100)
+        assert int(user_balance['amount']) == calculate.to_usrc(500 - 100 - 1)
