@@ -7,6 +7,10 @@ from loguru import logger
 from tools import handle_resp_data, handle_console_input
 from x.base import BaseClass
 
+"""
+Tx交易,(第五)
+"""
+
 
 class Tx(BaseClass):
 
