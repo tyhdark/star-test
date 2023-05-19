@@ -6,7 +6,7 @@ class FixedDeposit():
         self.balances = balances
 
     def month(self, year_fixed_deposit_interest_rate=None, month=None, stake=None):
-        print(f"设置的年化利率是:{year_fixed_deposit_interest_rate}元,选择的定期月是{month}个月,存入的本金是{stake}")
+        print(f"设置的年化利率是:{year_fixed_deposit_interest_rate}百分比,选择的定期月是{month}个月,存入的本金是{stake}")
         rewards = year_fixed_deposit_interest_rate * month / 12 * stake
         print(f"到期后获得的利息是{rewards}")
         sum_balances = self.balances + rewards + stake
@@ -27,7 +27,6 @@ class StakingDelegate():
         print("用户质押出去后剩余的本金为:", self.balances_existing)
 
     def test(self):
-        b = 1
         a = self.balances_existing
         print("当前的利息是:")
         return a
@@ -43,6 +42,7 @@ class StakingDelegate():
         # rewards = int((793 * (stake / 20000000000) * 10 ** 6 * heights - fees))
         rewards = (self.oneself_height_reward * (stake / 20000000000) * self.heights - fees) * 10 ** 6
         # rewards = (793 * (stake / 20000000000) * heights - fees) * 10 ** 6
+
         print("活期质押金额为:", stake, "经历的块高为:", self.heights, "设置的手续费为:", fees)
         print("产生的利息为:", rewards, "取出质押和收益后的余额为:",
               int(rewards) + self.balances_existing + (stake * 10 ** 6))
@@ -80,16 +80,19 @@ class StakingDelegate():
 
 
 if __name__ == '__main__':
-    stake = 101
-    start_heights = 922
-    end_heights = 3270
+    stake = 10000
+    start_heights = 2988
+    end_heights = 3109
     # heights = 263
     fees = 0
-    balances_existing = 289900000973  # 扣除活期后剩余的金额
-    sd = StakingDelegate(balances_existing=balances_existing, start_heights=start_heights, end_heights=end_heights)
-    print("----------" * 5, "下面是mec方法的", "----------" * 5)
+    balances_existing = 29341  # 扣除活期后剩余的金额
+    # sd = StakingDelegate(balances_existing=balances_existing, start_heights=start_heights, end_heights=end_heights)
+    # print("----------" * 5, "下面是mec方法的", "----------" * 5)
 
-    sd.rewards_mec(stake=stake, fees=fees)
+    # sd.rewards_mec(stake=stake, fees=fees)
+    # print("----------" * 5, "下面是KYC的方法的", "----------" * 5)
+    # sd.kyc_rewards_mec(stake=stake, fees=fees)
+
     # print("----------" * 5, "下面是umec方法的", "----------" * 5)
     # sd.rewards_umec(stake=stake, heights=heights, fees=fees)
     # print("----------" * 5, "下面是第二次umec方法的", "----------" * 5)
@@ -99,14 +102,14 @@ if __name__ == '__main__':
     # sd = StakingDelegate(balances_existing=balances_existing2)
     # sd.rewards_umec(stake=stake4, heights=heights2, fees=fees)
 
-    # print("----------" * 5, "下面是定期计算的", "----------" * 5)
-    # balances = 289900000973
-    # year_rate = 0.013
-    # month = 3
-    # stake4 = 8276698171
-    # fd = FixedDeposit(balances=balances)
-    # a = fd.month(year_fixed_deposit_interest_rate=year_rate,month=month,stake=stake4)
-    # print(a)
+    print("----------" * 5, "下面是定期计算的", "----------" * 5)
+    balances = 70022997
+    year_rate = 0.233
+    month = 1
+    stake4 = 10000000
+    fd = FixedDeposit(balances=balances)
+    a = fd.month(year_fixed_deposit_interest_rate=year_rate,month=month,stake=stake4)
+    print("收益为：",a)
     '''
     print("----------" * 5, "下面是手动计算的", "----------" * 5)
     # # print(balances)

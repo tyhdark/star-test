@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import inspect
+import json
 import time
 
 from loguru import logger
@@ -36,6 +37,90 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_split_esc(resp_info)
 
+    class SendToAdmin(object):
+
+        # superdmin = '$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend}) '
+
+        @staticmethod
+        def send_to_admin():
+            """创世时国库给超管赚钱"""
+            # TODO 设计国库给超管打钱的命令
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank sendToAdmin 1000mec --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend})  {Tx.keyring_backend}  {Tx.chain_id}"
+            # cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank sendToAdmin 1000mec --from={Tx.SendToAdmin.superdmin}  {Tx.keyring_backend}  {Tx.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # 这里是logger插入
+            # Tx.channel.sen 是调用了Host类，对服务器进行；连接，且查看响应，send发送cmd命令且\n脱敏
+            Tx.channel.send(cmd + "\n")  # 对命令进行\n处理，因为linux不能识别\n
+            """Tx.channel是对引用了Host类，当调用时就是自动对服务器进行连接，且查看响应且返回内容，resp_info就是返回结果"""
+            """handle_console_input.ready_info是捕获你插入的cmd命令展示出来Logger"""
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:  # 如果你输入cmd后你响应的内容里面有confirm 那就是提示你y/n确认，执行下面这步
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
+        # TODO 设计超管往个人打钱
+        @staticmethod
+        def send_admin_to_user(amounts=100, fees=0):
+            """创世后超管往个人打钱，前提是超管有钱！"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank send $({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend}) $({Tx.chain_bin} keys show kycwangzhibiao -a {Tx.keyring_backend}) {amounts}mec {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('c')} "
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            Tx.channel.send(cmd + "\n")
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
+        # TODO 设计创建验证者节点
+        @staticmethod
+        def creation_validator_node(amounts=100, fees=0):
+            """创世后创建验证者节点"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking create-validator --amount={amounts}{Tx.coin.get('c')} --pubkey=$(./me-chaind tendermint show-validator --home node8) --moniker=\"node8\" --commission-rate=\"0.10\" --commission-max-rate=\"0.20\" --commission-max-change-rate=\"0.01\" --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend}) {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('c')}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 当有需要交互的时候，调用Tx下的channel下的send方法
+            Tx.channel.send(cmd + "\n")
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
+        # TODO 查看验证者节点列表
+        @staticmethod
+        def query_staking_validator():
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} query staking validators"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
+            resp_info = Tx.ssh_client.ssh(cmd)
+
+            return handle_resp_data.handle_yaml_to_dict(resp_info)
+
+        # TODO 创建区且绑定区
+        @staticmethod
+        def creation_region(region_id=None, region_name=None, validator=None, fees=0):
+            rn = Tx.SendToAdmin.query_staking_validator()["validators"][0]["operator_address"]
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking new-region {region_id} {region_name} {rn}  --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend})  {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('c')}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 当有需要交互的时候，调用Tx下的channel下的send方法
+            Tx.channel.send(cmd + "\n")
+            resp_info = handle_console_input.ready_info(Tx.channel)
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
+        # TODO 查看区列表
+        @staticmethod
+        def query_staking_list_region():
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} q staking list-region {Tx.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
+            resp_info = Tx.ssh_client.ssh(cmd)
+
+            return handle_resp_data.handle_yaml_to_dict(resp_info)
     class Staking(object):
 
         @staticmethod
@@ -434,10 +519,24 @@ if __name__ == '__main__':
     # py_01 = Tx().staking.remove_kyc("sil1jqjtm7dge0ja64spr3wfgs8f6rnfg9ayj0lu6x",
     #                                 "sil1xxvavly4p87d6t3jkktp6pvt0jhystt48kwglh", 1, True)
     # print(py_01)
-    pub = '\'{"type": "tendermint/PubKeyEd25519","value": "a9UxLb0DuMJ0Y584VjSe+FWvJiglV4STErFSfT0Cd0Q="}\''
+    # pub = '\'{"type": "tendermint/PubKeyEd25519","value": "a9UxLb0DuMJ0Y584VjSe+FWvJiglV4STErFSfT0Cd0Q="}\''
 
     # res = Tx().staking.create_validator(pub, "node2", "sil1xxvavly4p87d6t3jkktp6pvt0jhystt48kwglh", 1)
     # res = Tx().staking.update_validator("silvaloper1jxrauca2fdrwyvtzmelv5td84wpjqd9f6rks4c", "CZE",
     #                                     "sil1xxvavly4p87d6t3jkktp6pvt0jhystt48kwglh", 1)
     # res = Tx().staking.do_fixed_deposit(10, "PERIOD_3_MONTHS", "sil155mv39aqtl234twde44wrjdd5phxx28mg46u3p", 1)
     # print(res)
+    tx = Tx()
+    # r = tx.SendToAdmin.send_to_admin()
+    # send_user = tx.SendToAdmin.send_admin_to_user()
+    # v = tx.SendToAdmin.creation_validator_node()
+    q = tx.SendToAdmin.query_staking_validator()
+    # riegion = tx.SendToAdmin.creation_region(region_id=8,region_name="KOR")
+    riegion_list = tx.SendToAdmin.query_staking_list_region()
+    print(riegion_list)
+    print(type(riegion_list))
+    print(q)
+    print(type(q))
+
+    # print(r)
+    # print(send_user)

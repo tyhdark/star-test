@@ -110,4 +110,11 @@ class Host:
         return channel
 
 
+if __name__ == '__main__':
+    ip = "192.168.0.207"
+    username = "meuser"
+    password = "12345678"
+    host = Host(ip=ip, username=username, password=password)
+    pid = "meuser"
+    print(host.pid(name=pid))
 
