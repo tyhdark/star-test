@@ -77,7 +77,7 @@ class Tx(BaseClass):
         @staticmethod
         def creation_validator_node(amounts=100, fees=0):
             """创世后创建验证者节点"""
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking create-validator --amount={amounts}{Tx.coin.get('c')} --pubkey=$(./me-chaind tendermint show-validator --home node8) --moniker=\"node8\" --commission-rate=\"0.10\" --commission-max-rate=\"0.20\" --commission-max-change-rate=\"0.01\" --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend}) {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('c')}"
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking create-validator --amount={amounts}{Tx.coin.get('c')} --pubkey=$(./me-chaind tendermint show-validator --home node2) --moniker=\"node2\" --commission-rate=\"0.10\" --commission-max-rate=\"0.20\" --commission-max-change-rate=\"0.01\" --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend}) {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('c')}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             # 当有需要交互的时候，调用Tx下的channel下的send方法
             Tx.channel.send(cmd + "\n")
@@ -121,6 +121,28 @@ class Tx(BaseClass):
             resp_info = Tx.ssh_client.ssh(cmd)
 
             return handle_resp_data.handle_yaml_to_dict(resp_info)
+
+        # TODO 串联起来
+        @staticmethod
+        def start_script():
+            """创世脚本跑完后，链起来之后的一系列操作"""
+            # 国库转钱给超管
+            print(Tx.SendToAdmin.send_to_admin())
+            # 查询验证者节点列表
+            print(Tx.SendToAdmin.query_staking_validator())
+            # 超管创建节点
+            print(Tx.SendToAdmin.creation_validator_node())
+            # time.sleep(3)
+            # 查询验证者节点
+            # print(Tx.SendToAdmin.query_staking_validator())
+            # 查询区列表
+            # print(Tx.SendToAdmin.query_staking_list_region())
+            # 创建区绑定节点
+            # print(Tx.SendToAdmin.creation_region(region_id=9, region_name="JPN"))
+            # time.sleep(3)
+            # 查询区列表
+            # print(Tx.SendToAdmin.query_staking_list_region())
+
     class Staking(object):
 
         @staticmethod
@@ -468,11 +490,17 @@ class Tx(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return handle_resp_data.handle_yaml_to_dict(Tx.ssh_client.ssh(cmd))
 
+        @staticmethod
+        def query_kyc_list():
+            """查询KYC用户列表"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} q staking list-kyc"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+
     class Keys(object):
 
         @staticmethod
         def add(username):
-            """添加用户 重名也会新增,地址不一样"""
+            """添加用户 重名也会新增,地址不一样  1.3可以用"""
             cmd = Tx.ssh_home + f"{Tx.chain_bin} keys add {username} {Tx.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
@@ -489,21 +517,21 @@ class Tx(BaseClass):
 
         @staticmethod
         def lists():
-            """查询用户列表 需要密码"""
+            """查询用户列表 需要密码,1.3可以直接调用"""
             cmd = Tx.ssh_home + f"{Tx.chain_bin} keys list {Tx.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return handle_resp_data.handle_yaml_to_dict(Tx.ssh_client.ssh(cmd))
 
         @staticmethod
         def show(username):
-            """查询用户信息"""
+            """查询用户信息， 1.3可以直接用"""
             cmd = Tx.ssh_home + f"{Tx.chain_bin} keys show {username} {Tx.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return handle_resp_data.handle_yaml_to_dict(Tx.ssh_client.ssh(cmd))
 
         @staticmethod
         def private_export(username):
-            """导出私钥"""
+            """导出私钥, 1.3已经不能用了"""
             cmd = Tx.ssh_home + f"{Tx.chain_bin} keys export {username} --unsafe --unarmored-hex {Tx.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
@@ -513,6 +541,16 @@ class Tx(BaseClass):
                 resp_info = handle_console_input.yes_or_no(Tx.channel)
 
             return handle_resp_data.handle_split_esc(resp_info)
+
+        # TODO 根据姓名导出用户私钥
+        @staticmethod
+        def private_export_meuser(username=None):
+            """传入name导出用户私钥，1.3可用"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} keys show {username} -a {Tx.keyring_backend}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            resp_info = Tx.ssh_client.ssh(cmd)
+
+            return handle_resp_data.handle_yaml_to_dict(resp_info)
 
 
 if __name__ == '__main__':
@@ -526,17 +564,25 @@ if __name__ == '__main__':
     #                                     "sil1xxvavly4p87d6t3jkktp6pvt0jhystt48kwglh", 1)
     # res = Tx().staking.do_fixed_deposit(10, "PERIOD_3_MONTHS", "sil155mv39aqtl234twde44wrjdd5phxx28mg46u3p", 1)
     # print(res)
-    tx = Tx()
-    # r = tx.SendToAdmin.send_to_admin()
+
     # send_user = tx.SendToAdmin.send_admin_to_user()
     # v = tx.SendToAdmin.creation_validator_node()
-    q = tx.SendToAdmin.query_staking_validator()
+    # q = tx.SendToAdmin.query_staking_validator()
     # riegion = tx.SendToAdmin.creation_region(region_id=8,region_name="KOR")
-    riegion_list = tx.SendToAdmin.query_staking_list_region()
-    print(riegion_list)
-    print(type(riegion_list))
-    print(q)
-    print(type(q))
+    # riegion_list = tx.SendToAdmin.query_staking_list_region()
+    # keys_list = tx.Keys.lists()
+
+    # add_key = tx.Keys.show("testpython")
+    # print(add_key)
+    # print(type(add_key))
+    # print(keys_list)
+    # print(type(keys_list))
+    # pe = tx.keys.private_export_meuser("kycwangzhibiao")
+    # print(pe)
+    # print(type(pe))
+    # print(q)
+    # print(type(q))
 
     # print(r)
     # print(send_user)
+    Tx.SendToAdmin.start_script()
