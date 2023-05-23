@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import inspect
 import json
 import time
@@ -39,14 +40,12 @@ class Tx(BaseClass):
 
     class SendToAdmin(object):
 
-        # superdmin = '$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend}) '
-
         @staticmethod
         def send_to_admin():
-            """创世时国库给超管赚钱"""
-            # TODO 设计国库给超管打钱的命令
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank sendToAdmin 1000mec --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend})  {Tx.keyring_backend}  {Tx.chain_id}"
-            # cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank sendToAdmin 1000mec --from={Tx.SendToAdmin.superdmin}  {Tx.keyring_backend}  {Tx.chain_id}"
+            """创世时国库给超管打钱，无手续费，作为初始用"""
+
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank sendToAdmin 100mec --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend})  {Tx.keyring_backend}  {Tx.chain_id}"
+
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # 这里是logger插入
             # Tx.channel.sen 是调用了Host类，对服务器进行；连接，且查看响应，send发送cmd命令且\n脱敏
             Tx.channel.send(cmd + "\n")  # 对命令进行\n处理，因为linux不能识别\n
@@ -59,11 +58,27 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
-        # TODO 设计超管往个人打钱
+        def send_to_admin_fees(amout: int, fees=100):
+            """普通时国库给超管转钱，有手续费，作为一种场景"""
+
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank sendToAdmin {amout}{Tx.coin.get('c')} --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend})  {Tx.keyring_backend}  {Tx.chain_id} --fees={fees}{Tx.coin.get('uc')}"
+
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # 这里是logger插入
+            # Tx.channel.sen 是调用了Host类，对服务器进行；连接，且查看响应，send发送cmd命令且\n脱敏
+            Tx.channel.send(cmd + "\n")  # 对命令进行\n处理，因为linux不能识别\n
+            """Tx.channel是对引用了Host类，当调用时就是自动对服务器进行连接，且查看响应且返回内容，resp_info就是返回结果"""
+            """handle_console_input.ready_info是捕获你插入的cmd命令展示出来Logger"""
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:  # 如果你输入cmd后你响应的内容里面有confirm 那就是提示你y/n确认，执行下面这步
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
         @staticmethod
-        def send_admin_to_user(amounts=100, fees=0):
+        def send_admin_to_user(to_account: str, amounts=100, fees=100):
             """创世后超管往个人打钱，前提是超管有钱！"""
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank send $({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend}) $({Tx.chain_bin} keys show kycwangzhibiao -a {Tx.keyring_backend}) {amounts}mec {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('c')} "
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank send $({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend}) $({Tx.chain_bin} keys show {to_account} -a {Tx.keyring_backend}) {amounts}mec {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')} "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             Tx.channel.send(cmd + "\n")
             resp_info = handle_console_input.ready_info(Tx.channel)
@@ -73,11 +88,26 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
-        # TODO 设计创建验证者节点
         @staticmethod
-        def creation_validator_node(amounts=100, fees=0):
-            """创世后创建验证者节点"""
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking create-validator --amount={amounts}{Tx.coin.get('c')} --pubkey=$(./me-chaind tendermint show-validator --home node2) --moniker=\"node2\" --commission-rate=\"0.10\" --commission-max-rate=\"0.20\" --commission-max-change-rate=\"0.01\" --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend}) {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('c')}"
+        def tx_bank_send(from_address: str, to_address: str, amounts: int, fees=100):
+            """根据用户名，A用户给B用户打钱"""
+
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank send {Tx.Keys.private_export_meuser(username=from_address)} {Tx.Keys.private_export_meuser(username=to_address)} {amounts}mec {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')} "
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            Tx.channel.send(cmd + "\n")
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            # print(Tx.Query.query_bank_balance_adders(address=to_address))
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
+        @staticmethod
+        def creation_validator_node(node_name: str, amounts=100, fees=100):
+            """创世后创建验证者节点  传入node_name将节点升级成验证者"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking create-validator --amount={amounts}{Tx.coin.get('c')} --pubkey=$(./me-chaind tendermint show-validator --home {node_name}) --moniker={node_name} --commission-rate=\"0.10\" --commission-max-rate=\"0.20\" --commission-max-change-rate=\"0.01\" --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend}) {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             # 当有需要交互的时候，调用Tx下的channel下的send方法
             Tx.channel.send(cmd + "\n")
@@ -88,21 +118,12 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
-        # TODO 查看验证者节点列表
         @staticmethod
-        def query_staking_validator():
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} query staking validators"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
-            # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
-            resp_info = Tx.ssh_client.ssh(cmd)
-
-            return handle_resp_data.handle_yaml_to_dict(resp_info)
-
-        # TODO 创建区且绑定区
-        @staticmethod
-        def creation_region(region_id=None, region_name=None, validator=None, fees=0):
-            rn = Tx.SendToAdmin.query_staking_validator()["validators"][0]["operator_address"]
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking new-region {region_id} {region_name} {rn}  --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend})  {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('c')}"
+        def creation_region(region_id: int, region_name: str, validator_node_name: str, fees=100):
+            """传入区id、区名称、节点名称 来创建区"""
+            # node_name = validator_node_name
+            validator_address = Tx.Query.query_staking_validator_from_node_name(node_name=validator_node_name)
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking new-region {region_id} {region_name} {validator_address}  --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend})  {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             # 当有需要交互的时候，调用Tx下的channel下的send方法
             Tx.channel.send(cmd + "\n")
@@ -112,36 +133,71 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
-        # TODO 查看区列表
+
         @staticmethod
-        def query_staking_list_region():
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} q staking list-region {Tx.chain_id}"
+        def new_kyc_for_username(user_name: str, region_id: int, fees=100):
+            """传入用户名称，和区id，进行用户kyc认证"""
+
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking new-kyc {Tx.Keys.show_address_for_username(username=user_name)}  {region_id} --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend})  {Tx.keyring_backend}  {Tx.chain_id} --fees={fees}{Tx.coin.get('uc')} "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
-            # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
-            resp_info = Tx.ssh_client.ssh(cmd)
+            # 当有需要交互的时候，调用Tx下的channel下的send方法
+            Tx.channel.send(cmd + "\n")
+            resp_info = handle_console_input.ready_info(Tx.channel)
 
-            return handle_resp_data.handle_yaml_to_dict(resp_info)
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
 
-        # TODO 串联起来
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+        @staticmethod
+        def count_down_5s():
+            for i in range(6, 0, -1):
+                print(i)
+                time.sleep(1)
+
+            print("next!")
         @staticmethod
         def start_script():
             """创世脚本跑完后，链起来之后的一系列操作"""
             # 国库转钱给超管
-            print(Tx.SendToAdmin.send_to_admin())
+            Tx.SendToAdmin.send_to_admin_fees(amout=Tx.amout)
+            Tx.SendToAdmin.count_down_5s()
             # 查询验证者节点列表
-            print(Tx.SendToAdmin.query_staking_validator())
+            validator_list_before = Tx.Query.query_staking_validator_list()
+            for validators_before in validator_list_before["validators"]:
+                print(validators_before)
             # 超管创建节点
-            print(Tx.SendToAdmin.creation_validator_node())
-            # time.sleep(3)
+            Tx.SendToAdmin.creation_validator_node(node_name=Tx.node_name)
+            Tx.SendToAdmin.count_down_5s()
+            # 超管给个人打钱
+            Tx.SendToAdmin.send_admin_to_user(to_account=Tx.to_account)
+            Tx.SendToAdmin.count_down_5s()
             # 查询验证者节点
-            # print(Tx.SendToAdmin.query_staking_validator())
+            validator_list_later = Tx.Query.query_staking_validator_list()
+            for validators_later in validator_list_later["validators"]:
+                print(validators_later)
             # 查询区列表
-            # print(Tx.SendToAdmin.query_staking_list_region())
+            region_list_before = Tx.Query.query_staking_list_region()
+            for regions_later_before in region_list_before["region"]:
+                print(regions_later_before)
             # 创建区绑定节点
-            # print(Tx.SendToAdmin.creation_region(region_id=9, region_name="JPN"))
-            # time.sleep(3)
+            Tx.SendToAdmin.creation_region(region_id=Tx.region_id, region_name=Tx.region_name,validator_node_name=Tx.node_name)
+            Tx.SendToAdmin.count_down_5s()
             # 查询区列表
-            # print(Tx.SendToAdmin.query_staking_list_region())
+            region_list_later = Tx.Query.query_staking_list_region()
+            for regions_later in region_list_later["region"]:
+                print(regions_later)
+            # 将用户认证成KYC
+            Tx.SendToAdmin.new_kyc_for_username(user_name=Tx.to_account, region_id=Tx.region_id)
+            Tx.SendToAdmin.count_down_5s()
+            # 查询KYC列表
+            kyc_list = Tx.Query.query_staking_list_kyc()
+
+            for kycs in kyc_list["kyc"]:
+                print(kycs)
+
+            print("恭喜，所有的方法都执行成功了，初始化成功，")
+
+
 
     class Staking(object):
 
@@ -530,6 +586,13 @@ class Tx(BaseClass):
             return handle_resp_data.handle_yaml_to_dict(Tx.ssh_client.ssh(cmd))
 
         @staticmethod
+        def show_address_for_username(username):
+            """查询用户地址"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} keys show {username} -a {Tx.keyring_backend}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return handle_resp_data.handle_yaml_to_dict(Tx.ssh_client.ssh(cmd))
+
+        @staticmethod
         def private_export(username):
             """导出私钥, 1.3已经不能用了"""
             cmd = Tx.ssh_home + f"{Tx.chain_bin} keys export {username} --unsafe --unarmored-hex {Tx.keyring_backend}"
@@ -542,12 +605,97 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_split_esc(resp_info)
 
-        # TODO 根据姓名导出用户私钥
         @staticmethod
         def private_export_meuser(username=None):
             """传入name导出用户私钥，1.3可用"""
             cmd = Tx.ssh_home + f"{Tx.chain_bin} keys show {username} -a {Tx.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            resp_info = Tx.ssh_client.ssh(cmd)
+
+            return handle_resp_data.handle_yaml_to_dict(resp_info)
+
+    class Query(object):
+        """ 这个类主要用来查询相关操作"""
+
+        @staticmethod
+        def query_staking_validator():
+            """查看验证者节点列表"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} query staking validators"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
+            resp_info = Tx.ssh_client.ssh(cmd)
+
+            return handle_resp_data.handle_yaml_to_dict(resp_info)
+
+        @staticmethod
+        def query_bank_balance_username(username: str):
+            """根据用户名，查询余额"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} q bank balances {Tx.Keys.private_export_meuser(username)} {Tx.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
+            resp_info = Tx.ssh_client.ssh(cmd)
+
+            return handle_resp_data.handle_yaml_to_dict(resp_info)
+
+        @staticmethod
+        def query_bank_balance_adders(address: str):
+            """根据地址私钥，查询余额 ，一般用作模块账户查找"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} q bank balances {address} {Tx.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
+            resp_info = Tx.ssh_client.ssh(cmd)
+
+            return handle_resp_data.handle_yaml_to_dict(resp_info)
+
+        @staticmethod
+        def query_staking_validator_list():
+            """查找验证者列表"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} query staking validators"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
+            resp_info = Tx.ssh_client.ssh(cmd)
+
+            return handle_resp_data.handle_yaml_to_dict(resp_info)
+
+        @staticmethod
+        def query_staking_validator_from_node_name(node_name: str):
+            """根据node名称查找对应的节点地址"""
+            dict_validator_list = Tx.Query.query_staking_validator_list()
+            moniker_to_find = node_name
+            operator_address = None
+            for validator in dict_validator_list['validators']:
+                if validator['description']['moniker'] == moniker_to_find:
+                    operator_address = validator['operator_address']
+                    break
+            return operator_address
+            # return dicta
+
+        @staticmethod
+        def query_staking_list_region():
+            """查看区列表"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} q staking list-region {Tx.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
+            resp_info = Tx.ssh_client.ssh(cmd)
+
+            return handle_resp_data.handle_yaml_to_dict(resp_info)
+
+        @staticmethod
+        def query_staking_list_kyc():
+            """查看区列表"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} q staking list-kyc {Tx.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
+            resp_info = Tx.ssh_client.ssh(cmd)
+
+            return handle_resp_data.handle_yaml_to_dict(resp_info)
+
+        @staticmethod
+        def query_staking_delegate(username: str):
+            """根据用户名区，查看自己的活期委托"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} q staking delegation $({Tx.chain_bin} keys show {username} -a {Tx.keyring_backend}) {Tx.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
             resp_info = Tx.ssh_client.ssh(cmd)
 
             return handle_resp_data.handle_yaml_to_dict(resp_info)
@@ -582,7 +730,66 @@ if __name__ == '__main__':
     # print(type(pe))
     # print(q)
     # print(type(q))
-
+    # print(Tx.Keys.private_export_meuser(username="kycwangzhibiao"))
     # print(r)
+    # print(Tx.query.query_staking_validator())
+    # print(Tx.SendToAdmin.tx_bank_send(from_address="superadmin", to_address="kycwangzhibiao", amounts=1))
+    # print(Tx.SendToAdmin.query_bank_balance(address="kycwangzhibiao"))
     # print(send_user)
+    # print(Tx.SendToAdmin.query_staking())
+    # print(Tx.SendToAdmin.query_staking_validator_from())
+    # print(type(Tx.SendToAdmin.query_staking_validator_from()))
+    import sys
+
+    # print(Tx.Query.query_bank_balance_adders(adders="cosmos1quarn305vjusjaqxzdm8du09w63gjx36ue0aqq"))
+    # print(Tx.SendToAdmin.send_to_admin_fees(amout=13000,fees=100))
+    # time.sleep(5)
+    # print(Tx.Query.query_bank_balance_username(username="superadmin"))
+    # print(Tx.Query.query_bank_balance_adders(adders="cosmos1quarn305vjusjaqxzdm8du09w63gjx36ue0aqq"))
+    # print(Tx.Query.query_staking_list_kyc())
+
+    # print(Tx.SendToAdmin.send_admin_to_user(to_account="kycwangzhibiao", amounts=1000000, fees=100))
+    # time.sleep(5)
+    # print(Tx.Query.query_bank_balance_username(username="kycwangzhibiao"))
+    # print(Tx.Query.query_staking_delegate(username="kycwangzhibiao"))
+    # dict2 = Tx.Query.query_staking_validator_list()
+    # for key,value in dict2.items():
+    #     print(key,value)
+    # def fun():
+    #     dict2 = Tx.Query.query_staking_validator_list()
+    #     moniker_to_find = 'node2'
+    #     operator_address = None
+    #     for validator in dict2['validators']:
+    #         if validator['description']['moniker'] == moniker_to_find:
+    #             operator_address = validator['operator_address']
+    #             break
+    #     return operator_address
+    # dict2 = Tx.Query.query_staking_validator_list()
+    # for k in dict2['validators']:
+    #     print(k)
+    # print(Tx.SendToAdmin.creation_validator_node(node_name="node3", amounts=1000))
+    # print(Tx.SendToAdmin.creation_region(region_id=3, region_name="KOR", validator_node_name="node3"))
+    # print(Tx.Keys.show_address_for_username(username="kycwangzhibiao"))
+    # print(Tx.Query.query_staking_validator_from_node_name(node_name="node1"))
+    # print(type(dict2))
+    # for key, value in dict2.items():
+    #     print(key, value)
+    # d = Tx.Keys.lists()
+    # for v in d:
+    #     print(v)
     Tx.SendToAdmin.start_script()
+
+    # validator_list = Tx.Query.query_staking_validator_list()
+    # for validators in validator_list["validators"]:
+    #     print(validators)
+    # print(type(r_list))
+    # list2 = Tx.Query.query_staking_list_kyc()
+    # for k in list2["kyc"]:
+        # print(k)
+    # print(list2)
+    # print(type(list2))
+    # # info_data = Tx.Query.query_staking_validator()
+    # print(Tx.Query.query_bank_balance_adders(adders="cosmos1quarn305vjusjaqxzdm8du09w63gjx36ue0aqq"))
+    # Tx.SendToAdmin.send_to_admin_fees(amout=1000000,fees=100)
+    # time.sleep(5)
+    # print(Tx.Query.query_bank_balance_adders(adders="cosmos1quarn305vjusjaqxzdm8du09w63gjx36ue0aqq"))

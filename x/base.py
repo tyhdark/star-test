@@ -37,6 +37,14 @@ class BaseClass(object):
 
     channel = ssh_client.create_invoke_shell()  # 建立ssh链接，调用shell
 
+    # 重新部署链之后，初始时需要用到的一些数据
+    node_name = chain.node_name
+    to_account = chain.to_account
+    region_id = chain.region_id
+    region_name = chain.region_name
+    amout = chain.amout
+
+
 
     """
     # ssh_info = chain.ssh_info["config"]
