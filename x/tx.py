@@ -729,6 +729,7 @@ class Tx(BaseClass):
 if __name__ == '__main__':
     username = "nokycwangzhibiao"
     adderss = "cosmos1fap8hp3t3xt20qw4sczlyrk6n92uffj4r4kw77"
+    print("1")
     # 国库转给管理员
     # Tx.SendToAdmin.send_to_admin_fees(amount=10000,fees=100)
     # 用户转账
