@@ -362,9 +362,9 @@ class Tx(BaseClass):
 
         # TODO 取消或者减少委托
         @staticmethod
-        def delegate(amount: int, username: str, fees=100):
+        def delegate_unkycunbond(amount: int, username: str, fees=100):
             """创建/追加 活期质押，修改"""
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking delegate  {amount}{Tx.coin.get('c')} --from={Tx.Keys.private_export_meuser(username=username)} {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')}"
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking unKycUnbond {amount}{Tx.coin.get('c')} --from={Tx.Keys.private_export_meuser(username=username)} {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
 
@@ -740,6 +740,8 @@ if __name__ == '__main__':
     # print(Tx.Keys.private_export_meuser(username=username))
     # 发起质押
     Tx.Staking.delegate(amount=1, username=username, fees=100)
+    # 减少质押
+    Tx.Staking.delegate_unkycunbond(amount=1,username=username,fees=0)
     # 查询质押
     Tx.SendToAdmin.count_down_5s()
     print(Tx.Query.query_staking_delegate(username=username))
