@@ -29,7 +29,7 @@ class Query(BaseClass):
     class Block(object):  # 区块
 
         @staticmethod  # 静态方法装饰器
-        def query_block(self, height=""):  # 查询区块
+        def query_block(height=""):  # 查询区块
             """
             返回当前块高
             """
@@ -47,7 +47,7 @@ class Query(BaseClass):
 
         @staticmethod
         def query_tx(tx_hash):
-            """查询 tx_hash"""
+            """查询 tx_hash,1.3可以直接用"""
             cmd = Query.ssh_home + f"{Query.chain_bin} q tx {tx_hash} {Query.custom_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             time.sleep(5)
@@ -55,15 +55,17 @@ class Query(BaseClass):
             time.sleep(2)
             return handle_resp_data.handle_yaml_to_dict(res)  # 返回对应的cmd
 
-    class Bank(object):  # 库
+    class Bank(object):  # 钱
 
         @staticmethod
         def query_balances(addr):
-            """查询 addr 余额"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q bank balance {addr} {Query.custom_node}"
+            """根据地址查询余额 1.3可用"""
+            cmd = Query.ssh_home + f"{Query.chain_bin} q bank balances {addr} {Query.custom_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             res = Query.ssh_client.ssh(cmd)
             return handle_resp_data.handle_yaml_to_dict(res)
+
+
 
     class Staking(object):  # 权益质押
 
@@ -213,9 +215,11 @@ class Query(BaseClass):
 
 
 if __name__ == '__main__':
+    # q = Query()
+    # k = q.staking.list_validator()
+    # print(k)
     q = Query()
-    k = q.staking.list_validator()
-    print(k)
+    print(q.Bank.query_balances(addr="cosmos15rm6lr2w667yzcdkvp6r5j59hz6wxfshkdpmaw"))
 
     # r = q.staking.show_region("bfdf8d44bc9211ed83a91e620a42e349")
     # r1 = q.staking.show_region_by_name("CZE")

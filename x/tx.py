@@ -44,7 +44,7 @@ class Tx(BaseClass):
         def send_to_admin():
             """创世时国库给超管打钱，无手续费，作为初始用"""
 
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank sendToAdmin 100mec --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend})  {Tx.keyring_backend}  {Tx.chain_id}"
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank sendToAdmin 10000mec --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend})  {Tx.keyring_backend}  {Tx.chain_id}"
 
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # 这里是logger插入
             # Tx.channel.sen 是调用了Host类，对服务器进行；连接，且查看响应，send发送cmd命令且\n脱敏
@@ -58,10 +58,10 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
-        def send_to_admin_fees(amout: int, fees=100):
+        def send_to_admin_fees(amount: int, fees=100):
             """普通时国库给超管转钱，有手续费，作为一种场景"""
 
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank sendToAdmin {amout}{Tx.coin.get('c')} --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend})  {Tx.keyring_backend}  {Tx.chain_id} --fees={fees}{Tx.coin.get('uc')}"
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank sendToAdmin {amount}{Tx.coin.get('c')} --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend})  {Tx.keyring_backend}  {Tx.chain_id} --fees={fees}{Tx.coin.get('uc')}"
 
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # 这里是logger插入
             # Tx.channel.sen 是调用了Host类，对服务器进行；连接，且查看响应，send发送cmd命令且\n脱敏
@@ -92,7 +92,7 @@ class Tx(BaseClass):
         def tx_bank_send(from_address: str, to_address: str, amounts: int, fees=100):
             """根据用户名，A用户给B用户打钱"""
 
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank send {Tx.Keys.private_export_meuser(username=from_address)} {Tx.Keys.private_export_meuser(username=to_address)} {amounts}mec {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')} "
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank send {Tx.Keys.private_export_meuser(username=from_address)} {Tx.Keys.private_export_meuser(username=to_address)} {amounts}umec {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')} "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             Tx.channel.send(cmd + "\n")
             resp_info = handle_console_input.ready_info(Tx.channel)
@@ -133,7 +133,6 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
-
         @staticmethod
         def new_kyc_for_username(user_name: str, region_id: int, fees=100):
             """传入用户名称，和区id，进行用户kyc认证"""
@@ -148,18 +147,20 @@ class Tx(BaseClass):
                 resp_info = handle_console_input.yes_or_no(Tx.channel)
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
         @staticmethod
         def count_down_5s():
-            for i in range(6, 0, -1):
+            for i in range(5, 0, -1):
                 print(i)
                 time.sleep(1)
 
             print("next!")
+
         @staticmethod
         def start_script():
             """创世脚本跑完后，链起来之后的一系列操作"""
             # 国库转钱给超管
-            Tx.SendToAdmin.send_to_admin_fees(amout=Tx.amout)
+            Tx.SendToAdmin.send_to_admin_fees(amout=Tx.amout, fees=0)
             Tx.SendToAdmin.count_down_5s()
             # 查询验证者节点列表
             validator_list_before = Tx.Query.query_staking_validator_list()
@@ -180,7 +181,8 @@ class Tx(BaseClass):
             for regions_later_before in region_list_before["region"]:
                 print(regions_later_before)
             # 创建区绑定节点
-            Tx.SendToAdmin.creation_region(region_id=Tx.region_id, region_name=Tx.region_name,validator_node_name=Tx.node_name)
+            Tx.SendToAdmin.creation_region(region_id=Tx.region_id, region_name=Tx.region_name,
+                                           validator_node_name=Tx.node_name)
             Tx.SendToAdmin.count_down_5s()
             # 查询区列表
             region_list_later = Tx.Query.query_staking_list_region()
@@ -196,8 +198,6 @@ class Tx(BaseClass):
                 print(kycs)
 
             print("恭喜，所有的方法都执行成功了，初始化成功，")
-
-
 
     class Staking(object):
 
@@ -343,11 +343,11 @@ class Tx(BaseClass):
                 error_info = handle_resp_data.HandleRespErrorInfo.handle_rpc_error(resp_info)
                 return error_info
 
+
         @staticmethod
-        def delegate(from_addr, amount, fees):
-            """创建/追加 活期质押"""
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking delegate --from={from_addr} --amount={amount}{Tx.coin['c']} " \
-                                f"--fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend} "
+        def delegate(amount: int, username: str, fees=100):
+            """创建/追加 活期质押，已修改"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking delegate  {amount}{Tx.coin.get('c')} --from={Tx.Keys.private_export_meuser(username=username)} {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
 
@@ -359,6 +359,22 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
+
+        # TODO 取消或者减少委托
+        @staticmethod
+        def delegate(amount: int, username: str, fees=100):
+            """创建/追加 活期质押，修改"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking delegate  {amount}{Tx.coin.get('c')} --from={Tx.Keys.private_export_meuser(username=username)} {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+
+            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
         @staticmethod
         def undelegate(from_addr, amount, fees):
             """
@@ -551,6 +567,10 @@ class Tx(BaseClass):
             """查询KYC用户列表"""
             cmd = Tx.ssh_home + f"{Tx.chain_bin} q staking list-kyc"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            # 没有交互的窗口，直接查询，再来考虑要不要处理
+            resp_info = handle_resp_data.handle_yaml_to_dict(Tx.ssh_client.ssh(cmd))
+
+            return resp_info
 
     class Keys(object):
 
@@ -634,8 +654,13 @@ class Tx(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
             resp_info = Tx.ssh_client.ssh(cmd)
+            dict_resp_info = handle_resp_data.handle_yaml_to_dict(resp_info)
+            if dict_resp_info.get('balances') == []:  # 判断余额是否为空，为空就余额等于0，用作下面计算
+                return 0
+            else:
+                return int(dict_resp_info.get('balances')[0].get('amount'))
 
-            return handle_resp_data.handle_yaml_to_dict(resp_info)
+            # return handle_resp_data.handle_yaml_to_dict(resp_info)
 
         @staticmethod
         def query_bank_balance_adders(address: str):
@@ -657,18 +682,18 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_yaml_to_dict(resp_info)
 
-        @staticmethod
-        def query_staking_validator_from_node_name(node_name: str):
-            """根据node名称查找对应的节点地址"""
-            dict_validator_list = Tx.Query.query_staking_validator_list()
-            moniker_to_find = node_name
-            operator_address = None
-            for validator in dict_validator_list['validators']:
-                if validator['description']['moniker'] == moniker_to_find:
-                    operator_address = validator['operator_address']
-                    break
-            return operator_address
-            # return dicta
+        # @staticmethod
+        # def query_staking_validator_from_node_name(node_name: str):
+        #     """根据node名称查找对应的节点地址"""
+        #     dict_validator_list = Tx.Query.query_staking_validator_list()
+        #     moniker_to_find = node_name
+        #     operator_address = None
+        #     for validator in dict_validator_list['validators']:
+        #         if validator['description']['moniker'] == moniker_to_find:
+        #             operator_address = validator['operator_address']
+        #             break
+        #     return operator_address
+        #     # return dicta
 
         @staticmethod
         def query_staking_list_region():
@@ -702,6 +727,24 @@ class Tx(BaseClass):
 
 
 if __name__ == '__main__':
+    username = "nokycwangzhibiao"
+    adderss = "cosmos1fap8hp3t3xt20qw4sczlyrk6n92uffj4r4kw77"
+    # 国库转给管理员
+    # Tx.SendToAdmin.send_to_admin_fees(amount=10000,fees=100)
+    # 用户转账
+    # Tx.SendToAdmin.send_admin_to_user(to_account="nokycwangzhibiao",amounts=10000,fees=100)
+    # Tx.SendToAdmin.count_down_5s()
+    # 查询余额
+    # print(Tx.Query.query_bank_balance_username(username="nokycwangzhibiao"))
+    # 查询用户address
+    # print(Tx.Keys.private_export_meuser(username=username))
+    # 发起质押
+    Tx.Staking.delegate(amount=1, username=username, fees=100)
+    # 查询质押
+    Tx.SendToAdmin.count_down_5s()
+    print(Tx.Query.query_staking_delegate(username=username))
+
+    # print(Tx.Staking.query_kyc_list())
     # py_01 = Tx().staking.remove_kyc("sil1jqjtm7dge0ja64spr3wfgs8f6rnfg9ayj0lu6x",
     #                                 "sil1xxvavly4p87d6t3jkktp6pvt0jhystt48kwglh", 1, True)
     # print(py_01)
@@ -730,6 +773,7 @@ if __name__ == '__main__':
     # print(type(pe))
     # print(q)
     # print(type(q))
+    #
     # print(Tx.Keys.private_export_meuser(username="kycwangzhibiao"))
     # print(r)
     # print(Tx.query.query_staking_validator())
@@ -740,7 +784,7 @@ if __name__ == '__main__':
     # print(Tx.SendToAdmin.query_staking_validator_from())
     # print(type(Tx.SendToAdmin.query_staking_validator_from()))
     import sys
-
+    # print("1")
     # print(Tx.Query.query_bank_balance_adders(adders="cosmos1quarn305vjusjaqxzdm8du09w63gjx36ue0aqq"))
     # print(Tx.SendToAdmin.send_to_admin_fees(amout=13000,fees=100))
     # time.sleep(5)
@@ -750,6 +794,7 @@ if __name__ == '__main__':
 
     # print(Tx.SendToAdmin.send_admin_to_user(to_account="kycwangzhibiao", amounts=1000000, fees=100))
     # time.sleep(5)
+    # print(Tx.Keys.show_address_for_username("kycwangzhibiao"))
     # print(Tx.Query.query_bank_balance_username(username="kycwangzhibiao"))
     # print(Tx.Query.query_staking_delegate(username="kycwangzhibiao"))
     # dict2 = Tx.Query.query_staking_validator_list()
@@ -777,15 +822,30 @@ if __name__ == '__main__':
     # d = Tx.Keys.lists()
     # for v in d:
     #     print(v)
-    Tx.SendToAdmin.start_script()
-
+    # Tx.SendToAdmin.start_script()
+    # Tx.SendToAdmin.send_to_admin()
+    # Tx.SendToAdmin.count_down_5s()
+    # Tx.SendToAdmin.send_admin_to_user(to_account="nokycwangzhibiao003",amounts=10000,fees=0)
+    # a = "cosmos1vw6kpnmtuffex6qfp4m3uck7pxn9yn7f7hldk0"
+    # Tx.SendToAdmin.count_down_5s()
+    # print(Tx.Query.query_bank_balance_username(username="nokycwangzhibiao002"))
+    # print(type(Tx.Query.query_bank_balance_username(username="nokycwangzhibiao002")))
+    # print(Tx.Query.query_staking_delegate(username="nokycwangzhibiao003"))
+    # Tx.SendToAdmin.tx_bank_send(from_address="nokycwangzhibiao002",to_address="nokycwangzhibiao003",amounts=312500000,fees=)
+    # Tx.SendToAdmin.send_to_admin_fees(amout=1000,fees=0)
+    # Tx.SendToAdmin.send_admin_to_user(to_account="nokycwangzhibiao002",amounts=100,fees=100)
+    # key_list = Tx.Keys.lists()
+    # for i in key_list:
+    #     print(i)
+    # Tx.SendToAdmin.send_admin_to_user(to_account="nokycwangzhibiao")
+    # print(Tx.Query.query_bank_balance_username(username="nokycwangzhibiao002"))
     # validator_list = Tx.Query.query_staking_validator_list()
     # for validators in validator_list["validators"]:
     #     print(validators)
     # print(type(r_list))
     # list2 = Tx.Query.query_staking_list_kyc()
     # for k in list2["kyc"]:
-        # print(k)
+    #     print(k)
     # print(list2)
     # print(type(list2))
     # # info_data = Tx.Query.query_staking_validator()
