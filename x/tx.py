@@ -1171,7 +1171,7 @@ if __name__ == '__main__':
     time.sleep(2)
     Tx.Query.query_staking_validator_list()          # 查询节点列表
     Tx.Query.query_staking_list_region()        # 查询区列表
-    # print(Tx.Keys.add(username=username))       # 添加用戶
+    print(Tx.Keys.add(username=username))       # 添加用戶
     # Tx.SendToAdmin.count_down_5s()
 
     # print(Tx.Keys.show_address_for_username(username=username))  # 通过用户名称查询用户地址
