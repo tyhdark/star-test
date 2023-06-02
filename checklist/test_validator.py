@@ -32,7 +32,8 @@ class TestRegionInfo(object):
         validator_list = self.handle_q.get_validator_list()['validator']
         num = 0
         while True:
-            validator_info = random.choice(validator_list)
+            Global_list = [i for i in validator_list if i["RegionName"] == "Global"]
+            validator_info = random.choice(Global_list)
             num += 1
             if validator_info["RegionName"] == "Global":
                 break
