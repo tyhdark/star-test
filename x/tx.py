@@ -932,8 +932,15 @@ class Tx(BaseClass):
             # return handle_resp_data.handle_yaml_to_dict(resp_info)
 
         @staticmethod
-        def query_bank_balance_adders(address: str):
-            """根据地址私钥，查询余额 ，一般用作模块账户查找"""
+        def query_bank_balance_for_adders(address: str):
+            """
+            根据地址，查询余额 ，一般用作模块账户查找
+
+            Args:
+                address(str):用户地址
+            Return:
+                用户余额
+            """
             cmd = Tx.ssh_home + f"{Tx.chain_bin} q bank balances {address} {Tx.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
@@ -994,7 +1001,7 @@ class Tx(BaseClass):
 
         @staticmethod
         def query_staking_delegate(username: str):
-            """根据用户名区，查看自己的活期委托"""
+            """根据用户名，查看自己的活期委托"""
             cmd = Tx.ssh_home + f"{Tx.chain_bin} q staking delegation $({Tx.chain_bin} keys show {username} -a {Tx.keyring_backend}) {Tx.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
@@ -1114,33 +1121,35 @@ if __name__ == '__main__':
     # username = "nokycwangzhibiao003"
     # username = "test001"  # cosmos1cjsvfrth4ygc0hqdw9y7hnpwgzdt5mh6vv2lqj
     # username = "test002" # cosmos1lkaqrt9s6glk6lcgk9tt0dnc9a9gmxqlq56pyv
-    username = "PHLuser002"
+    username = "wangzhibiao001"
 
     # username="Jimzhang"
     # username = "superadmin"
-
+    yue = "1999900"
     node_name = "node2"
     region_name = "USA"
     # adderss = "cosmos1fap8hp3t3xt20qw4sczlyrk6n92uffj4r4kw77"
     print("======" * 5, "初始化起始线", "======" * 5)
-    # print(Tx.Keys.add(username=username))       # 添加用戶
+    # print(Tx.Keys.add(username=username))                         # 添加用戶
     # Tx.SendToAdmin.count_down_5s()
     #
-    # Tx.SendToAdmin.send_to_admin_fees(amount=1000, fees=100) # 国库转给管理员
+    # Tx.SendToAdmin.send_to_admin_fees(amount=10000, fees=100) # 国库转给管理员
     # Tx.SendToAdmin.count_down_5s()
     # time.sleep(2)
-    print("查询管理员余额：",Tx.Query.query_bank_balance_username("superadmin")) # 查询管理员余额
-
-    # Tx.SendToAdmin.send_admin_to_user(to_account=username, amounts=10000, fees=100) # 管理员给用户转账
+    # print("查询管理员余额：",Tx.Query.query_bank_balance_username("superadmin")) # 查询管理员余额
+    # #
+    # Tx.SendToAdmin.send_admin_to_user(to_account=username, amounts=10001, fees=100) # 管理员给用户转账
     # Tx.SendToAdmin.count_down_5s()
     # time.sleep(1)
-    # print(f"{username}该用户余额为:",Tx.Query.query_bank_balance_username(username=username)) # 查询该用户余额
-    # print(f"{username}该用户地址为:",Tx.Keys.private_export_meuser(username=username))     # 查询用户address
-    # Tx.SendToAdmin.tx_bank_send(from_address_name=username,to_address_name="JPNuser2",amounts=46725,fees=100) # 用户给用户转账
-
+    # print(f"{username}该用户余额为:",Tx.Query.query_bank_balance_username(username=username))   # 查询该用户余额
+    # print(f"{username}该用户地址为:",Tx.Keys.private_export_meuser(username=username))       # 查询用户address
+    # Tx.SendToAdmin.tx_bank_send(from_address_name=username,to_address_name=username,amounts=46725,fees=100) # 用户给用户转账
+    # Tx.SendToAdmin.count_down_5s()
+    # time.sleep(2)
+    # print(f"{username}该用户余额为:", Tx.Query.query_bank_balance_username(username=username))  # 查询该用户余额
     # Tx.Staking.new_kyc_for_username(user_name=username, region_name=region_name)  # NEW KYC
     # Tx.SendToAdmin.count_down_5s()
-    # Tx.Staking.delegate(amount=100, username=username, fees=100)                               # 发起质押
+    # Tx.Staking.delegate(amount=20000, username=username, fees=100)                               # 发起质押
     # Tx.SendToAdmin.count_down_5s()
     # print(type(Tx.Staking.delegate_unkycunbond_height(amount=20, username=username, fees=100))) # 赎回质押
     # Tx.SendToAdmin.count_down_5s()
@@ -1161,17 +1170,21 @@ if __name__ == '__main__':
     # time.sleep(6)
     # print(f"{username}该用户余额为:",Tx.Query.query_bank_balance_username(username=username)) # 查询该用户余额
 
+    # Tx.Query.query_bank_balance_for_adders()
+
     # a = "cosmosvaloper1klxpqfh48l57lxmql57ghsumel0ghdcsq97sr5"
 
-    Tx.Staking.creation_validator_node(node_name=node_name,amounts=50000000)   # 创建验证者节点
-    time.sleep(2)
-    Tx.SendToAdmin.count_down_5s()
-    Tx.Staking.new_region(region_name=region_name, node_name=node_name)   # 创建区
-    Tx.SendToAdmin.count_down_5s()
-    time.sleep(2)
+    # Tx.Staking.creation_validator_node(node_name=node_name,amounts=50000000)   # 创建验证者节点
+    # time.sleep(2)
+    # Tx.SendToAdmin.count_down_5s()
+    # Tx.Staking.new_region(region_name=region_name, node_name=node_name)   # 创建区
+    # Tx.SendToAdmin.count_down_5s()
+    # time.sleep(2)
+    print("查询节点列表")
     Tx.Query.query_staking_validator_list()          # 查询节点列表
+    print("查询区列表")
     Tx.Query.query_staking_list_region()        # 查询区列表
-    print(Tx.Keys.add(username=username))       # 添加用戶
+    # print(Tx.Keys.add(username=username))       # 添加用戶
     # Tx.SendToAdmin.count_down_5s()
 
     # print(Tx.Keys.show_address_for_username(username=username))  # 通过用户名称查询用户地址
@@ -1196,14 +1209,14 @@ if __name__ == '__main__':
     # print(Tx.Query.query_tx_hash(hash_value=hash_v))
     keys_list = Tx.Keys.lists()  # 查询用户列表
     for i in keys_list:  # 查询用户列表
-        print("用户地址",i)  # 查询用户列表
+        print("用户列表：",i)  # 查询用户列表
 
     # print("KYC用戶列表如下：")
     # time.sleep(1)
     kyc_list = Tx.Query.query_staking_list_kyc()  # 查询KYC列表
     #
     for k in kyc_list.get('kyc'):
-        print(k)
+        print("KYC用户列表：",k)
     # a = Tx.Keys.lists_test()
     # c = Tx.Keys.lists()
     # print(c)
