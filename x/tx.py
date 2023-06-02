@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import inspect
 import json
+import math
 import time
 
 from loguru import logger
@@ -37,6 +38,75 @@ class Tx(BaseClass):
                 resp_info = handle_console_input.yes_or_no(Tx.channel)
 
             return handle_resp_data.handle_split_esc(resp_info)
+
+        @staticmethod
+        def rewards_nokyc(username: str, amount: int, fees=100):
+            """
+            获取收益的方法
+            Args:
+                username(str): 质押的用户
+                amount(int) : 质押金额和取出的金额
+
+            """
+            balances = Tx.Query.query_bank_balance_username(username=username)  # 查询用户余额，且把余额金额拿出来
+            print("该用户起始的余额为：", balances)
+            Tx.Staking.delegate(amount=amount, username=username, fees=100)  # 先委托存进去一定金额
+            Tx.SendToAdmin.count_down_5s()  # 等待五秒 查询开始快高
+            Tx.SendToAdmin.count_down_5s()  # 怕太快了，再等等
+            Tx.SendToAdmin.count_down_5s()  # 怕太快了，再等等
+            start_height = Tx.Query.query_staking_delegate_start_height(username=username)  # 查询质押 返回质押开始时的快高
+
+            hash_value = Tx.Staking.delegate_unkycunbond_height(amount=amount, username=username)  # 取出来并且取得哈希
+            # time.sleep(6)
+            # end_height =Tx.Staking.delegate_unkycunbond_height(amount=amount,username=username) # 取出全部质押，且获取取出时的快高
+            end_height = Tx.Query.query_tx_height(hash_value=hash_value)  # 根据取出来的hash，获得取出时的块高
+
+            oneself_height_reward = math.ceil(((50 * 10 ** 8) / ((365 * 24 * 60 * 60) / 5)))  # 单块全网总收益 793mec
+            rewards_one_blok = oneself_height_reward * (amount / (200 * 10 ** 8))  # 全网总收益 x 全网质押比例， 就是出块时个人出块总收益mec
+            rewaeds = (rewards_one_blok * (end_height - start_height)) * 10 ** 6  # 单块个人收益乘以经历的块数 等于单人在这个区块差之间的收益总收益
+
+            # b = '( 结束块高 - 开始块高 )  - 手续费'
+            # 最终余额为：开始余额+收益减去两次手续费
+            end_balances = balances - (amount * 10 ** 6) + rewaeds - fees - fees
+            print("该用户活期委托结束后经过计算的余额为：", end_balances)
+            query_balances = Tx.Query.query_bank_balance_username(username=username)  # 查询用户余额，
+            print("看看是不是相等的最后查询到的余额为：", query_balances)
+            return end_balances
+
+        @staticmethod
+        def rewards_kyc(username: str, amount: int, fees=100):
+            """
+            获取收益的方法
+            Args:
+                username(str): 质押的用户
+                amount(int) : 质押金额和取出的金额
+
+            """
+            balances = Tx.Query.query_bank_balance_username(username=username)  # 查询用户余额，且把余额金额拿出来
+            print("该用户起始的余额为：", balances)
+            Tx.Staking.delegate(amount=amount, username=username, fees=100)  # 先委托存进去一定金额
+            Tx.SendToAdmin.count_down_5s()  # 等待五秒 查询开始快高
+            Tx.SendToAdmin.count_down_5s()  # 怕太快了，再等等
+            Tx.SendToAdmin.count_down_5s()  # 怕太快了，再等等
+            start_height = Tx.Query.query_staking_delegate_start_height(username=username)  # 查询质押 返回质押开始时的快高
+
+            hash_value = Tx.Staking.delegate_unkycunbond_height(amount=amount, username=username)  # 取出来并且取得哈希
+            time.sleep(6)
+            # end_height =Tx.Staking.delegate_unkycunbond_height(amount=amount,username=username) # 取出全部质押，且获取取出时的快高
+            end_height = Tx.Query.query_tx_height(hash_value=hash_value)  # 根据取出来的hash，获得取出时的块高
+
+            oneself_height_reward = math.ceil(((50 * 10 ** 8) / ((365 * 24 * 60 * 60) / 5)))  # 单块全网总收益 793mec
+            rewards_one_blok = oneself_height_reward * (
+                    (amount + 1) / (200 * 10 ** 8))  # 全网总收益 x 全网质押比例， 就是出块时个人出块总收益mec
+            rewaeds = (rewards_one_blok * (end_height - start_height)) * 10 ** 6  # 单块个人收益乘以经历的块数 等于单人在这个区块差之间的收益总收益
+
+            # b = '( 结束块高 - 开始块高 )  - 手续费'
+            # 最终余额为：开始余额+收益减去两次手续费
+            end_balances = balances + rewaeds - fees - fees
+            print("该用户活期委托结束后经过计算的余额为：", end_balances)
+            query_balances = Tx.Query.query_bank_balance_username(username=username)  # 查询用户余额，
+            print("看看是不是相等的最后查询到的余额为：", query_balances)
+            return end_balances
 
     class SendToAdmin(object):
 
@@ -89,10 +159,10 @@ class Tx(BaseClass):
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
         @staticmethod
-        def tx_bank_send(from_address: str, to_address: str, amounts: int, fees=100):
+        def tx_bank_send(from_address_name: str, to_address_name: str, amounts: int, fees=100):
             """根据用户名，A用户给B用户打钱"""
 
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank send {Tx.Keys.private_export_meuser(username=from_address)} {Tx.Keys.private_export_meuser(username=to_address)} {amounts}umec {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')} "
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank send {Tx.Keys.private_export_meuser(username=from_address_name)} {Tx.Keys.private_export_meuser(username=to_address_name)} {amounts}umec {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')} "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             Tx.channel.send(cmd + "\n")
             resp_info = handle_console_input.ready_info(Tx.channel)
@@ -150,7 +220,7 @@ class Tx(BaseClass):
 
         @staticmethod
         def count_down_5s():
-            for i in range(5, 0, -1):
+            for i in range(8, 0, -1):
                 print(i)
                 time.sleep(1)
 
@@ -160,7 +230,7 @@ class Tx(BaseClass):
         def start_script():
             """创世脚本跑完后，链起来之后的一系列操作"""
             # 国库转钱给超管
-            Tx.SendToAdmin.send_to_admin_fees(amout=Tx.amout, fees=0)
+            Tx.SendToAdmin.send_to_admin_fees(amout=10000, fees=0)
             Tx.SendToAdmin.count_down_5s()
             # 查询验证者节点列表
             validator_list_before = Tx.Query.query_staking_validator_list()
@@ -200,367 +270,362 @@ class Tx(BaseClass):
             print("恭喜，所有的方法都执行成功了，初始化成功，")
 
     class Staking(object):
+        #
+        # @staticmethod
+        # def ag_to_ac(ag_amount, from_addr, fees):
+        #     cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking ag-to-ac {ag_amount}{Tx.coin['g']} --from={from_addr} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
+        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        #     Tx.channel.send(cmd + "\n")
+        #
+        #     time.sleep(3)
+        #     resp_info = handle_console_input.ready_info(Tx.channel)
+        #
+        #     if "confirm" in resp_info:
+        #         resp_info = handle_console_input.yes_or_no(Tx.channel)
+        #
+        #     return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+        #
+        # @staticmethod
+        # def create_region(region_name, region_id, total_as, delegators_limit, fee_rate,
+        #                   from_addr, totalStakeAllow, userMaxDelegateAC, userMinDelegateAC, fees, gas=200000):
+        #     """
+        #     创建区
+        #     :param region_name: 区名称
+        #     :param region_id: 区ID
+        #     :param total_as: 区所占AS权重
+        #     :param delegators_limit: 区内委托上限人数（-1表示没有限制，0表示不允许质押，其他数值表示人数限制）
+        #     :param fee_rate: 区内KYC用户手续费比例
+        #     :param from_addr: 发起方地址
+        #     :param totalStakeAllow: 质押水位上限
+        #     :param userMaxDelegateAC: 区内用户最大质押额
+        #     :param userMinDelegateAC: 区内用户最小质押额
+        #     :param fees: Gas费用
+        #     :param gas: gas 默认为 200000
+        #     :return:
+        #     """
+        #
+        #     cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking create-region --region-name={region_name} " \
+        #                         f"--region-id={region_id} --total-as={total_as} " \
+        #                         f"--delegators-limit={delegators_limit} " \
+        #                         f"--totalStakeAllow={totalStakeAllow} " \
+        #                         f"--fee-rate={fee_rate} " \
+        #                         f"--userMaxDelegateAC={userMaxDelegateAC} " \
+        #                         f"--userMinDelegateAC={userMinDelegateAC} " \
+        #                         f"--from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
+        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        #     Tx.channel.send(cmd + "\n")
+        #     # handle_console_input.input_password(Tx.channel)
+        #     time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+        #     resp_info = handle_console_input.ready_info(Tx.channel)
+        #
+        #     try:
+        #         return handle_resp_data.handle_split_esc_re_code(resp_info)
+        #     except Exception:
+        #         error_info = handle_resp_data.HandleRespErrorInfo.handle_rpc_error(resp_info)
+        #         return error_info
+        #
+        # @staticmethod
+        # def update_region(region_id, from_addr, fees, region_name=None, delegators_limit=None,
+        #                   fee_rate=None, totalStakeAllow=None, userMaxDelegateAC=None,
+        #                   userMinDelegateAC=None, isUndelegate=None):
+        #     """
+        #     修改区信息
+        #     :param region_name: 区名称
+        #     :param region_id: 区ID
+        #     :param delegators_limit: 区内委托上限人数（-1表示没有限制，0表示不允许质押，其他数值表示人数限制）
+        #     :param fee_rate: 区内KYC用户手续费比例
+        #     :param from_addr: 发起方地址
+        #     :param totalStakeAllow: 质押水位上限
+        #     :param userMaxDelegateAC: 区内用户最大质押额
+        #     :param userMinDelegateAC: 区内用户最小质押额
+        #     :param fees: Gas费用
+        #     :return:
+        #     """
+        #     cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking update-region --from={from_addr} --region-id={region_id} " \
+        #                         f"--fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend} "
+        #     if region_name:
+        #         region_name = f"--region-name={region_name} "
+        #         cmd += f"{region_name}"
+        #     if delegators_limit:
+        #         cmd += f"--delegators-limit={delegators_limit} "
+        #     if fee_rate:
+        #         cmd += f"--fee-rate={fee_rate} "
+        #     if totalStakeAllow:
+        #         cmd += f"--totalStakeAllow={totalStakeAllow} "
+        #     if userMaxDelegateAC:
+        #         cmd += f"--userMaxDelegateAC={userMaxDelegateAC} "
+        #     if userMinDelegateAC:
+        #         cmd += f"--userMinDelegateAC={userMinDelegateAC} "
+        #     if isUndelegate:
+        #         cmd += f"--isUndelegate={isUndelegate} "
+        #
+        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        #     Tx.channel.send(cmd + "\n")
+        #
+        #     time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+        #     resp_info = handle_console_input.ready_info(Tx.channel)
+        #
+        #     if "confirm" in resp_info:
+        #         resp_info = handle_console_input.yes_or_no(Tx.channel)
+        #     try:
+        #         return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+        #     except Exception:
+        #         error_info = handle_resp_data.HandleRespErrorInfo.handle_rpc_error(resp_info)
+        #         return error_info
+        #
+        # @staticmethod
+        # def create_validator(pubkey, moniker, from_addr, fees):
+        #     cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking create-validator --pubkey={pubkey} --moniker={moniker} " \
+        #                         f"--from={from_addr} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend} "
+        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        #     Tx.channel.send(cmd + "\n")
+        #
+        #     time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+        #     resp_info = handle_console_input.ready_info(Tx.channel)
+        #
+        #     if "confirm" in resp_info:
+        #         resp_info = handle_console_input.yes_or_no(Tx.channel)
+        #
+        #     try:
+        #         return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+        #     except Exception:
+        #         error_info = handle_resp_data.HandleRespErrorInfo.handle_rpc_error(resp_info)
+        #         return error_info
+        #
+        # @staticmethod
+        # def update_validator(operator_address, region_name, from_addr, fees):
+        #     """Only used to modify the Region ID of the verifier"""
+        #     cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking update-validator --validator-address={operator_address} " \
+        #                         f"--region-name={region_name} --from={from_addr} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend} "
+        #
+        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        #     Tx.channel.send(cmd + "\n")
+        #
+        #     time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+        #     resp_info = handle_console_input.ready_info(Tx.channel)
+        #
+        #     if "confirm" in resp_info:
+        #         resp_info = handle_console_input.yes_or_no(Tx.channel)
+        #
+        #     try:
+        #         return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+        #     except Exception:
+        #         error_info = handle_resp_data.HandleRespErrorInfo.handle_rpc_error(resp_info)
+        #         return error_info
 
-        @staticmethod
-        def ag_to_ac(ag_amount, from_addr, fees):
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking ag-to-ac {ag_amount}{Tx.coin['g']} --from={from_addr} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-
-            time.sleep(3)
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-
-            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
-
-        @staticmethod
-        def create_region(region_name, region_id, total_as, delegators_limit, fee_rate,
-                          from_addr, totalStakeAllow, userMaxDelegateAC, userMinDelegateAC, fees, gas=200000):
-            """
-            创建区
-            :param region_name: 区名称
-            :param region_id: 区ID
-            :param total_as: 区所占AS权重
-            :param delegators_limit: 区内委托上限人数（-1表示没有限制，0表示不允许质押，其他数值表示人数限制）
-            :param fee_rate: 区内KYC用户手续费比例
-            :param from_addr: 发起方地址
-            :param totalStakeAllow: 质押水位上限
-            :param userMaxDelegateAC: 区内用户最大质押额
-            :param userMinDelegateAC: 区内用户最小质押额
-            :param fees: Gas费用
-            :param gas: gas 默认为 200000
-            :return:
-            """
-
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking create-region --region-name={region_name} " \
-                                f"--region-id={region_id} --total-as={total_as} " \
-                                f"--delegators-limit={delegators_limit} " \
-                                f"--totalStakeAllow={totalStakeAllow} " \
-                                f"--fee-rate={fee_rate} " \
-                                f"--userMaxDelegateAC={userMaxDelegateAC} " \
-                                f"--userMinDelegateAC={userMinDelegateAC} " \
-                                f"--from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-            # handle_console_input.input_password(Tx.channel)
-            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            try:
-                return handle_resp_data.handle_split_esc_re_code(resp_info)
-            except Exception:
-                error_info = handle_resp_data.HandleRespErrorInfo.handle_rpc_error(resp_info)
-                return error_info
-
-        @staticmethod
-        def update_region(region_id, from_addr, fees, region_name=None, delegators_limit=None,
-                          fee_rate=None, totalStakeAllow=None, userMaxDelegateAC=None,
-                          userMinDelegateAC=None, isUndelegate=None):
-            """
-            修改区信息
-            :param region_name: 区名称
-            :param region_id: 区ID
-            :param delegators_limit: 区内委托上限人数（-1表示没有限制，0表示不允许质押，其他数值表示人数限制）
-            :param fee_rate: 区内KYC用户手续费比例
-            :param from_addr: 发起方地址
-            :param totalStakeAllow: 质押水位上限
-            :param userMaxDelegateAC: 区内用户最大质押额
-            :param userMinDelegateAC: 区内用户最小质押额
-            :param fees: Gas费用
-            :return:
-            """
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking update-region --from={from_addr} --region-id={region_id} " \
-                                f"--fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend} "
-            if region_name:
-                region_name = f"--region-name={region_name} "
-                cmd += f"{region_name}"
-            if delegators_limit:
-                cmd += f"--delegators-limit={delegators_limit} "
-            if fee_rate:
-                cmd += f"--fee-rate={fee_rate} "
-            if totalStakeAllow:
-                cmd += f"--totalStakeAllow={totalStakeAllow} "
-            if userMaxDelegateAC:
-                cmd += f"--userMaxDelegateAC={userMaxDelegateAC} "
-            if userMinDelegateAC:
-                cmd += f"--userMinDelegateAC={userMinDelegateAC} "
-            if isUndelegate:
-                cmd += f"--isUndelegate={isUndelegate} "
-
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-
-            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-            try:
-                return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
-            except Exception:
-                error_info = handle_resp_data.HandleRespErrorInfo.handle_rpc_error(resp_info)
-                return error_info
-
-        @staticmethod
-        def create_validator(pubkey, moniker, from_addr, fees):
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking create-validator --pubkey={pubkey} --moniker={moniker} " \
-                                f"--from={from_addr} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend} "
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-
-            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-
-            try:
-                return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
-            except Exception:
-                error_info = handle_resp_data.HandleRespErrorInfo.handle_rpc_error(resp_info)
-                return error_info
-
-        @staticmethod
-        def update_validator(operator_address, region_name, from_addr, fees):
-            """Only used to modify the Region ID of the verifier"""
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking update-validator --validator-address={operator_address} " \
-                                f"--region-name={region_name} --from={from_addr} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend} "
-
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-
-            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-
-            try:
-                return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
-            except Exception:
-                error_info = handle_resp_data.HandleRespErrorInfo.handle_rpc_error(resp_info)
-                return error_info
-
+        #
+        # @staticmethod
+        # def undelegate(from_addr, amount, fees):
+        #     """
+        #     减少活期质押:
+        #     1.减少质押金额 >= 实际质押额 则按实际质押额兑付 并主动发放收益
+        #     2.减少质押金额 < 实际质押额 则按传入金额兑付, 收益重新计算但不主动发放
+        #     """
+        #     cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking undelegate --from={from_addr} --amount={amount}{Tx.coin['c']} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
+        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        #     Tx.channel.send(cmd + "\n")
+        #
+        #     time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+        #     resp_info = handle_console_input.ready_info(Tx.channel)
+        #
+        #     if "confirm" in resp_info:
+        #         resp_info = handle_console_input.yes_or_no(Tx.channel)
+        #
+        #     return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+        #
+        # @staticmethod
+        # def exit_delegate(from_addr, delegator_address, fees):
+        #     """
+        #     退出活期质押
+        #     :param from_addr: 发起方地址  【超管、区管理员、用户自己】
+        #     :param delegator_address: 被清退质押者地址
+        #     :param fees:
+        #     :return:
+        #     """
+        #     cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking exit-delegate --from={from_addr} " \
+        #                         f"--delegator-address={delegator_address} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
+        #
+        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        #     Tx.channel.send(cmd + "\n")
+        #
+        #     time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+        #     resp_info = handle_console_input.ready_info(Tx.channel)
+        #
+        #     if "confirm" in resp_info:
+        #         resp_info = handle_console_input.yes_or_no(Tx.channel)
+        #
+        #     return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+        #
+        # @staticmethod
+        # def delegate_fixed(from_addr, amount, term, fees):
+        #     """创建活期周期质押"""
+        #     cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking delegate-fixed --from={from_addr} --amount={amount}{Tx.coin['c']} --fixed_delegation_term={term} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
+        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        #     Tx.channel.send(cmd + "\n")
+        #
+        #     time.sleep(1)
+        #     resp_info = handle_console_input.ready_info(Tx.channel)
+        #
+        #     if "confirm" in resp_info:
+        #         resp_info = handle_console_input.yes_or_no(Tx.channel)
+        #
+        #     return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+        #
+        # @staticmethod
+        # def delegate_infinite(from_addr, amount, fees):
+        #     """创建活期永久质押"""
+        #     cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking delegate-infinite --from={from_addr} --amount={amount}{Tx.coin['c']} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
+        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        #     Tx.channel.send(cmd + "\n")
+        #
+        #     time.sleep(1)
+        #     resp_info = handle_console_input.ready_info(Tx.channel)
+        #
+        #     if "confirm" in resp_info:
+        #         resp_info = handle_console_input.yes_or_no(Tx.channel)
+        #
+        #     return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+        #
+        # @staticmethod
+        # def undelegate_fixed(from_addr, fixed_delegation_id, fees, gas=200000):
+        #     """减少活期周期质押"""
+        #     cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking undelegate-fixed --from={from_addr} --fixed_delegation_id={fixed_delegation_id} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend}"
+        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        #     Tx.channel.send(cmd + "\n")
+        #
+        #     time.sleep(1)
+        #     resp_info = handle_console_input.ready_info(Tx.channel)
+        #
+        #     if "confirm" in resp_info:
+        #         resp_info = handle_console_input.yes_or_no(Tx.channel)
+        #
+        #     return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+        #
+        # @staticmethod
+        # def undelegate_infinite(from_addr, amount, fees):
+        #     """减少活期永久质押"""
+        #     cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking undelegate-infinite --from={from_addr} --amount={amount}{Tx.coin['c']} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
+        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        #     Tx.channel.send(cmd + "\n")
+        #
+        #     time.sleep(1)
+        #     resp_info = handle_console_input.ready_info(Tx.channel)
+        #
+        #     if "confirm" in resp_info:
+        #         resp_info = handle_console_input.yes_or_no(Tx.channel)
+        #
+        #     return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+        #
+        # @staticmethod
+        # def withdraw(addr, fees, gas=200000):
+        #     """KYC用户提取活期收益"""
+        #     cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking withdraw --from={addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend}"
+        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        #     Tx.channel.send(cmd + "\n")
+        #
+        #     time.sleep(1)
+        #     resp_info = handle_console_input.ready_info(Tx.channel)
+        #
+        #     if "confirm" in resp_info:
+        #         resp_info = handle_console_input.yes_or_no(Tx.channel)
+        #
+        #     return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+        #
+        # @staticmethod
+        # def create_fixed_deposit(amount, period, from_addr, fees=1, gas=200000):
+        #     cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking deposit-fixed {amount}{Tx.coin['c']} {period} --from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend}"
+        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        #     Tx.channel.send(cmd + "\n")
+        #
+        #     time.sleep(3)
+        #     resp_info = handle_console_input.ready_info(Tx.channel)
+        #
+        #     if "confirm" in resp_info:
+        #         resp_info = handle_console_input.yes_or_no(Tx.channel)
+        #
+        #     return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+        #
+        # @staticmethod
+        # def withdraw_fixed_deposit(deposit_id, from_addr, fees=1, gas=200000):
+        #     cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking withdraw-fixed {deposit_id} --from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend}"
+        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        #     Tx.channel.send(cmd + "\n")
+        #
+        #     time.sleep(3)
+        #     resp_info = handle_console_input.ready_info(Tx.channel)
+        #
+        #     if "confirm" in resp_info:
+        #         resp_info = handle_console_input.yes_or_no(Tx.channel)
+        #
+        #     return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+        #
+        # @staticmethod
+        # def set_fixed_deposit_interest_rate(region_id, rate, period, from_addr, fees):
+        #     cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking set-fixed-deposit-interest-rate {region_id} {rate} {period} " \
+        #                         f"--from={from_addr} --fees={fees}{Tx.coin['c']} {Tx.chain_id}"
+        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        #     Tx.channel.send(cmd + "\n")
+        #     handle_console_input.input_password(Tx.channel)
+        #     time.sleep(3)
+        #     resp_info = handle_console_input.ready_info(Tx.channel)
+        #
+        #     if "confirm" in resp_info:
+        #         resp_info = handle_console_input.yes_or_no(Tx.channel)
+        #
+        #     return handle_resp_data.handle_split_esc(resp_info)
+        #
+        # @staticmethod
+        # def new_kyc(addr, region_id, role, from_addr, fees=1, gas=200000):
+        #     """
+        #     创建KYC用户
+        #     :param gas: gas限制 默认200000
+        #     :param addr: kyc address
+        #     :param region_id: 所绑定区域ID
+        #     :param role: 区内角色  KYC_ROLE_USER  or KYC_ROLE_ADMIN
+        #     :param from_addr: 发起地址 区管理员 or 全局管理员
+        #     :param fees: Gas费用 单位{Tx.coin['c']}
+        #     :return: tx Hash
+        #     """
+        #     cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking new-kyc {addr} {region_id} {role} --from {from_addr} " \
+        #                         f"-y --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend}"
+        #
+        #     if from_addr != Tx.super_addr:
+        #         # 区管理员 不能创建 KYC_ROlE_ADMIN
+        #         assert "KYC_ROLE_USER" == role
+        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        #     return handle_resp_data.handle_yaml_to_dict(Tx.ssh_client.ssh(cmd))
+        #
+        # @staticmethod
+        # def remove_kyc(addr, from_addr, fees):
+        #     cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking remove-kyc {addr} --from={from_addr} -y --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
+        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        #     return handle_resp_data.handle_yaml_to_dict(Tx.ssh_client.ssh(cmd))
 
         @staticmethod
         def delegate(amount: int, username: str, fees=100):
-            """创建/追加 活期质押，已修改"""
+            """
+            创建/追加 活期质押，已修改，返回的是发起交易时的块高，方便后面计算用
+            Args:
+                amount(int): "是以mec为单位传入的"
+                username(str): "用户名称，可以通过配置文件的变量传入，"
+                fees(int): ”是以umec为单位传入的，默认是100umec“
+
+            """
+
             cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking delegate  {amount}{Tx.coin.get('c')} --from={Tx.Keys.private_export_meuser(username=username)} {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
 
-            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+            # time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
             resp_info = handle_console_input.ready_info(Tx.channel)
 
             if "confirm" in resp_info:
                 resp_info = handle_console_input.yes_or_no(Tx.channel)
+                time.sleep(1)
 
-            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+            resp_info_dict = handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
-
-        # TODO 取消或者减少委托
-        @staticmethod
-        def delegate_unkycunbond(amount: int, username: str, fees=100):
-            """创建/追加 活期质押，修改"""
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking unKycUnbond {amount}{Tx.coin.get('c')} --from={Tx.Keys.private_export_meuser(username=username)} {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-
-            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-
-            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
-        @staticmethod
-        def undelegate(from_addr, amount, fees):
-            """
-            减少活期质押:
-            1.减少质押金额 >= 实际质押额 则按实际质押额兑付 并主动发放收益
-            2.减少质押金额 < 实际质押额 则按传入金额兑付, 收益重新计算但不主动发放
-            """
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking undelegate --from={from_addr} --amount={amount}{Tx.coin['c']} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-
-            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-
-            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
-
-        @staticmethod
-        def exit_delegate(from_addr, delegator_address, fees):
-            """
-            退出活期质押
-            :param from_addr: 发起方地址  【超管、区管理员、用户自己】
-            :param delegator_address: 被清退质押者地址
-            :param fees:
-            :return:
-            """
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking exit-delegate --from={from_addr} " \
-                                f"--delegator-address={delegator_address} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
-
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-
-            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-
-            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
-
-        @staticmethod
-        def delegate_fixed(from_addr, amount, term, fees):
-            """创建活期周期质押"""
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking delegate-fixed --from={from_addr} --amount={amount}{Tx.coin['c']} --fixed_delegation_term={term} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-
-            time.sleep(1)
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-
-            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
-
-        @staticmethod
-        def delegate_infinite(from_addr, amount, fees):
-            """创建活期永久质押"""
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking delegate-infinite --from={from_addr} --amount={amount}{Tx.coin['c']} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-
-            time.sleep(1)
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-
-            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
-
-        @staticmethod
-        def undelegate_fixed(from_addr, fixed_delegation_id, fees, gas=200000):
-            """减少活期周期质押"""
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking undelegate-fixed --from={from_addr} --fixed_delegation_id={fixed_delegation_id} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-
-            time.sleep(1)
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-
-            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
-
-        @staticmethod
-        def undelegate_infinite(from_addr, amount, fees):
-            """减少活期永久质押"""
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking undelegate-infinite --from={from_addr} --amount={amount}{Tx.coin['c']} --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-
-            time.sleep(1)
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-
-            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
-
-        @staticmethod
-        def withdraw(addr, fees, gas=200000):
-            """KYC用户提取活期收益"""
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking withdraw --from={addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-
-            time.sleep(1)
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-
-            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
-
-        @staticmethod
-        def create_fixed_deposit(amount, period, from_addr, fees=1, gas=200000):
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking deposit-fixed {amount}{Tx.coin['c']} {period} --from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-
-            time.sleep(3)
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-
-            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
-
-        @staticmethod
-        def withdraw_fixed_deposit(deposit_id, from_addr, fees=1, gas=200000):
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking withdraw-fixed {deposit_id} --from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-
-            time.sleep(3)
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-
-            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
-
-        @staticmethod
-        def set_fixed_deposit_interest_rate(region_id, rate, period, from_addr, fees):
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking set-fixed-deposit-interest-rate {region_id} {rate} {period} " \
-                                f"--from={from_addr} --fees={fees}{Tx.coin['c']} {Tx.chain_id}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.channel.send(cmd + "\n")
-            handle_console_input.input_password(Tx.channel)
-            time.sleep(3)
-            resp_info = handle_console_input.ready_info(Tx.channel)
-
-            if "confirm" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
-
-            return handle_resp_data.handle_split_esc(resp_info)
-
-        @staticmethod
-        def new_kyc(addr, region_id, role, from_addr, fees=1, gas=200000):
-            """
-            创建KYC用户
-            :param gas: gas限制 默认200000
-            :param addr: kyc address
-            :param region_id: 所绑定区域ID
-            :param role: 区内角色  KYC_ROLE_USER  or KYC_ROLE_ADMIN
-            :param from_addr: 发起地址 区管理员 or 全局管理员
-            :param fees: Gas费用 单位{Tx.coin['c']}
-            :return: tx Hash
-            """
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking new-kyc {addr} {region_id} {role} --from {from_addr} " \
-                                f"-y --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend}"
-
-            if from_addr != Tx.super_addr:
-                # 区管理员 不能创建 KYC_ROlE_ADMIN
-                assert "KYC_ROLE_USER" == role
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Tx.ssh_client.ssh(cmd))
-
-        @staticmethod
-        def remove_kyc(addr, from_addr, fees):
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx srstaking remove-kyc {addr} --from={from_addr} -y --fees={fees}{Tx.coin['c']} {Tx.chain_id} {Tx.keyring_backend}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Tx.ssh_client.ssh(cmd))
+            return resp_info_dict.get("txhash")
 
         @staticmethod
         def query_kyc_list():
@@ -571,6 +636,196 @@ class Tx(BaseClass):
             resp_info = handle_resp_data.handle_yaml_to_dict(Tx.ssh_client.ssh(cmd))
 
             return resp_info
+
+        @staticmethod
+        def delegate_unkycunbond_txhash(amount: int, username: str, fees=100):
+            """
+            取消或者减少 活期质押， 返回的值是交易的hash
+            Args:
+                amount(int): 减少的金额
+                username(str): 用户的name
+                fees(int): 手续费
+            """
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking unKycUnbond {amount}{Tx.coin.get('c')} --from={Tx.Keys.private_export_meuser(username=username)} {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+
+            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            resp_info_dict = handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
+            return resp_info_dict.get("txhash")
+
+        @staticmethod
+        def delegate_unkycunbond_height(amount: int, username: str, fees=100):
+            """
+            取消或者减少 活期质押， 返回的值是交易的hash
+            Args:
+                amount(int): 减少的金额
+                username(str): 用户的name
+                fees(int): 手续费，不填就是默认100
+            """
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking unKycUnbond {amount}{Tx.coin.get('c')} --from={Tx.Keys.private_export_meuser(username=username)} {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+
+            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            resp_info_dict = handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+            hash_value = resp_info_dict.get("txhash")
+            # Tx.Query.query_tx_height()
+            # time.sleep(1)
+
+            return hash_value
+
+        @staticmethod
+        def deposit_fixed(amount: int, months: int, username: str, fees=100):
+            """
+            发起定期委托的方法，
+            Args:
+                amount(int): 委托金额
+                months(int): 委托期限，月数，1，3，6，12，36，48
+                username(str): 用户名称，根据用户名称会自动转换成地址
+                fees(int): 手续费，默认100已设置好，可以不用传
+
+            Return:
+                返回出去的是code为0和哈希值，没有做其他的事
+            """
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking deposit-fixed {amount}{Tx.coin.get('c')} Term_{months}_MONTHS --from=$({Tx.chain_bin} keys show {username} -a {Tx.keyring_backend}) {Tx.chain_id} --fees={fees}{Tx.coin.get('uc')} {Tx.keyring_backend}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+
+            # time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+                time.sleep(1)
+
+            resp_info_dict = handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
+            return resp_info_dict
+
+        @staticmethod
+        def creation_validator_node(node_name: str, amounts=100, fees=100):
+            """
+            创世后创建验证者节点  传入node_name将节点升级成验证者
+            Args:
+                node_name(str): 节点名称，node2之类
+                amounts(int): 节点staking值 默认100 可不填
+                fees(int): 默认100，不用填
+
+            return：
+                返回页面？
+            """
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking create-validator --amount={amounts}{Tx.coin.get('c')} --pubkey=$(./me-chaind tendermint show-validator --home {node_name}) --moniker={node_name} --commission-rate=\"0.10\" --commission-max-rate=\"0.20\" --commission-max-change-rate=\"0.01\" --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend}) {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 当有需要交互的时候，调用Tx下的channel下的send方法
+            Tx.channel.send(cmd + "\n")
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
+        # TODO 增加验证者节点的staking值
+        @staticmethod
+        def validator_node_stake_increase(node_name: str, amount: int, fees=100):
+            """
+            根据区名称查找节点的地址，再根据节点地址增加验证者节点的staking值，
+            Args:
+                node_name(str): 区名称
+                amount(int): 需要增加的金额
+                fees: 固定100umec
+            """
+            cmd = Tx.ssh_home + f"./me-chaind tx staking stake {Tx.Query.query_staking_validator_from_node_name(node_name=node_name)}  {amount}{Tx.coin.get('c')} --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend}) {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 当有需要交互的时候，调用Tx下的channel下的send方法
+            Tx.channel.send(cmd + "\n")
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
+        # TODO 减少验证者节点的staking值
+        @staticmethod
+        def validator_node_stake_unstake(node_name: str, amount: int, fees=100):
+            """
+            根据区名称查找节点的地址，再根据节点地址减少验证者节点的staking值，
+            Args:
+                node_name(str): 区名称
+                amount(int): 需要增加的金额
+                fees: 固定100umec
+            """
+            cmd = Tx.ssh_home + f"./me-chaind tx staking unstake {Tx.Query.query_staking_validator_from_node_name(node_name=node_name)}  {amount}{Tx.coin.get('c')} --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend}) {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 当有需要交互的时候，调用Tx下的channel下的send方法
+            Tx.channel.send(cmd + "\n")
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
+        @staticmethod
+        def new_region(region_name: str, node_name=None, fees=100):
+            """
+            根据node_name获取节点地址
+            根据节点地址，绑定对应的区
+            Args:
+                region_name(str): 区名称，可以用来
+                node_name(str): 节点名称，可以使用你创建验证者节点时的名称
+                fees(int): 默认100，不用填
+
+            return：
+                返回的是页面？，可以改成返回区id？
+
+            """
+            region_id = f"{region_name}id"
+            validator_address = Tx.Query.query_staking_validator_from_node_name(node_name=node_name)
+            # print(validator_address)
+            # validator_address2 = f"{Tx.chain_bin} q staking validators | grep {node_name} -A 6 | awk '\/operator_address/{print $2}\'"
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking new-region {region_id} {region_name}  {validator_address}  --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend})  {Tx.keyring_backend} {Tx.chain_id} --fees={fees}{Tx.coin.get('uc')} "
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            Tx.channel.send(cmd + "\n")  # 发送命令行
+            resp_info = handle_console_input.ready_info(Tx.channel)  # 抓取输出的命令行
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)  # 处理yee or no
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
+        # TODO newkyc 新增KYC用户
+        @staticmethod
+        def new_kyc_for_username(user_name: str, region_name: str, fees=100):
+            """
+            传入用户名称，和区名称，进行用户kyc认证，区名称会自动转化成区ID，
+            """
+            # 根据区名称查询区ID？因为区名称已经被定义了。
+
+            region_id = f"{region_name}id"
+
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking new-kyc {Tx.Keys.show_address_for_username(username=user_name)}  {region_id} --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend})  {Tx.keyring_backend}  {Tx.chain_id} --fees={fees}{Tx.coin.get('uc')} "
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 当有需要交互的时候，调用Tx下的channel下的send方法
+            Tx.channel.send(cmd + "\n")
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
     class Keys(object):
 
@@ -597,6 +852,20 @@ class Tx(BaseClass):
             cmd = Tx.ssh_home + f"{Tx.chain_bin} keys list {Tx.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return handle_resp_data.handle_yaml_to_dict(Tx.ssh_client.ssh(cmd))
+        @staticmethod
+        def lists_test():
+            """
+            查询用户列表 返回出去的是用户姓名的列表
+             """
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} keys list {Tx.keyring_backend}"
+            # logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            keys_list = handle_resp_data.handle_yaml_to_dict(Tx.ssh_client.ssh(cmd))
+            name = []
+            for i in keys_list:
+                a = i.get('name')
+                name.append(a)
+
+            return name
 
         @staticmethod
         def show(username):
@@ -674,40 +943,48 @@ class Tx(BaseClass):
 
         @staticmethod
         def query_staking_validator_list():
-            """查找验证者列表"""
+            """查找验证者列表 已经遍历了，无需print"""
             cmd = Tx.ssh_home + f"{Tx.chain_bin} query staking validators"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
             resp_info = Tx.ssh_client.ssh(cmd)
+            validator_list = handle_resp_data.handle_yaml_to_dict(resp_info).get('validators')
+            for i in validator_list:
+                print(i)
 
             return handle_resp_data.handle_yaml_to_dict(resp_info)
 
-        # @staticmethod
-        # def query_staking_validator_from_node_name(node_name: str):
-        #     """根据node名称查找对应的节点地址"""
-        #     dict_validator_list = Tx.Query.query_staking_validator_list()
-        #     moniker_to_find = node_name
-        #     operator_address = None
-        #     for validator in dict_validator_list['validators']:
-        #         if validator['description']['moniker'] == moniker_to_find:
-        #             operator_address = validator['operator_address']
-        #             break
-        #     return operator_address
-        #     # return dicta
+        @staticmethod
+        def query_staking_validator_from_node_name(node_name: str):
+            """根据node名称查找对应的节点地址"""
+            dict_validator_list = Tx.Query.query_staking_validator_list()
+            moniker_to_find = node_name
+            operator_address = None
+            for validator in dict_validator_list['validators']:
+                if validator['description']['moniker'] == moniker_to_find:
+                    operator_address = validator['operator_address']
+                    break
+            return operator_address
+            # return dicta
 
         @staticmethod
         def query_staking_list_region():
-            """查看区列表"""
+            """
+            查看区列表，无需传参，已经遍历了，不用print，
+            """
             cmd = Tx.ssh_home + f"{Tx.chain_bin} q staking list-region {Tx.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
             resp_info = Tx.ssh_client.ssh(cmd)
+            list_region = handle_resp_data.handle_yaml_to_dict(resp_info).get('region')
+            for i in list_region:
+                print(i)
 
             return handle_resp_data.handle_yaml_to_dict(resp_info)
 
         @staticmethod
         def query_staking_list_kyc():
-            """查看区列表"""
+            """查看kyc用戶列表"""
             cmd = Tx.ssh_home + f"{Tx.chain_bin} q staking list-kyc {Tx.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
@@ -725,134 +1002,221 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_yaml_to_dict(resp_info)
 
+        # TODO 查询自己的活期委托产生的利息
+        @staticmethod
+        def query_distribution_rewards_form_name(username: str):
+            """
+            实时查询用户活期委托所产生的利息，
+            Args:
+                username(str): 用户名称
+            Return:
+                return: 返回全部
+            """
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} query distribution rewards $({Tx.chain_bin} keys show {username} -a {Tx.keyring_backend})"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
+            resp_info = Tx.ssh_client.ssh(cmd)
+
+            return handle_resp_data.handle_yaml_to_dict(resp_info)
+
+        @staticmethod
+        def query_staking_delegate_start_height(username: str):
+            """根据用户名区，查看自己的活期委托"""
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} q staking delegation $({Tx.chain_bin} keys show {username} -a {Tx.keyring_backend}) {Tx.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
+            resp_info = Tx.ssh_client.ssh(cmd)
+            resp_info_dict = handle_resp_data.handle_yaml_to_dict(resp_info)  # 接收响应内容
+            print("开始快高为：", resp_info_dict.get("delegation").get('startHeight'))
+
+            return int(resp_info_dict.get("delegation").get('startHeight'))  # 获取快高，且返回成int类型供后面计算
+
+        # TODO 根据响应结果查询哈希
+        @staticmethod
+        def query_tx_height(hash_value=None):
+            """
+            根据响应回来的hash值，查询响应结果，并且返回块高
+            """
+            # time.sleep(1)
+            Tx.SendToAdmin.count_down_5s()
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} q tx {hash_value} --chain-id=me-chain"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            resp_info = Tx.ssh_client.ssh(cmd)
+
+            # time.sleep(2)
+            # print("resp_info内容是：",resp_info)
+            # print("resp_info的类型是：", type(resp_info))
+            # time.sleep(5)
+            resp_info_dict = handle_resp_data.handle_yaml_to_dict(resp_info)
+            # print(f"resp_info_dict的类型为：",type(resp_info_dict))
+            # time.sleep(2)
+            height = resp_info_dict.get("height")
+            print("结束时的height快高是", height)
+            # print("height的类型是",type(height))
+            int_height = int(height)
+
+            return int_height
+
+        # TODO 根据hash值查看响应的内容
+        @staticmethod
+        def query_tx_hash(hash_value=None):
+            """
+            根据响应回来的hash值，查询响应结果，并且返回块高
+            """
+            # time.sleep(1)
+            # Tx.SendToAdmin.count_down_5s()
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} q tx {hash_value} --chain-id=me-chain"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            resp_info = Tx.ssh_client.ssh(cmd)
+
+            # time.sleep(2)
+            # print("resp_info内容是：",resp_info)
+            # print("resp_info的类型是：", type(resp_info))
+            # time.sleep(5)
+            resp_info_dict = handle_resp_data.handle_yaml_to_dict(resp_info)
+            # print(f"resp_info_dict的类型为：",type(resp_info_dict))
+            # time.sleep(2)
+            # height = resp_info_dict.get("height")
+            # print("结束时的height快高是", height)
+            # print("height的类型是",type(height))
+            # int_height = int(height)
+
+            return resp_info_dict
+
+        # 查询所有定期委托
+        @staticmethod
+        def query_list_fixed_deposit():
+            """
+            查询所有的定期委托列表，不需要传参，函数方法内已经进行了遍历打印，不需要print，
+
+            Return:
+                返回出的是一个列表，
+            """
+            cmd = Tx.ssh_home + f"./me-chaind query staking list-fixed-deposit"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
+            resp_info = Tx.ssh_client.ssh(cmd)
+            resp_info_dict = handle_resp_data.handle_yaml_to_dict(resp_info)
+            resp_info_list = resp_info_dict.get('FixedDeposit')
+
+            for e in resp_info_list:
+                print(e)
+
+            return resp_info_list
+
+        # TODO 计算块高
+        @staticmethod
+        def count_height():
+            pass
+
 
 if __name__ == '__main__':
-    username = "nokycwangzhibiao"
-    adderss = "cosmos1fap8hp3t3xt20qw4sczlyrk6n92uffj4r4kw77"
-    print("1")
-    # 国库转给管理员
-    # Tx.SendToAdmin.send_to_admin_fees(amount=10000,fees=100)
-    # 用户转账
-    # Tx.SendToAdmin.send_admin_to_user(to_account="nokycwangzhibiao",amounts=10000,fees=100)
+    # username = "nokycwangzhibiao003"
+    # username = "test001"  # cosmos1cjsvfrth4ygc0hqdw9y7hnpwgzdt5mh6vv2lqj
+    # username = "test002" # cosmos1lkaqrt9s6glk6lcgk9tt0dnc9a9gmxqlq56pyv
+    username = "PHLuser002"
+
+    # username="Jimzhang"
+    # username = "superadmin"
+
+    node_name = "node2"
+    region_name = "USA"
+    # adderss = "cosmos1fap8hp3t3xt20qw4sczlyrk6n92uffj4r4kw77"
+    print("======" * 5, "初始化起始线", "======" * 5)
+    # print(Tx.Keys.add(username=username))       # 添加用戶
     # Tx.SendToAdmin.count_down_5s()
-    # 查询余额
-    # print(Tx.Query.query_bank_balance_username(username="nokycwangzhibiao"))
-    # 查询用户address
-    # print(Tx.Keys.private_export_meuser(username=username))
-    # 发起质押
-    Tx.Staking.delegate(amount=1, username=username, fees=100)
-    # 减少质押
-    Tx.Staking.delegate_unkycunbond(amount=1,username=username,fees=0)
-    # 查询质押
-    Tx.SendToAdmin.count_down_5s()
-    print(Tx.Query.query_staking_delegate(username=username))
-
-    # print(Tx.Staking.query_kyc_list())
-    # py_01 = Tx().staking.remove_kyc("sil1jqjtm7dge0ja64spr3wfgs8f6rnfg9ayj0lu6x",
-    #                                 "sil1xxvavly4p87d6t3jkktp6pvt0jhystt48kwglh", 1, True)
-    # print(py_01)
-    # pub = '\'{"type": "tendermint/PubKeyEd25519","value": "a9UxLb0DuMJ0Y584VjSe+FWvJiglV4STErFSfT0Cd0Q="}\''
-
-    # res = Tx().staking.create_validator(pub, "node2", "sil1xxvavly4p87d6t3jkktp6pvt0jhystt48kwglh", 1)
-    # res = Tx().staking.update_validator("silvaloper1jxrauca2fdrwyvtzmelv5td84wpjqd9f6rks4c", "CZE",
-    #                                     "sil1xxvavly4p87d6t3jkktp6pvt0jhystt48kwglh", 1)
-    # res = Tx().staking.do_fixed_deposit(10, "PERIOD_3_MONTHS", "sil155mv39aqtl234twde44wrjdd5phxx28mg46u3p", 1)
-    # print(res)
-
-    # send_user = tx.SendToAdmin.send_admin_to_user()
-    # v = tx.SendToAdmin.creation_validator_node()
-    # q = tx.SendToAdmin.query_staking_validator()
-    # riegion = tx.SendToAdmin.creation_region(region_id=8,region_name="KOR")
-    # riegion_list = tx.SendToAdmin.query_staking_list_region()
-    # keys_list = tx.Keys.lists()
-
-    # add_key = tx.Keys.show("testpython")
-    # print(add_key)
-    # print(type(add_key))
-    # print(keys_list)
-    # print(type(keys_list))
-    # pe = tx.keys.private_export_meuser("kycwangzhibiao")
-    # print(pe)
-    # print(type(pe))
-    # print(q)
-    # print(type(q))
     #
-    # print(Tx.Keys.private_export_meuser(username="kycwangzhibiao"))
-    # print(r)
-    # print(Tx.query.query_staking_validator())
-    # print(Tx.SendToAdmin.tx_bank_send(from_address="superadmin", to_address="kycwangzhibiao", amounts=1))
-    # print(Tx.SendToAdmin.query_bank_balance(address="kycwangzhibiao"))
-    # print(send_user)
-    # print(Tx.SendToAdmin.query_staking())
-    # print(Tx.SendToAdmin.query_staking_validator_from())
-    # print(type(Tx.SendToAdmin.query_staking_validator_from()))
-    import sys
-    # print("1")
-    # print(Tx.Query.query_bank_balance_adders(adders="cosmos1quarn305vjusjaqxzdm8du09w63gjx36ue0aqq"))
-    # print(Tx.SendToAdmin.send_to_admin_fees(amout=13000,fees=100))
-    # time.sleep(5)
-    # print(Tx.Query.query_bank_balance_username(username="superadmin"))
-    # print(Tx.Query.query_bank_balance_adders(adders="cosmos1quarn305vjusjaqxzdm8du09w63gjx36ue0aqq"))
-    # print(Tx.Query.query_staking_list_kyc())
+    # Tx.SendToAdmin.send_to_admin_fees(amount=1000, fees=100) # 国库转给管理员
+    # Tx.SendToAdmin.count_down_5s()
+    # time.sleep(2)
+    print("查询管理员余额：",Tx.Query.query_bank_balance_username("superadmin")) # 查询管理员余额
 
-    # print(Tx.SendToAdmin.send_admin_to_user(to_account="kycwangzhibiao", amounts=1000000, fees=100))
-    # time.sleep(5)
-    # print(Tx.Keys.show_address_for_username("kycwangzhibiao"))
-    # print(Tx.Query.query_bank_balance_username(username="kycwangzhibiao"))
-    # print(Tx.Query.query_staking_delegate(username="kycwangzhibiao"))
-    # dict2 = Tx.Query.query_staking_validator_list()
-    # for key,value in dict2.items():
-    #     print(key,value)
-    # def fun():
-    #     dict2 = Tx.Query.query_staking_validator_list()
-    #     moniker_to_find = 'node2'
-    #     operator_address = None
-    #     for validator in dict2['validators']:
-    #         if validator['description']['moniker'] == moniker_to_find:
-    #             operator_address = validator['operator_address']
-    #             break
-    #     return operator_address
-    # dict2 = Tx.Query.query_staking_validator_list()
-    # for k in dict2['validators']:
-    #     print(k)
-    # print(Tx.SendToAdmin.creation_validator_node(node_name="node3", amounts=1000))
-    # print(Tx.SendToAdmin.creation_region(region_id=3, region_name="KOR", validator_node_name="node3"))
-    # print(Tx.Keys.show_address_for_username(username="kycwangzhibiao"))
-    # print(Tx.Query.query_staking_validator_from_node_name(node_name="node1"))
-    # print(type(dict2))
-    # for key, value in dict2.items():
-    #     print(key, value)
-    # d = Tx.Keys.lists()
-    # for v in d:
-    #     print(v)
-    # Tx.SendToAdmin.start_script()
-    # Tx.SendToAdmin.send_to_admin()
+    # Tx.SendToAdmin.send_admin_to_user(to_account=username, amounts=10000, fees=100) # 管理员给用户转账
     # Tx.SendToAdmin.count_down_5s()
-    # Tx.SendToAdmin.send_admin_to_user(to_account="nokycwangzhibiao003",amounts=10000,fees=0)
-    # a = "cosmos1vw6kpnmtuffex6qfp4m3uck7pxn9yn7f7hldk0"
+    # time.sleep(1)
+    # print(f"{username}该用户余额为:",Tx.Query.query_bank_balance_username(username=username)) # 查询该用户余额
+    # print(f"{username}该用户地址为:",Tx.Keys.private_export_meuser(username=username))     # 查询用户address
+    # Tx.SendToAdmin.tx_bank_send(from_address_name=username,to_address_name="JPNuser2",amounts=46725,fees=100) # 用户给用户转账
+
+    # Tx.Staking.new_kyc_for_username(user_name=username, region_name=region_name)  # NEW KYC
     # Tx.SendToAdmin.count_down_5s()
-    # print(Tx.Query.query_bank_balance_username(username="nokycwangzhibiao002"))
-    # print(type(Tx.Query.query_bank_balance_username(username="nokycwangzhibiao002")))
-    # print(Tx.Query.query_staking_delegate(username="nokycwangzhibiao003"))
-    # Tx.SendToAdmin.tx_bank_send(from_address="nokycwangzhibiao002",to_address="nokycwangzhibiao003",amounts=312500000,fees=)
-    # Tx.SendToAdmin.send_to_admin_fees(amout=1000,fees=0)
-    # Tx.SendToAdmin.send_admin_to_user(to_account="nokycwangzhibiao002",amounts=100,fees=100)
-    # key_list = Tx.Keys.lists()
-    # for i in key_list:
+    # Tx.Staking.delegate(amount=100, username=username, fees=100)                               # 发起质押
+    # Tx.SendToAdmin.count_down_5s()
+    # print(type(Tx.Staking.delegate_unkycunbond_height(amount=20, username=username, fees=100))) # 赎回质押
+    # Tx.SendToAdmin.count_down_5s()
+    # print(f"{username}该用户活期委托本金为:",Tx.Query.query_staking_delegate(username=username))  # 查询质押
+    # print(f"{username}该用户活期委托实时收益为:",Tx.Query.query_distribution_rewards_form_name(username=username))  # 查询用户活期委托所产生的利息
+    # print(Tx.Query.query_staking_delegate_start_height(username=username))
+
+    # print(f"{username}该用户余额为:",Tx.Query.query_bank_balance_username(username=username)) # 查询该用户余额
+    # a = Tx.Staking.delegate_unkycunbond_height(username=username, amount=1)   # 减少质押
+    # print(a)
+    # print(type(a))
+
+    # print("======" * 5, "委托起始线", "======" * 5)
+    # a = Tx.Bank.rewards_nokyc(username=username,amount=10,fees=100) #  非KYC发起质押且计算收益，扣除手续费后的收益
+    # a = Tx.Bank.rewards_kyc(username=username, amount=10000)    # KYC发起质押且计算收益，扣除手续费后的收益
+    # print(a)
+    # print(type(a))
+    # time.sleep(6)
+    # print(f"{username}该用户余额为:",Tx.Query.query_bank_balance_username(username=username)) # 查询该用户余额
+
+    # a = "cosmosvaloper1klxpqfh48l57lxmql57ghsumel0ghdcsq97sr5"
+
+    Tx.Staking.creation_validator_node(node_name=node_name,amounts=50000000)   # 创建验证者节点
+    time.sleep(2)
+    Tx.SendToAdmin.count_down_5s()
+    Tx.Staking.new_region(region_name=region_name, node_name=node_name)   # 创建区
+    Tx.SendToAdmin.count_down_5s()
+    time.sleep(2)
+    Tx.Query.query_staking_validator_list()          # 查询节点列表
+    Tx.Query.query_staking_list_region()        # 查询区列表
+    # print(Tx.Keys.add(username=username))       # 添加用戶
+    # Tx.SendToAdmin.count_down_5s()
+
+    # print(Tx.Keys.show_address_for_username(username=username))  # 通过用户名称查询用户地址
+    # Tx.SendToAdmin.count_down_5s()
+    # Tx.Staking.new_kyc_for_username(user_name=username,region_name=region_name) #NEW KYC
+
+    # Tx.SendToAdmin.count_down_5s()                # 暂停5秒
+
+    # print(kyc_list)
+
+    # print(Tx.Staking.deposit_fixed(amount=10,months=12,username=username))  #发起定期委托
+    # Tx.SendToAdmin.count_down_5s()
+    # Tx.Query.query_list_fixed_deposit()                # 查询所有定期委托列表
+    # Tx.Query.query_staking_validator_list()
+    # Tx.Query.query_staking_list_region()                   #  查询区列表
+    # Tx.Staking.validator_node_stake_increase(node_name=node_name, amount=49989907)  # 增加节点对应的staking值
+    # Tx.Staking.validator_node_stake_unstake(node_name=node_name,amount=3)  # 减少节点对应的staking值
+    # Tx.SendToAdmin.count_down_5s()
+    # time.sleep(2)
+    # print(Tx.Query.query_staking_validator_from_node_name(node_name=node_name))
+    # hash_v = "7E7631939F8497BB6577806F870CF2C7BC372A6C89700A727B2FFAA4D8DF27CA"
+    # print(Tx.Query.query_tx_hash(hash_value=hash_v))
+    keys_list = Tx.Keys.lists()  # 查询用户列表
+    for i in keys_list:  # 查询用户列表
+        print("用户地址",i)  # 查询用户列表
+
+    # print("KYC用戶列表如下：")
+    # time.sleep(1)
+    kyc_list = Tx.Query.query_staking_list_kyc()  # 查询KYC列表
+    #
+    for k in kyc_list.get('kyc'):
+        print(k)
+    # a = Tx.Keys.lists_test()
+    # c = Tx.Keys.lists()
+    # print(c)
+    # for i in a:
     #     print(i)
-    # Tx.SendToAdmin.send_admin_to_user(to_account="nokycwangzhibiao")
-    # print(Tx.Query.query_bank_balance_username(username="nokycwangzhibiao002"))
-    # validator_list = Tx.Query.query_staking_validator_list()
-    # for validators in validator_list["validators"]:
-    #     print(validators)
-    # print(type(r_list))
-    # list2 = Tx.Query.query_staking_list_kyc()
-    # for k in list2["kyc"]:
-    #     print(k)
-    # print(list2)
-    # print(type(list2))
-    # # info_data = Tx.Query.query_staking_validator()
-    # print(Tx.Query.query_bank_balance_adders(adders="cosmos1quarn305vjusjaqxzdm8du09w63gjx36ue0aqq"))
-    # Tx.SendToAdmin.send_to_admin_fees(amout=1000000,fees=100)
-    # time.sleep(5)
-    # print(Tx.Query.query_bank_balance_adders(adders="cosmos1quarn305vjusjaqxzdm8du09w63gjx36ue0aqq"))
+    #     print(i.get('name'))
+    # b = "testname01"
+    # if b in a:
+    #     print("ture")
+    # else:
+    #     print("false")
+    # print(type(a))
+    # print(a)
+    # print(f"{username}该用户余额为:", Tx.Query.query_bank_balance_username(username=username))  # 查询该用户余额
+    #
+    print("======" * 5, "最后结束线", "======" * 5)

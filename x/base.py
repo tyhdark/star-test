@@ -6,10 +6,12 @@ from tools.host import Host
 
 
 class BaseClass(object):
-    ssh_info = chain.ssh_info_me["config"]
-    # ssh_info = chain.ssh_info_meuser["config"]
+    # ssh_info = chain.ssh_info_me["config"]
+    # ssh_info = chain.ssh_info_tg["config"]
+    ssh_info = chain.ssh_info_meuser["config"]
     # 定义根目录
     ssh_home = chain.ssh_info_meuser["home"]  # home根目录
+    # ssh_home = chain.ssh_info_tg["home"]  # home根目录
     # 实例化类，把ip地址等传参给类的属性
     # ssh_client = Host(**ssh_info)
 
@@ -39,6 +41,7 @@ class BaseClass(object):
     region_name = chain.region_name
     amout = chain.amout
     # ssh_info = chain.ssh_info["config"]
+    test_new_kyc_name = chain.test_new_kyc_nacme
 
     ssh_client = Host(**ssh_info)
 

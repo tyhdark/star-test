@@ -1,0 +1,3 @@
+superadmin = "--from=$(./me-chaind keys show superadmin -a --keyring-backend=test)"
+
+fees = "--fees={fees}{Tx.coin.get('uc')}"

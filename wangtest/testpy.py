@@ -23,11 +23,11 @@ class StakingDelegate():
         '''
         self.balances_existing = balances_existing
         self.oneself_height_reward = int(math.ceil((50 * 10 ** 8) / ((365 * 24 * 60 * 60) / 5)))
-        self.oneself_height_reward_2_year = int(
-            math.ceil(((50 * 10 ** 8) / 200) / 2 / 2 / 2 / 2 / 2 / 2 / 2 / 2 / 2 / 2))  # 测试环境下一年200个块
+        # self.oneself_height_reward_2_year = int(
+        #     math.ceil((50 * 10 ** 8) / 200))  # 测试环境下一年200个块
         self.heights = end_heights - start_heights
-        print("单块收益为:", self.oneself_height_reward_2_year, "收益类型为:", type(self.oneself_height_reward))
-        print("用户质押出去后剩余的本金为:", self.balances_existing)
+        print("单块收益为:", self.oneself_height_reward)
+        # print("用户质押出去后剩余的本金为:", self.balances_existing)
 
     def test(self):
         a = self.balances_existing
@@ -43,8 +43,8 @@ class StakingDelegate():
         :return: 产生的活期收益
         '''
 
-        rewards_one_blok = (self.oneself_height_reward_2_year * (stake / (20000000000 * 10 ** 6))) * (10 ** 6)
-        rewards = (self.oneself_height_reward_2_year * (stake / (20000000000 * 10 ** 6)) * self.heights) * (10 ** 6)
+        rewards_one_blok = (self.oneself_height_reward * (stake / (20000000000 * 10 ** 6))) * (10 ** 6)
+        rewards = (self.oneself_height_reward * (stake / (20000000000 * 10 ** 6)) * self.heights) * (10 ** 6)
 
         earnings = int(rewards) - fees
         delegation_end = self.balances_existing - stake - fees
@@ -52,7 +52,7 @@ class StakingDelegate():
         print(
             f"本来的金额为：{self.balances_existing}umec,减去委托本金和手续费后的余额为：{delegation_end}")
         print(f"单块个人收益为:{rewards_one_blok}")
-        print(f"单块国库收益为：{(self.oneself_height_reward_2_year * (10 ** 6)) - rewards_one_blok}")
+        # print(f"单块国库收益为：{(self.oneself_height_reward_2_year * (10 ** 6)) - rewards_one_blok}")
         print(f"活期质押金额为:{stake}umec,经历的块高为:{self.heights}设置的手续费为:{fees}umec")
         print(
             f"经历块高产生的利息为:{rewards}，扣除手续费到账收益金额为：{earnings}，")
@@ -82,10 +82,10 @@ class StakingDelegate():
 
 
 if __name__ == '__main__':
-    start_balances = 10000 * 10 ** 6
-    stake = 10000 * 10 ** 6
-    start_heights = 2000
-    end_heights = 2116
+    start_balances = 100000 * 10 ** 6
+    stake = 100000 * 10 ** 6
+    start_heights = 7535
+    end_heights = 7539
     fees = 0
 
     sd = StakingDelegate(balances_existing=start_balances, start_heights=start_heights, end_heights=end_heights)
@@ -94,30 +94,30 @@ if __name__ == '__main__':
     now_rewards = sd.rewards_mec(stake=stake, fees=fees)
     b = 6987487031250000
     a = 6974987037500000
-    print(f"单块国库收益为：{b - a}")
-    no_1 = 1187500000
-    no_2 = 1250000000
-    no_3 = 625000000
-    no_4 = 312500000
-    no_5 = 156250000
-    no_6 = 78125000
-    no_7 = 39062500
-    no_8 = 19531299.999999996
-    no_9 = 9765699.999999998
-    no_10 = 4882899.999999999
-    no_11 = 0#2441500.0
-    no_12 = 0#1220800.0
-    no_13 = 0#610400.0
-    no_14 = 0#305200.0
-    no_15 = 0#152600.0
+    # print(f"单块国库收益为：{b - a}")
+    no_1 = 0  # 1187500000
+    no_2 = 0  # 1250000000
+    no_3 = 0  # 625000000
+    no_4 = 0  # 312500000
+    no_5 = 0  # 156250000
+    no_6 = 0  # 78125000
+    no_7 = 0  # 39062500
+    no_8 = 0  # 19531299.999999996
+    no_9 = 0  # 9765699.999999998
+    no_10 = 0  # 4882899.999999999
+    no_11 = 0  # 2441500.0
+    no_12 = 0  # 1220800.0
+    no_13 = 0  # 610400.0
+    no_14 = 0  # 305200.0
+    no_15 = 0  # 152600.0
     no_16 = 0
     no_17 = 0
     no_18 = 0
     no_19 = 0
     no_20 = 0
 
-    print(f"第一年出块个人总收益为：{no_1}")
-    now = no_1 + no_2 + no_3 + no_4 + no_5 + no_6 + no_8 + no_9 + no_10 + no_11 + no_12 + no_13 + no_14 + no_15 + no_16 + no_17 + no_18 + no_19 + no_20 + now_rewards
+    print(f"第一年出块个人总收益为：{now_rewards}")
+    now = now_rewards+ no_1 + no_2 + no_3 + no_4 + no_5 + no_6 + no_8 + no_9 + no_10 + no_11 + no_12 + no_13 + no_14 + no_15 + no_16 + no_17 + no_18 + no_19 + no_20
     print(f"现在应该显示的的收益为：{now}")
 
     # print("----------" * 5, "下面是KYC的方法的", "----------" * 5)
