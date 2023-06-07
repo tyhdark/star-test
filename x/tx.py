@@ -73,6 +73,48 @@ class Tx(BaseClass):
             print("看看是不是相等的最后查询到的余额为：", query_balances)
             return end_balances
 
+
+        @staticmethod
+        def rewards_nokyc_for_course_height_amount(amount: int, course_height: int):
+            """
+            非KYC用户，传入快高差，委托金额，计算收益
+
+            Args:
+                amount(int): 被委托的金额，
+                course_height(int): 经历的快高
+
+            Return:
+                收益金额 单位umec
+            """
+            oneself_height_reward = math.ceil(((50 * 10 ** 8) / ((365 * 24 * 60 * 60) / 5)))  # 单块全网总收益 793mec
+            rewards_one_blok = oneself_height_reward * (amount / (200 * 10 ** 8))  # 全网总收益 x 全网质押比例， 就是出块时个人出块总收益mec
+            rewaeds = (rewards_one_blok * course_height) * 10 ** 6  # 单块个人收益乘以经历的块数 等于单人在这个区块差之间的收益总收益 且换算成了umec
+            rewaeds_umec_unfees = rewaeds - 100
+            # print(type(rewaeds_umec_unfees))
+
+            return int(rewaeds_umec_unfees)
+
+
+        @staticmethod
+        def rewards_kyc_for_course_height_amount(amount: int, course_height: int):
+            """
+            非KYC用户，传入快高差，委托金额，计算收益
+
+            Args:
+                amount(int): 被委托的金额，
+                course_height(int): 经历的快高
+
+            Return:
+                收益金额 单位umec
+            """
+            oneself_height_reward = math.ceil(((50 * 10 ** 8) / ((365 * 24 * 60 * 60) / 5)))  # 单块全网总收益 793mec
+            rewards_one_blok = oneself_height_reward * ((amount + 1) / (200 * 10 ** 8))  # 全网总收益 x 全网质押比例， 就是出块时个人出块总收益mec
+            rewaeds = (rewards_one_blok * course_height) * 10 ** 6  # 单块个人收益乘以经历的块数 等于单人在这个区块差之间的收益总收益 且换算成了umec
+            rewaeds_umec_unfees = rewaeds - 100
+            # print(type(rewaeds_umec_unfees))
+
+            return int(rewaeds_umec_unfees)
+
         @staticmethod
         def rewards_kyc(username: str, amount: int, fees=100):
             """
@@ -160,9 +202,20 @@ class Tx(BaseClass):
 
         @staticmethod
         def tx_bank_send(from_address_name: str, to_address_name: str, amounts: int, fees=100):
-            """根据用户名，A用户给B用户打钱"""
+            """
+            根据用户名，A用户给B用户打钱
 
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank send {Tx.Keys.private_export_meuser(username=from_address_name)} {Tx.Keys.private_export_meuser(username=to_address_name)} {amounts}umec {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')} "
+            Args:
+                from_address_name: 转出用户的名字
+                to_address_name: 接收转账的用户的名字
+                amounts: 转账的金额 单位是mec
+                fees: 手续费 单位是umec
+
+            Return:
+                返回的是控制台的输出结果
+            """
+
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank send {Tx.Keys.private_export_meuser(username=from_address_name)} {Tx.Keys.private_export_meuser(username=to_address_name)} {amounts}{Tx.coin.get('c')} {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')} "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             Tx.channel.send(cmd + "\n")
             resp_info = handle_console_input.ready_info(Tx.channel)
@@ -638,9 +691,32 @@ class Tx(BaseClass):
             return resp_info
 
         @staticmethod
+        def delegate_kycunbond_txhash(amount: int, username: str, fees=100):
+            """
+            KYC用户取消或者减少 活期质押， 返回的值是交易的hash
+            Args:
+                amount(int): 减少的金额
+                username(str): 用户的name
+                fees(int): 手续费
+            """
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking unbond {amount}{Tx.coin.get('c')} --from={Tx.Keys.private_export_meuser(username=username)} {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+
+            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            resp_info_dict = handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
+            return resp_info_dict.get("txhash")
+
+        @staticmethod
         def delegate_unkycunbond_txhash(amount: int, username: str, fees=100):
             """
-            取消或者减少 活期质押， 返回的值是交易的hash
+            非KYC用户取消或者减少 活期质押， 返回的值是交易的hash
             Args:
                 amount(int): 减少的金额
                 username(str): 用户的name
@@ -663,7 +739,7 @@ class Tx(BaseClass):
         @staticmethod
         def delegate_unkycunbond_height(amount: int, username: str, fees=100):
             """
-            取消或者减少 活期质押， 返回的值是交易的hash
+            非KYC用户取消或者减少 活期质押， 返回的值是交易的hash
             Args:
                 amount(int): 减少的金额
                 username(str): 用户的name
@@ -737,7 +813,7 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
-        # TODO 增加验证者节点的staking值
+
         @staticmethod
         def validator_node_stake_increase(node_name: str, amount: int, fees=100):
             """
@@ -758,7 +834,7 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
-        # TODO 减少验证者节点的staking值
+
         @staticmethod
         def validator_node_stake_unstake(node_name: str, amount: int, fees=100):
             """
@@ -806,7 +882,7 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
-        # TODO newkyc 新增KYC用户
+
         @staticmethod
         def new_kyc_for_username(user_name: str, region_name: str, fees=100):
             """
@@ -852,6 +928,7 @@ class Tx(BaseClass):
             cmd = Tx.ssh_home + f"{Tx.chain_bin} keys list {Tx.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return handle_resp_data.handle_yaml_to_dict(Tx.ssh_client.ssh(cmd))
+
         @staticmethod
         def lists_test():
             """
@@ -883,7 +960,15 @@ class Tx(BaseClass):
 
         @staticmethod
         def private_export(username):
-            """导出私钥, 1.3已经不能用了"""
+            """
+            根据用户的名字，导出用户的私钥
+
+            Args:
+                username(str): 用户名字
+
+            Return:
+                用户私钥
+            """
             cmd = Tx.ssh_home + f"{Tx.chain_bin} keys export {username} --unsafe --unarmored-hex {Tx.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
@@ -896,7 +981,15 @@ class Tx(BaseClass):
 
         @staticmethod
         def private_export_meuser(username=None):
-            """传入name导出用户私钥，1.3可用"""
+            """
+            传入name导出用户地址，1.3可用
+
+            Args:
+                username(str): 用户名称
+
+            Return:
+                返回用户的地址
+            """
             cmd = Tx.ssh_home + f"{Tx.chain_bin} keys show {username} -a {Tx.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             resp_info = Tx.ssh_client.ssh(cmd)
@@ -918,13 +1011,21 @@ class Tx(BaseClass):
 
         @staticmethod
         def query_bank_balance_username(username: str):
-            """根据用户名，查询余额"""
+            """
+            根据用户名，查询余额
+
+            Return:
+                用户余额数字，如果没有就返回0
+            """
             cmd = Tx.ssh_home + f"{Tx.chain_bin} q bank balances {Tx.Keys.private_export_meuser(username)} {Tx.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
             resp_info = Tx.ssh_client.ssh(cmd)
             dict_resp_info = handle_resp_data.handle_yaml_to_dict(resp_info)
-            if dict_resp_info.get('balances') == []:  # 判断余额是否为空，为空就余额等于0，用作下面计算
+            if dict_resp_info == None:
+                return ("没有查询到该用户")
+
+            elif dict_resp_info.get('balances') == []:  # 判断余额是否为空，为空就余额等于0，用作下面计算
                 return 0
             else:
                 return int(dict_resp_info.get('balances')[0].get('amount'))
@@ -1001,7 +1102,7 @@ class Tx(BaseClass):
 
         @staticmethod
         def query_staking_delegate(username: str):
-            """根据用户名，查看自己的活期委托"""
+            """根据用户名，查看自己的活期委托,返回的结果没有做处理，需要print"""
             cmd = Tx.ssh_home + f"{Tx.chain_bin} q staking delegation $({Tx.chain_bin} keys show {username} -a {Tx.keyring_backend}) {Tx.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
@@ -1009,7 +1110,7 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_yaml_to_dict(resp_info)
 
-        # TODO 查询自己的活期委托产生的利息
+
         @staticmethod
         def query_distribution_rewards_form_name(username: str):
             """
@@ -1038,7 +1139,7 @@ class Tx(BaseClass):
 
             return int(resp_info_dict.get("delegation").get('startHeight'))  # 获取快高，且返回成int类型供后面计算
 
-        # TODO 根据响应结果查询哈希
+
         @staticmethod
         def query_tx_height(hash_value=None):
             """
@@ -1064,7 +1165,7 @@ class Tx(BaseClass):
 
             return int_height
 
-        # TODO 根据hash值查看响应的内容
+
         @staticmethod
         def query_tx_hash(hash_value=None):
             """
@@ -1121,9 +1222,10 @@ if __name__ == '__main__':
     # username = "nokycwangzhibiao003"
     # username = "test001"  # cosmos1cjsvfrth4ygc0hqdw9y7hnpwgzdt5mh6vv2lqj
     # username = "test002" # cosmos1lkaqrt9s6glk6lcgk9tt0dnc9a9gmxqlq56pyv
-    username = "wangzhibiao001"
+    # username = "wangzhibiao001"
 
-    # username="Jimzhang"
+    # username="wangzhibiao001"
+    username = "wangzhibiao001"
     # username = "superadmin"
     yue = "1999900"
     node_name = "node2"
@@ -1137,7 +1239,7 @@ if __name__ == '__main__':
     # Tx.SendToAdmin.count_down_5s()
     # time.sleep(2)
     # print("查询管理员余额：",Tx.Query.query_bank_balance_username("superadmin")) # 查询管理员余额
-    # #
+
     # Tx.SendToAdmin.send_admin_to_user(to_account=username, amounts=10001, fees=100) # 管理员给用户转账
     # Tx.SendToAdmin.count_down_5s()
     # time.sleep(1)
@@ -1168,7 +1270,7 @@ if __name__ == '__main__':
     # print(a)
     # print(type(a))
     # time.sleep(6)
-    # print(f"{username}该用户余额为:",Tx.Query.query_bank_balance_username(username=username)) # 查询该用户余额
+    print(f"{username}该用户余额为:",Tx.Query.query_bank_balance_username(username=username)) # 查询该用户余额
 
     # Tx.Query.query_bank_balance_for_adders()
 
@@ -1180,10 +1282,10 @@ if __name__ == '__main__':
     # Tx.Staking.new_region(region_name=region_name, node_name=node_name)   # 创建区
     # Tx.SendToAdmin.count_down_5s()
     # time.sleep(2)
-    print("查询节点列表")
-    Tx.Query.query_staking_validator_list()          # 查询节点列表
-    print("查询区列表")
-    Tx.Query.query_staking_list_region()        # 查询区列表
+    # print("查询节点列表")
+    # Tx.Query.query_staking_validator_list()          # 查询节点列表
+    # print("查询区列表")
+    # Tx.Query.query_staking_list_region()        # 查询区列表
     # print(Tx.Keys.add(username=username))       # 添加用戶
     # Tx.SendToAdmin.count_down_5s()
 
@@ -1196,6 +1298,7 @@ if __name__ == '__main__':
     # print(kyc_list)
 
     # print(Tx.Staking.deposit_fixed(amount=10,months=12,username=username))  #发起定期委托
+    # print(Tx.Staking.deposit_fixed(amount=10,months=12,username=username))  #发起定期委托
     # Tx.SendToAdmin.count_down_5s()
     # Tx.Query.query_list_fixed_deposit()                # 查询所有定期委托列表
     # Tx.Query.query_staking_validator_list()
@@ -1207,16 +1310,19 @@ if __name__ == '__main__':
     # print(Tx.Query.query_staking_validator_from_node_name(node_name=node_name))
     # hash_v = "7E7631939F8497BB6577806F870CF2C7BC372A6C89700A727B2FFAA4D8DF27CA"
     # print(Tx.Query.query_tx_hash(hash_value=hash_v))
-    keys_list = Tx.Keys.lists()  # 查询用户列表
-    for i in keys_list:  # 查询用户列表
-        print("用户列表：",i)  # 查询用户列表
+    # keys_list = Tx.Keys.lists()  # 查询用户列表
+    # for i in keys_list:  # 查询用户列表
+    #     print("用户列表：",i)  # 查询用户列表
+    #
+    # piv = Tx.Keys.private_export(username=username)  # 导出用户私钥
+    # print(piv)
 
     # print("KYC用戶列表如下：")
     # time.sleep(1)
-    kyc_list = Tx.Query.query_staking_list_kyc()  # 查询KYC列表
-    #
-    for k in kyc_list.get('kyc'):
-        print("KYC用户列表：",k)
+    # kyc_list = Tx.Query.query_staking_list_kyc()  # 查询KYC列表
+
+    # for k in kyc_list.get('kyc'):
+    #     print("KYC用户列表：",k)
     # a = Tx.Keys.lists_test()
     # c = Tx.Keys.lists()
     # print(c)
@@ -1231,5 +1337,7 @@ if __name__ == '__main__':
     # print(type(a))
     # print(a)
     # print(f"{username}该用户余额为:", Tx.Query.query_bank_balance_username(username=username))  # 查询该用户余额
+
+    print(Tx.Bank.rewards_nokyc_for_course_height_amount(amount=10000, course_height=1))
     #
     print("======" * 5, "最后结束线", "======" * 5)

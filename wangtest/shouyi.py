@@ -1,12 +1,18 @@
-v = {'commission': {'commission_rates': {'max_change_rate': '0.010000000000000000', 'max_rate': '0.200000000000000000',
-                                         'rate': '0.100000000000000000'},
-                    'update_time': '2023-06-01T07:30:33.995461101Z'},
-     'consensus_pubkey': {'@type': '/cosmos.crypto.ed25519.PubKey',
-                          'key': 'K7tKibA1tTD0StOsC5F6E2pPZzTXtzteja4Z1mwM/dA='},
-     'delegation_amount': '0',
-     'description': {'details': '', 'identity': '', 'moniker': 'node1', 'security_contact': '', 'website': ''},
-     'jailed': False, 'kyc_amount': '0', 'min_self_stake': '1000000',
-     'operator_address': 'mevaloper1nptzxtkghzwj7dtwwt6muv42l8s80x5gs75w6d',
-     'owner_address': 'me1sh46s803aw8w4qx65k9pnqtem59k6244l2pce9', 'staker_shares': '50000000000000.000000000000000000',
-     'status': 'BOND_STATUS_BONDED', 'tokens': '50000000000000', 'unbonding_height': '0',
-     'unbonding_time': '1970-01-01T00:00:00Z'}
+# -*- coding:utf-8 -*-
+
+# 1. 准备一个空列表
+# list1 = []
+#
+# # for循环实现
+# # 2. 书写循环，一次追加数字到空列表list1中
+# i = 0
+# for i in range(10):
+#     list1.append(i)
+#
+# print(list1)
+# # [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+list1 = [i for i in range(10)]
+print(list1)
+
+# [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
