@@ -1,20 +1,39 @@
-dict1 = {'balances': [{'amount': '10999999900', 'denom': 'umec'}], 'pagination': {'next_key': None, 'total': '0'}}
-dict2 = {'balances': [], 'pagination': {'next_key': None, 'total': '0'}}
-list2 = dict1.get('balances')[0]
-amount= list2.get('amount')
-int1 = int(amount)
-print(int1)
-print(type(int1))
-a = int(dict1.get('balances')[0].get('amount'))
+# -*- coding:utf-8 -*-
+import threading
+import time
 
-print(a)
-print(type(a))
-# a = int(dict2.get('balances')[0].get('amount'))
-#
-# print(a)
-# print(type(a))
-if dict2.get('balances')==None:
-    print("kong")
-else:
+
+def music(data):
+    print("bengin listen music: {}".format(time.ctime()))
+    # time.sleep(1)
+    print(str(data))
+    print("music end: {}".format(time.ctime()))
+
+
+def movie(data):
+    print("bengin look movie: {}".format(time.ctime()))
+    # time.sleep(3)
+    print(str(data))
+    print("movie end: {}".format(time.ctime()))
+
+def fun1():
+
+    print("1")
+    time.sleep(1)
+    print(time.ctime())
+
+def fun2():
+
     print("2")
-    int(dict_resp_info.get('balances')[0].get('amount'))
+    time.sleep(1)
+    print(time.ctime())
+
+f1 = threading.Thread(target=fun1)
+f2 = threading.Thread(target=fun2)
+f1.start()
+f2.start()
+# th1 = threading.Thread(target=music, args=("love.mp3",))  ##创建线程
+# th1.start()  ##启动线程
+# th2 = threading.Thread(target=movie, args=("Anit.avi",))
+# th2.start()
+

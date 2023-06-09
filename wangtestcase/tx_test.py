@@ -19,23 +19,23 @@ region_name = "NZL"
 print("======" * 5, "初始化起始线", "======" * 5)
 # print(Tx.Keys.add(username=username))                         # 添加用戶
 # Tx.SendToAdmin.count_down_5s()
-# Tx.SendToAdmin.send_to_treasury_fees(amount=1 ,fees=100)   # 管理员转账给国库
+Tx.SendToAdmin.send_to_treasury_fees(amount=1 ,fees=100)   # 管理员转账给国库
 # Tx.SendToAdmin.count_down_5s()
 # Tx.SendToAdmin.send_to_admin_fees(amount=100000, fees=100) # 国库转给管理员
 # Tx.SendToAdmin.count_down_5s()
 # time.sleep(2)
 # print("查询管理员余额：",Tx.Query.query_bank_balance_username("superadmin")) # 查询管理员余额
 #
-f1 = threading.Thread(target=Tx.SendToAdmin.send_to_treasury_fees,args=(10000,100)) # 管理员转账给国库
-f2 = threading.Thread(target=Tx.SendToAdmin.tx_bank_send,args=(username,username1,0.1,100)) # 用户给用户转账
+# f1 = threading.Thread(target=Tx.SendToAdmin.send_to_treasury_fees,args=(10000,100)) # 管理员转账给国库
+# f2 = threading.Thread(target=Tx.SendToAdmin.tx_bank_send,args=(username,username1,0.1,100)) # 用户给用户转账
 # f1.start()
-f2.start()
+# f2.start()
 # Tx.SendToAdmin.send_admin_to_user(to_account=username1, amounts=100000, fees=100) # 管理员给用户转账
 # Tx.SendToAdmin.count_down_5s()
 # time.sleep(1)
 # print(f"{username}该用户余额为:",Tx.Query.query_bank_balance_username(username=username))   # 查询该用户余额
 # print(f"{username}该用户地址为:",Tx.Keys.private_export_meuser(username=username))       # 查询用户address
-# Tx.SendToAdmin.tx_bank_send(from_address_name=username,to_address_name=username1,amounts=0.1,fees=110) # 用户给用户转账
+Tx.SendToAdmin.tx_bank_send(from_address_name=username,to_address_name=username1,amounts=0.1,fees=10) # 用户给用户转账
 # Tx.SendToAdmin.count_down_5s()
 # time.sleep(2)
 # print(f"{username}该用户余额为:", Tx.Query.query_bank_balance_username(username=username))  # 查询该用户余额
