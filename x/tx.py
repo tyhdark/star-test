@@ -73,7 +73,6 @@ class Tx(BaseClass):
             print("看看是不是相等的最后查询到的余额为：", query_balances)
             return end_balances
 
-
         @staticmethod
         def rewards_nokyc_for_course_height_amount(amount: int, course_height: int):
             """
@@ -94,7 +93,6 @@ class Tx(BaseClass):
 
             return int(rewaeds_umec_unfees)
 
-
         @staticmethod
         def rewards_kyc_for_course_height_amount(amount: int, course_height: int):
             """
@@ -108,7 +106,8 @@ class Tx(BaseClass):
                 收益金额 单位umec
             """
             oneself_height_reward = math.ceil(((50 * 10 ** 8) / ((365 * 24 * 60 * 60) / 5)))  # 单块全网总收益 793mec
-            rewards_one_blok = oneself_height_reward * ((amount + 1) / (200 * 10 ** 8))  # 全网总收益 x 全网质押比例， 就是出块时个人出块总收益mec
+            rewards_one_blok = oneself_height_reward * (
+                    (amount + 1) / (200 * 10 ** 8))  # 全网总收益 x 全网质押比例， 就是出块时个人出块总收益mec
             rewaeds = (rewards_one_blok * course_height) * 10 ** 6  # 单块个人收益乘以经历的块数 等于单人在这个区块差之间的收益总收益 且换算成了umec
             rewaeds_umec_unfees = rewaeds - 100
             # print(type(rewaeds_umec_unfees))
@@ -187,6 +186,23 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
+        def send_to_treasury_fees(amount: int, fees=100):
+            """管理员转钱给国库，有手续费，作为一种场景"""
+
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank sendToTreasury {amount}{Tx.coin.get('c')} --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend})  {Tx.keyring_backend}  {Tx.chain_id} --fees={fees}{Tx.coin.get('uc')}"
+
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # 这里是logger插入
+            # Tx.channel.sen 是调用了Host类，对服务器进行；连接，且查看响应，send发送cmd命令且\n脱敏
+            Tx.channel.send(cmd + "\n")  # 对命令进行\n处理，因为linux不能识别\n
+            """Tx.channel是对引用了Host类，当调用时就是自动对服务器进行连接，且查看响应且返回内容，resp_info就是返回结果"""
+            """handle_console_input.ready_info是捕获你插入的cmd命令展示出来Logger"""
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:  # 如果你输入cmd后你响应的内容里面有confirm 那就是提示你y/n确认，执行下面这步
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
         @staticmethod
         def send_admin_to_user(to_account: str, amounts=100, fees=100):
             """创世后超管往个人打钱，前提是超管有钱！"""
@@ -201,7 +217,7 @@ class Tx(BaseClass):
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
         @staticmethod
-        def tx_bank_send(from_address_name: str, to_address_name: str, amounts: int, fees=100):
+        def tx_bank_send(from_address_name: str, to_address_name: str, amounts: float, fees=100):
             """
             根据用户名，A用户给B用户打钱
 
@@ -762,6 +778,32 @@ class Tx(BaseClass):
 
             return hash_value
 
+        # TODO 设计提取自己的活期利息
+        @staticmethod
+        def distribution_withdraw_rewards(username: str, fees=100):
+            """
+            设计提取自己活期的收益的方法
+
+            Args:
+                username: 用户的名字
+
+            Return:
+                返回的是交易时的哈希，方便查询错误
+            """
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx distribution withdraw-rewards --from={Tx.Keys.private_export_meuser(username=username)} {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+
+            time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            resp_info_dict = handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+            hash_value = resp_info_dict.get("txhash")
+            return resp_info_dict
+
         @staticmethod
         def deposit_fixed(amount: int, months: int, username: str, fees=100):
             """
@@ -776,6 +818,27 @@ class Tx(BaseClass):
                 返回出去的是code为0和哈希值，没有做其他的事
             """
             cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking deposit-fixed {amount}{Tx.coin.get('c')} Term_{months}_MONTHS --from=$({Tx.chain_bin} keys show {username} -a {Tx.keyring_backend}) {Tx.chain_id} --fees={fees}{Tx.coin.get('uc')} {Tx.keyring_backend}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+
+            # time.sleep(1)  # 执行速度太快会导致 控制台信息未展示完全就将数据返回
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+                time.sleep(1)
+
+            resp_info_dict = handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
+            return resp_info_dict
+
+        # TODO 设计取出定期
+        @staticmethod
+        def withdraw_fixed(fixed_id: int, username: str, fees=100):
+            """
+            取出定期,传入定期的id和用户的名称去取
+            """
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking withdraw-fixed {fixed_id}  --from=$({Tx.chain_bin} keys show {username} -a {Tx.keyring_backend}) {Tx.chain_id} --fees={fees}{Tx.coin.get('uc')} {Tx.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
 
@@ -813,6 +876,26 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
+        # TODO 修改验证者节点的归属
+        @staticmethod
+        def edit_validator_owner_address(node_name: str, to_username: str, fees=100):
+            """
+            修改验证者节点的gas费归属用户
+
+            Args:
+                node_name: 节点名称
+                username: 需要售卖的用户名称
+            """
+            cmd = Tx.ssh_home + f"./me-chaind tx staking edit-validator $(./me-chaind  q staking validators | grep '{node_name}' -A 6 | awk '/operator_address/ {{print $2}}')  --owner-address=$({Tx.chain_bin} keys show {to_username} -a {Tx.keyring_backend}) {Tx.chain_id} --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend}) {Tx.chain_id} --fees={fees}{Tx.coin.get('uc')} {Tx.keyring_backend}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 当有需要交互的时候，调用Tx下的channel下的send方法
+            Tx.channel.send(cmd + "\n")
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
         @staticmethod
         def validator_node_stake_increase(node_name: str, amount: int, fees=100):
@@ -833,7 +916,6 @@ class Tx(BaseClass):
                 resp_info = handle_console_input.yes_or_no(Tx.channel)
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
-
 
         @staticmethod
         def validator_node_stake_unstake(node_name: str, amount: int, fees=100):
@@ -881,7 +963,6 @@ class Tx(BaseClass):
                 resp_info = handle_console_input.yes_or_no(Tx.channel)  # 处理yee or no
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
-
 
         @staticmethod
         def new_kyc_for_username(user_name: str, region_name: str, fees=100):
@@ -1110,7 +1191,6 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_yaml_to_dict(resp_info)
 
-
         @staticmethod
         def query_distribution_rewards_form_name(username: str):
             """
@@ -1139,7 +1219,6 @@ class Tx(BaseClass):
 
             return int(resp_info_dict.get("delegation").get('startHeight'))  # 获取快高，且返回成int类型供后面计算
 
-
         @staticmethod
         def query_tx_height(hash_value=None):
             """
@@ -1164,7 +1243,6 @@ class Tx(BaseClass):
             int_height = int(height)
 
             return int_height
-
 
         @staticmethod
         def query_tx_hash(hash_value=None):
@@ -1206,9 +1284,16 @@ class Tx(BaseClass):
             resp_info = Tx.ssh_client.ssh(cmd)
             resp_info_dict = handle_resp_data.handle_yaml_to_dict(resp_info)
             resp_info_list = resp_info_dict.get('FixedDeposit')
+            # fixde_dict = {key:value for key ,value in resp_info_list}
+            # for e in resp_info_list:
+            #
+            for my_dict in resp_info_list:
+                print(my_dict)
+                # for i in my_dict.get('id'):
+                # value = my_dict.get('id')
+                # print(i)
 
-            for e in resp_info_list:
-                print(e)
+            #     print(e)
 
             return resp_info_list
 
@@ -1244,7 +1329,7 @@ if __name__ == '__main__':
     # Tx.SendToAdmin.count_down_5s()
     # time.sleep(1)
     # print(f"{username}该用户余额为:",Tx.Query.query_bank_balance_username(username=username))   # 查询该用户余额
-    # print(f"{username}该用户地址为:",Tx.Keys.private_export_meuser(username=username))       # 查询用户address
+    print(f"{username}该用户地址为:", Tx.Keys.private_export_meuser(username=username))  # 查询用户address
     # Tx.SendToAdmin.tx_bank_send(from_address_name=username,to_address_name=username,amounts=46725,fees=100) # 用户给用户转账
     # Tx.SendToAdmin.count_down_5s()
     # time.sleep(2)
@@ -1270,7 +1355,7 @@ if __name__ == '__main__':
     # print(a)
     # print(type(a))
     # time.sleep(6)
-    print(f"{username}该用户余额为:",Tx.Query.query_bank_balance_username(username=username)) # 查询该用户余额
+    # print(f"{username}该用户余额为:",Tx.Query.query_bank_balance_username(username=username)) # 查询该用户余额
 
     # Tx.Query.query_bank_balance_for_adders()
 
@@ -1297,7 +1382,7 @@ if __name__ == '__main__':
 
     # print(kyc_list)
 
-    # print(Tx.Staking.deposit_fixed(amount=10,months=12,username=username))  #发起定期委托
+    print(Tx.Staking.deposit_fixed(amount=10, months=3, username=username))  # 发起定期委托
     # print(Tx.Staking.deposit_fixed(amount=10,months=12,username=username))  #发起定期委托
     # Tx.SendToAdmin.count_down_5s()
     # Tx.Query.query_list_fixed_deposit()                # 查询所有定期委托列表
@@ -1338,6 +1423,6 @@ if __name__ == '__main__':
     # print(a)
     # print(f"{username}该用户余额为:", Tx.Query.query_bank_balance_username(username=username))  # 查询该用户余额
 
-    print(Tx.Bank.rewards_nokyc_for_course_height_amount(amount=10000, course_height=1))
+    # print(Tx.Bank.rewards_nokyc_for_course_height_amount(amount=10000, course_height=1))
     #
     print("======" * 5, "最后结束线", "======" * 5)

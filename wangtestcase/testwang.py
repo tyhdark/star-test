@@ -41,9 +41,9 @@ class TestMe(object):
     @pytest.mark.skip
     def test004(self):
         """测试创建用户是否成功"""
-        name = "testname002"
+        name = "testname004"
         self.tx.Keys.add(username=name)
-        time.sleep(5)
+        self.tx.SendToAdmin.count_down_5s()
         name_list = self.tx.Keys.lists_test()
         name_user_list = []
         # for i in name_list:
@@ -57,13 +57,14 @@ class TestMe(object):
     @pytest.mark.skip
     def test_send_bank_005(self):
         testusername = "testname002"
-        test_amouts = 10000
+        test_amouts = 1
+        fees = 100
         # 查询用户余额先 拿到原有的余额 应该是0
         testusername_balances = self.tx.Query.query_bank_balance_username(username=testusername)
         print(testusername_balances)
         print(type(testusername_balances))
         # 第二： 发起转账
-        self.tx.SendToAdmin.send_admin_to_user(to_account=testusername, amounts=100, fees=0)
+        self.tx.SendToAdmin.send_admin_to_user(to_account=testusername, amounts=test_amouts, fees=fees)
         # 第三： 等待几秒钟再查
         self.tx.SendToAdmin.count_down_5s()
         time.sleep(2)
@@ -118,8 +119,8 @@ class TestMe(object):
     @pytest.mark.skip
     def test_staking_kyc_delegate_007(self):
         """KYC用户活期委托测试用例"""
-        test_name = "testnamekyc001"
-        delegate_amount = 10000
+        test_name = "testnamekyc002"
+        delegate_amount = 100
         # 1、发起活期委托
         self.tx.Staking.delegate(amount=delegate_amount, username=test_name, fees=100)  # 1 发起活期委托
         self.tx.SendToAdmin.count_down_5s()
@@ -159,8 +160,8 @@ class TestMe(object):
     def test_bank_send(self):
         """用户转账测试用例"""
         from_name = "wangzhibiao001"
-        to_name = "wangzhibiao002"
-        amounts = 10
+        to_name = "testname004"
+        amounts = 1
         fees = 100
         # 查询A用户余额
         start_balances_from = self.tx.Query.query_bank_balance_username(username=from_name)
@@ -185,12 +186,12 @@ class TestMe(object):
         assert end_balances_to == start_balances_to + (amounts * 10 ** 6)
 
 
-    @pytest.mark.skip
+    # @pytest.mark.skip
     def test_create_vaildator(self):
         """
         新增验证者节点的测试
         """
-        node_name = "node3"
+        node_name = "node2"
         amount = 50000000
         fees = 100
         # 创建验证者节点
@@ -212,8 +213,8 @@ class TestMe(object):
         区绑定对应的节点
 
         """
-        node_name = "node3"
-        region_name = "JPN"
+        node_name = "node2"
+        region_name = "USA"
         fees = 100
         # 将区绑定到对应的节点
         self.tx.Staking.new_region(region_name=region_name,node_name=node_name,fees=fees)
@@ -224,8 +225,44 @@ class TestMe(object):
         region_name_list = [i.get('name') for i in (region_dict.get('region'))]
         assert region_name in region_name_list
 
-    # TODO NEW KYC 用例设计，查看
 
+    @pytest.mark.skip
+    def test_new_kyc(self):
+        """
+        测试普通用户是否可以newkyc成功
+        """
+        user_name = "testnamekyc002"
+        region_name = "JPN"
+        fees = 100
+        # 认证KYC
+        self.tx.Staking.new_kyc_for_username(user_name=user_name,region_name=region_name,fees=fees)
+        self.tx.SendToAdmin.count_down_5s()
+        # 查询用户地址，
+        user_name_address = self.tx.Keys.show_address_for_username(username=user_name)
+        # 查询KYC列表
+        kyc_list = Tx.Query.query_staking_list_kyc()  # 查询KYC列表
+        kyc_address_list = [i.get('account') for i in kyc_list.get('kyc')] # 遍历出来KYC用户地址
+        # 断言是否在KYC列表里面
+        assert user_name_address in kyc_address_list
+
+    # TODO 设计发起定期委托 校验定期列表
+    @pytest.mark.skip
+    def test_fixed_delegate(self):
+        """
+        设计发起定期委托的用例
+
+        """
+        # 用户发起委托
+        user_name = "testnamekyc002"
+        amount = 100
+        mouth = 3
+        fees = 100
+        self.tx.Staking.deposit_fixed(amount=amount,months=mouth,username=user_name,fees=fees)
+        self.tx.SendToAdmin.count_down_5s()
+        # 查询委托列表
+        self.tx.Query.query_list_fixed_deposit()
+        # 校验是否存在委托列表里面
+        pass
 if __name__ == '__main__':
     # pytest.main(["./testwang.py", "-s", "--log-level=debug", "--alluredir=../report/wangtest", "--clean-alluredir"])
     pytest.main(['-s', './'])
