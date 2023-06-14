@@ -9,19 +9,21 @@ ttx = Tx()
 # username = "wangzhibiao001"
 
 username1 = "wangzhibiao002"
-username = "testnamekycNZL004"
-# username = "testnamekyc001"
+# username = "testnamekycNZL004"
+username = "testname006"
 # username = "superadmin"
 yue = "1999900"
-node_name = "node3"
-region_name = "NZL"
+# node_name = "node3"
+node_name = "node7"
+# region_name = "NZL"
+region_name = "LBY"
 # adderss = "cosmos1fap8hp3t3xt20qw4sczlyrk6n92uffj4r4kw77"
 print("======" * 5, "初始化起始线", "======" * 5)
 # print(Tx.Keys.add(username=username))                         # 添加用戶
 # Tx.SendToAdmin.count_down_5s()
-Tx.SendToAdmin.send_to_treasury_fees(amount=1 ,fees=100)   # 管理员转账给国库
+# Tx.SendToAdmin.send_to_treasury_fees(amount=20599720,fees=201000000000)   # 管理员转账给国库
 # Tx.SendToAdmin.count_down_5s()
-# Tx.SendToAdmin.send_to_admin_fees(amount=100000, fees=100) # 国库转给管理员
+# Tx.SendToAdmin.send_to_admin_fees(amount=1000000, fees=100) # 国库转给管理员
 # Tx.SendToAdmin.count_down_5s()
 # time.sleep(2)
 # print("查询管理员余额：",Tx.Query.query_bank_balance_username("superadmin")) # 查询管理员余额
@@ -30,23 +32,23 @@ Tx.SendToAdmin.send_to_treasury_fees(amount=1 ,fees=100)   # 管理员转账给�
 # f2 = threading.Thread(target=Tx.SendToAdmin.tx_bank_send,args=(username,username1,0.1,100)) # 用户给用户转账
 # f1.start()
 # f2.start()
-# Tx.SendToAdmin.send_admin_to_user(to_account=username1, amounts=100000, fees=100) # 管理员给用户转账
+# Tx.SendToAdmin.send_admin_to_user(to_account=username, amounts=100000, fees=100) # 管理员给用户转账
 # Tx.SendToAdmin.count_down_5s()
 # time.sleep(1)
-# print(f"{username}该用户余额为:",Tx.Query.query_bank_balance_username(username=username))   # 查询该用户余额
+# print(f"{username1}该用户余额为:",Tx.Query.query_bank_balance_username(username=username1))   # 查询username1该用户余额
 # print(f"{username}该用户地址为:",Tx.Keys.private_export_meuser(username=username))       # 查询用户address
-Tx.SendToAdmin.tx_bank_send(from_address_name=username,to_address_name=username1,amounts=0.1,fees=10) # 用户给用户转账
+# Tx.SendToAdmin.tx_bank_send(from_address_name=username,to_address_name=username1,amounts=0.00001,fees=100) # 用户给用户转账
 # Tx.SendToAdmin.count_down_5s()
 # time.sleep(2)
-# print(f"{username}该用户余额为:", Tx.Query.query_bank_balance_username(username=username))  # 查询该用户余额
+print(f"{username}该用户余额为:", Tx.Query.query_bank_balance_username(username=username))  # 查询该用户余额
 # Tx.Staking.new_kyc_for_username(user_name=username, region_name=region_name)  # NEW KYC
 # Tx.SendToAdmin.count_down_5s()
-# Tx.Staking.delegate(amount=1, username=username1, fees=100)                               # 发起质押
+# Tx.Staking.delegate(amount=800, username=username, fees=100)                               # 发起质押
 # Tx.SendToAdmin.count_down_5s()
-# print(type(Tx.Staking.delegate_unkycunbond_height(amount=1000000, username=username, fees=100))) # 非KYC用户赎回质押
-# Tx.Staking.delegate_kycunbond_txhash(amount=1000,username=username,fees=100)                  #  KYC用户赎回质押
+# print(type(Tx.Staking.delegate_unkycunbond_height(amount=19, username=username, fees=100))) # 非KYC用户赎回质押
+# Tx.Staking.delegate_kycunbond_txhash(amount=1,username=username,fees=100)                  #  KYC用户赎回质押
 # Tx.SendToAdmin.count_down_5s()
-# print(f"{username}该用户活期委托本金为:", Tx.Query.query_staking_delegate(username=username))  # 查询质押
+print(f"{username}该用户活期委托本金为:", Tx.Query.query_staking_delegate(username=username))  # 查询质押
 # print(f"{username}该用户活期委托实时收益为:",Tx.Query.query_distribution_rewards_form_name(username=username))  # 查询用户活期委托所产生的利息
 # print(Tx.Staking.distribution_withdraw_rewards(username=username, fees=100))                              # 用户提取自己的活期收益，不分KYC
 # print(Tx.Query.query_staking_delegate_start_height(username=username))
@@ -55,7 +57,7 @@ Tx.SendToAdmin.tx_bank_send(from_address_name=username,to_address_name=username1
 # a = Tx.Staking.delegate_unkycunbond_height(username=username, amount=1)   # 减少质押
 # print(a)
 # print(type(a))
-
+#
 # print("======" * 5, "委托起始线", "======" * 5)
 # a = Tx.Bank.rewards_nokyc(username=username,amount=10,fees=100) #  非KYC发起质押且计算收益，扣除手续费后的收益
 # a = Tx.Bank.rewards_kyc(username=username, amount=10000)    # KYC发起质押且计算收益，扣除手续费后的收益
@@ -95,21 +97,35 @@ Tx.SendToAdmin.tx_bank_send(from_address_name=username,to_address_name=username1
 # print(Tx.Keys.add(username=username))       # 添加用戶
 # Tx.SendToAdmin.count_down_5s()
 
-# print(Tx.Keys.show_address_for_username(username=username))  # 通过用户名称查询用户地址
+# print(Tx.Keys.show_address_for_username(username=username1))  # 通过用户名称查询用户地址
 # Tx.SendToAdmin.count_down_5s()
 # Tx.Staking.new_kyc_for_username(user_name=username,region_name=region_name) #NEW KYC
 
 # Tx.SendToAdmin.count_down_5s()                # 暂停5秒
 # print(kyc_list)
-# print(Tx.Staking.deposit_fixed(amount=88,months=1,username=username))  #发起定期委托
-# Tx.Staking.withdraw_fixed(fixed_id=5,username=username,fees=100)      # 根据ID赎回定期委托
+# print(Tx.Staking.deposit_fixed(amount=2,months=12,username=username))  #发起定期委托
+# Tx.Staking.withdraw_fixed(fixed_id=4,username=username,fees=100)      # 根据ID赎回定期委托
 # print(Tx.Staking.deposit_fixed(amount=10,months=12,username=username))  #发起定期委托
 # Tx.SendToAdmin.count_down_5s()
+# user_fixed = Tx.Query.query_list_fixed_deposit_for_username(username=username)  # 查询个人的定期列表
+# print(user_fixed)
+# print(type(user_fixed))
+# for l in user_fixed:
+#     print(l)
+# print(len(user_fixed))
+# print("查询所有定期列表")
 # ding = Tx.Query.query_list_fixed_deposit()                # 查询所有定期委托列表
 # print("所有定期委托",ding)
 # print(type(ding))
+# print(len(ding))
 # for i in ding:
-#     print(i)
+#     print("i是",i.get("id"))
+
+
+# a_list = [i.get("id") for i in ding]
+# print("id组合是：",a_list)
+# print("id的类型是：",type(a_list))
+
 # Tx.Query.query_staking_validator_list()
 # Tx.Query.query_staking_list_region()                   #  查询区列表
 # Tx.Staking.validator_node_stake_increase(node_name=node_name, amount=100)  # 增加节点对应的staking值
@@ -120,18 +136,18 @@ Tx.SendToAdmin.tx_bank_send(from_address_name=username,to_address_name=username1
 # time.sleep(2)
 # Tx.Staking.edit_validator_owner_address(node_name=node_name,to_username=username1,fees=100)  # 修改验证者节点的归属者
 # print(Tx.Query.query_staking_validator_from_node_name(node_name=node_name))
-# hash_v = "ED2771E9A15F7325806E4907B7E13207E2B672DD85F0498C4800CC1F51AE2FB0"  # 查询对应的hash值
+# hash_v = "68D9868D97104AE4A42823B54BEDE554584D8A5372DDAAD45C15D436B3203DE6"  # 查询对应的hash值
 # hash_dict = Tx.Query.query_tx_hash(hash_value=hash_v)
 # print(hash_dict)
 # for key,value in hash_dict.items():
 #     print(key,value)
 # print(Tx.Query.query_tx_hash(hash_value=hash_v))
-
-# keys_list = Tx.Keys.lists()  # 查询用户列表
-# for i in keys_list:  # 查询用户列表
-#     print("用户列表：",i)  # 查询用户列表
 #
-# piv = Tx.Keys.private_export(username=username)  # 导出用户私钥
+keys_list = Tx.Keys.lists()  # 查询用户列表
+for i in keys_list:  # 查询用户列表
+    print("用户列表：",i)  # 查询用户列表
+#
+piv = Tx.Keys.private_export(username=username)  # 导出用户私钥
 # print("用户的私钥为",piv)
 
 # print("KYC用戶列表如下：")

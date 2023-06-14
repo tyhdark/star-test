@@ -185,8 +185,7 @@ class TestMe(object):
         assert end_balances_from == (start_balances_from - (amounts * 10 ** 6) - fees)
         assert end_balances_to == start_balances_to + (amounts * 10 ** 6)
 
-
-    # @pytest.mark.skip
+    @pytest.mark.skip
     def test_create_vaildator(self):
         """
         新增验证者节点的测试
@@ -201,11 +200,10 @@ class TestMe(object):
         nade_dict = self.tx.Query.query_staking_validator()  # 用一个变量去接收查询出来的结果字典
         # nade_name_list = []  # 新建空列表等下用来接收查询出来的全部node_name
         # for i in nade_dict.get('validators'):
-            # nade_name_list.append(i.get('description').get('moniker')) # # 追加进这个空列表里面
+        # nade_name_list.append(i.get('description').get('moniker')) # # 追加进这个空列表里面
 
         node_name_list = [i.get('description').get('moniker') for i in (nade_dict.get('validators'))]  # 用推导式的写法
         assert node_name in node_name_list
-
 
     @pytest.mark.skip
     def test_create_region(self):
@@ -217,14 +215,13 @@ class TestMe(object):
         region_name = "USA"
         fees = 100
         # 将区绑定到对应的节点
-        self.tx.Staking.new_region(region_name=region_name,node_name=node_name,fees=fees)
+        self.tx.Staking.new_region(region_name=region_name, node_name=node_name, fees=fees)
         self.tx.SendToAdmin.count_down_5s()
         # 查询区有没有在区列表里面
         region_dict = self.tx.Query.query_staking_list_region()
         # 遍历出区域名称，
         region_name_list = [i.get('name') for i in (region_dict.get('region'))]
         assert region_name in region_name_list
-
 
     @pytest.mark.skip
     def test_new_kyc(self):
@@ -235,34 +232,59 @@ class TestMe(object):
         region_name = "JPN"
         fees = 100
         # 认证KYC
-        self.tx.Staking.new_kyc_for_username(user_name=user_name,region_name=region_name,fees=fees)
+        self.tx.Staking.new_kyc_for_username(user_name=user_name, region_name=region_name, fees=fees)
         self.tx.SendToAdmin.count_down_5s()
         # 查询用户地址，
         user_name_address = self.tx.Keys.show_address_for_username(username=user_name)
         # 查询KYC列表
         kyc_list = Tx.Query.query_staking_list_kyc()  # 查询KYC列表
-        kyc_address_list = [i.get('account') for i in kyc_list.get('kyc')] # 遍历出来KYC用户地址
+        kyc_address_list = [i.get('account') for i in kyc_list.get('kyc')]  # 遍历出来KYC用户地址
         # 断言是否在KYC列表里面
         assert user_name_address in kyc_address_list
 
-    # TODO 设计发起定期委托 校验定期列表
-    @pytest.mark.skip
+    # @pytest.mark.skip
     def test_fixed_delegate(self):
         """
-        设计发起定期委托的用例
+        设计发起定期委托的用例,先查询用户定期委托和全网定期委托，
+        发起委托后，再查用户定期委托和全网委托，进行比较，另外再校验code是否等于0
 
         """
-        # 用户发起委托
+
         user_name = "testnamekyc002"
-        amount = 100
-        mouth = 3
+        amount = 0.1
+        mouth = 1
         fees = 100
-        self.tx.Staking.deposit_fixed(amount=amount,months=mouth,username=user_name,fees=fees)
+        fixed_list_all = self.tx.Query.query_list_fixed_deposit()  # 查询所有定期列表
+        list_id_start = [i.get('id') for i in fixed_list_all]  # 发起定期委托前的所有定期委托id列表
+        # print("发起定期委托前的所有定期委托id列表",list_id_start)
+        fixed_list_user_start = self.tx.Query.query_list_fixed_deposit_for_username(
+            username=user_name)  # 发起定期委托前的个人定期委托列表
+        # print("发起定期委托前的个人定期委托列表",fixed_list_user_start)
+        resp = self.tx.Staking.deposit_fixed(amount=amount, months=mouth, username=user_name, fees=fees)
+        # time.sleep(3)
         self.tx.SendToAdmin.count_down_5s()
-        # 查询委托列表
-        self.tx.Query.query_list_fixed_deposit()
+        # print("resp的类型是：",type(resp))
+        # print("resp:",resp)
+        tx_hash = resp.get('txhash')
+        # print("txhash取出来了是:",tx_hash)
+        txhash_info = self.tx.Query.query_tx_hash(hash_value=tx_hash)
+        # print("txhash_info 的类型是：",type(txhash_info))
+        # print("txhash_info的值是：",txhash_info)
+        code = txhash_info.get('code')
+        # print("code的类型是：",type(code))
+        # print("code的值是",code)
+        # self.tx.SendToAdmin.count_down_5s()
+        fixed_list_all_end = self.tx.Query.query_list_fixed_deposit()  # 查询所有定期列表
+        list_id_end = [i.get('id') for i in fixed_list_all_end]  # 查询所有定期列表id
+        # print("发起定期委托前的所有定期委托id列表", list_id_end)
+        fixed_list_user_end = self.tx.Query.query_list_fixed_deposit_for_username(username=user_name)  # 查询该用户所有定期列表
+        # print("发起定期委托前的个人定期委托列表", fixed_list_user_end)
         # 校验是否存在委托列表里面
-        pass
+        assert len(fixed_list_user_end) == len(fixed_list_user_start) + 1
+        assert len(list_id_end) == len(list_id_start) + 1
+        assert code == 0
+
+
 if __name__ == '__main__':
     # pytest.main(["./testwang.py", "-s", "--log-level=debug", "--alluredir=../report/wangtest", "--clean-alluredir"])
     pytest.main(['-s', './'])

@@ -289,7 +289,7 @@ class Tx(BaseClass):
 
         @staticmethod
         def count_down_5s():
-            for i in range(8, 0, -1):
+            for i in range(5, 0, -1):
                 print(i)
                 time.sleep(1)
 
@@ -671,11 +671,11 @@ class Tx(BaseClass):
         #     return handle_resp_data.handle_yaml_to_dict(Tx.ssh_client.ssh(cmd))
 
         @staticmethod
-        def delegate(amount: int, username: str, fees=100):
+        def delegate(amount: int | float, username: str, fees=100):
             """
             创建/追加 活期质押，已修改，返回的是发起交易时的块高，方便后面计算用
             Args:
-                amount(int): "是以mec为单位传入的"
+                amount(int | float): "是以mec为单位传入的"
                 username(str): "用户名称，可以通过配置文件的变量传入，"
                 fees(int): ”是以umec为单位传入的，默认是100umec“
 
@@ -753,11 +753,11 @@ class Tx(BaseClass):
             return resp_info_dict.get("txhash")
 
         @staticmethod
-        def delegate_unkycunbond_height(amount: int, username: str, fees=100):
+        def delegate_unkycunbond_height(amount: int | float, username: str, fees=100):
             """
             非KYC用户取消或者减少 活期质押， 返回的值是交易的hash
             Args:
-                amount(int): 减少的金额
+                amount(int | float): 减少的金额
                 username(str): 用户的name
                 fees(int): 手续费，不填就是默认100
             """
@@ -805,11 +805,11 @@ class Tx(BaseClass):
             return resp_info_dict
 
         @staticmethod
-        def deposit_fixed(amount: int, months: int, username: str, fees=100):
+        def deposit_fixed(amount:int | float,months: int, username: str,fees=100):
             """
             发起定期委托的方法，
             Args:
-                amount(int): 委托金额
+                amount(int | float): 委托金额
                 months(int): 委托期限，月数，1，3，6，12，36，48
                 username(str): 用户名称，根据用户名称会自动转换成地址
                 fees(int): 手续费，默认100已设置好，可以不用传
@@ -1053,7 +1053,7 @@ class Tx(BaseClass):
             cmd = Tx.ssh_home + f"{Tx.chain_bin} keys export {username} --unsafe --unarmored-hex {Tx.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
-            time.sleep(3)
+            time.sleep(2)
             resp_info = handle_console_input.ready_info(Tx.channel)
             if "private key will be exported" in resp_info:
                 resp_info = handle_console_input.yes_or_no(Tx.channel)
@@ -1186,6 +1186,7 @@ class Tx(BaseClass):
             """根据用户名，查看自己的活期委托,返回的结果没有做处理，需要print"""
             cmd = Tx.ssh_home + f"{Tx.chain_bin} q staking delegation $({Tx.chain_bin} keys show {username} -a {Tx.keyring_backend}) {Tx.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            logger.info(inspect.stack())
             # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
             resp_info = Tx.ssh_client.ssh(cmd)
 
@@ -1251,7 +1252,7 @@ class Tx(BaseClass):
             """
             # time.sleep(1)
             # Tx.SendToAdmin.count_down_5s()
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} q tx {hash_value} --chain-id=me-chain"
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} q tx {hash_value}  --chain-id=me-chain"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             resp_info = Tx.ssh_client.ssh(cmd)
 
@@ -1278,7 +1279,7 @@ class Tx(BaseClass):
             Return:
                 返回出的是一个列表，
             """
-            cmd = Tx.ssh_home + f"./me-chaind query staking list-fixed-deposit"
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} query staking list-fixed-deposit"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
             resp_info = Tx.ssh_client.ssh(cmd)
@@ -1294,6 +1295,21 @@ class Tx(BaseClass):
                 # print(i)
 
             #     print(e)
+
+            return resp_info_list
+
+        # TODO 查询个人的定期委托列表
+        @staticmethod
+        def query_list_fixed_deposit_for_username(username):
+            """
+            根据个人用户名称查询个人所有的定期委托，返回出去的是个人所有委托的列表，如果没有委托，就返回一个没有元素的空列表
+            """
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} query staking show-fixed-deposit-by-acct {Tx.Keys.show_address_for_username(username=username)}  ALL_STATE {Tx.chain_id}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
+            resp_info = Tx.ssh_client.ssh(cmd)
+            resp_info_dict = handle_resp_data.handle_yaml_to_dict(resp_info)
+            resp_info_list = resp_info_dict.get('FixedDeposit')
 
             return resp_info_list
 

@@ -1,5 +1,6 @@
 import os
 
+from loguru import logger
 import pytest
 import allure
 
@@ -14,8 +15,9 @@ class TestLogin():
         assert 1 + 1 == 2
 
     def test_login02(self):
+        logger.info("---test_login02----")
         print("---test_login02----")
-        assert 1 + 2 == 2
+        assert 1 + 2 == 3
 
     def teardown(self):
         print("=============这是执行测试后执行的方法，方法级别的teardown==========")
