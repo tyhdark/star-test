@@ -19,7 +19,7 @@ node_name = "node7"
 # region_name = "NZL"
 region_name = "LBY"
 # adderss = "cosmos1fap8hp3t3xt20qw4sczlyrk6n92uffj4r4kw77"
-print("======" * 5, "初始化起始线", "=======" * 5)
+print("======" * 5, "初始化起始线", "========" * 5)
 # print(Tx.Keys.add(username=username))                         # 添加用戶
 # Tx.SendToAdmin.count_down_5s()
 # Tx.SendToAdmin.send_to_treasury_fees(amount=20599720,fees=201000000000)   # 管理员转账给国库
