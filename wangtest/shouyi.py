@@ -1,8 +1,23 @@
-list1 = [1,2,3]
-list2 = [1,2,3,4]
-# print(type(len(list1)))
-# for list2 in list1:
-#     if list2 not in list1:
-#         print(list2)
-list3 = set(list2) -set(list1)
-print(list(list3))
+# -*- coding: utf-8 -*-
+from decimal import Decimal
+
+# from numpy import matrix
+
+# new_list = [i for i in range(5) if i>1]
+# print(new_list)
+# new_list2 = [(x+1,y+1) for x in range(3) for y in range(4)]
+# print(new_list2)
+# flattened = []
+# for row in :
+#     for n in row:
+#         flattened.append(n)
+
+# flattened = [n for row in matrix for n in row]
+# print(flattened)
+# b = 0.0000001*1000000
+# print(b)
+# a = Decimal('0.0000001') * Decimal('1000000')
+# print(type(a))
+a="%0.001f"%(0.0000001*1000000)
+print(a)
+# print(float(a))

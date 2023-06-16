@@ -778,7 +778,7 @@ class Tx(BaseClass):
 
             return hash_value
 
-        # TODO 设计提取自己的活期利息
+
         @staticmethod
         def distribution_withdraw_rewards(username: str, fees=100):
             """
@@ -832,7 +832,7 @@ class Tx(BaseClass):
 
             return resp_info_dict
 
-        # TODO 设计取出定期
+
         @staticmethod
         def withdraw_fixed(fixed_id: int, username: str, fees=100):
             """
@@ -876,7 +876,7 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
-        # TODO 修改验证者节点的归属
+
         @staticmethod
         def edit_validator_owner_address(node_name: str, to_username: str, fees=100):
             """
@@ -1298,7 +1298,7 @@ class Tx(BaseClass):
 
             return resp_info_list
 
-        # TODO 查询个人的定期委托列表
+
         @staticmethod
         def query_list_fixed_deposit_for_username(username):
             """
