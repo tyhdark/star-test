@@ -243,6 +243,32 @@ class Tx(BaseClass):
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
+        def tx_bank_send_to__user_address(from_address_name: str, to_address: str, amounts: float, fees=100):
+            """
+            根据用户名，A用户给B用户打钱,根据用户的地址
+
+            Args:
+                from_address_name: 转出用户的名字
+                to_address: 接收转账的用户的地址
+                amounts: 转账的金额 单位是mec
+                fees: 手续费 单位是umec
+
+            Return:
+                返回的是控制台的输出结果
+            """
+
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank send {Tx.Keys.private_export_meuser(username=from_address_name)} {to_address} {amounts}{Tx.coin.get('c')} {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')} "
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
+            Tx.channel.send(cmd + "\n")
+            resp_info = handle_console_input.ready_info(Tx.channel)
+
+            if "confirm" in resp_info:
+                resp_info = handle_console_input.yes_or_no(Tx.channel)
+
+            # print(Tx.Query.query_bank_balance_adders(address=to_address))
+
+            return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
         @staticmethod
         def creation_validator_node(node_name: str, amounts=100, fees=100):
             """创世后创建验证者节点  传入node_name将节点升级成验证者"""
@@ -778,7 +804,6 @@ class Tx(BaseClass):
 
             return hash_value
 
-
         @staticmethod
         def distribution_withdraw_rewards(username: str, fees=100):
             """
@@ -805,7 +830,7 @@ class Tx(BaseClass):
             return resp_info_dict
 
         @staticmethod
-        def deposit_fixed(amount:int | float,months: int, username: str,fees=100):
+        def deposit_fixed(amount: int | float, months: int, username: str, fees=100):
             """
             发起定期委托的方法，
             Args:
@@ -831,7 +856,6 @@ class Tx(BaseClass):
             resp_info_dict = handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
             return resp_info_dict
-
 
         @staticmethod
         def withdraw_fixed(fixed_id: int, username: str, fees=100):
@@ -875,7 +899,6 @@ class Tx(BaseClass):
                 resp_info = handle_console_input.yes_or_no(Tx.channel)
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
-
 
         @staticmethod
         def edit_validator_owner_address(node_name: str, to_username: str, fees=100):
@@ -963,6 +986,46 @@ class Tx(BaseClass):
                 resp_info = handle_console_input.yes_or_no(Tx.channel)  # 处理yee or no
 
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
+
+        # TODO 批量创建区和验证者节点
+        @staticmethod
+        def creation_validator_region_many():
+            region_node = dict(zip(Tx.region_name_many, Tx.node_id_many))
+            Tx.SendToAdmin.send_to_admin_fees(amount=100)
+            Tx.SendToAdmin.count_down_5s()
+            time.sleep(1)
+            for k, v in region_node.items():
+                # 创建节点
+                creation_vailtion_cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking create-validator --amount=40000000{Tx.coin.get('c')} --pubkey=$(./me-chaind tendermint show-validator --home node{v}) --moniker=node{v} --commission-rate=\"0.10\" --commission-max-rate=\"0.20\" --commission-max-change-rate=\"0.01\" --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend}) {Tx.chain_id} {Tx.keyring_backend} --fees=100{Tx.coin.get('uc')}"
+                logger.info(f"{inspect.stack()[0][3]}: {creation_vailtion_cmd}")  # logger插入
+                # 当有需要交互的时候，调用Tx下的channel下的send方法
+                Tx.channel.send(creation_vailtion_cmd + "\n")
+                resp_info_node = handle_console_input.ready_info(Tx.channel)
+
+                if "confirm" in resp_info_node:
+                    resp_info_node = handle_console_input.yes_or_no(Tx.channel)
+                return_node= handle_resp_data.handle_input_y_split_esc_re_code(resp_info_node)
+                Tx.SendToAdmin.count_down_5s()
+                time.sleep(3)
+                # 创建区
+                region_id = f"{k}id"
+                node_id=f"node{v}"
+                validator_address = Tx.Query.query_staking_validator_from_node_name(node_name=node_id)
+                # print(validator_address)
+                # validator_address2 = f"{Tx.chain_bin} q staking validators | grep {node_name} -A 6 | awk '\/operator_address/{print $2}\'"
+                creation_region_cmd = Tx.ssh_home + f"{Tx.chain_bin} tx staking new-region {region_id} {k}  {validator_address}  --from=$({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend})  {Tx.keyring_backend} {Tx.chain_id} --fees=100{Tx.coin.get('uc')} "
+                logger.info(f"{inspect.stack()[0][3]}: {creation_region_cmd}")  # logger插入
+                Tx.channel.send(creation_region_cmd + "\n")  # 发送命令行
+                resp_info_region = handle_console_input.ready_info(Tx.channel)  # 抓取输出的命令行
+                if "confirm" in resp_info_region:
+                    resp_info_region = handle_console_input.yes_or_no(Tx.channel)  # 处理yee or no
+                return_region = handle_resp_data.handle_input_y_split_esc_re_code(resp_info_region)
+                Tx.SendToAdmin.count_down_5s()
+                time.sleep(3)
+                # 拿到节点的opaddress
+                # 创建区
+
+            return return_node,return_region
 
         @staticmethod
         def new_kyc_for_username(user_name: str, region_name: str, fees=100):
@@ -1166,8 +1229,8 @@ class Tx(BaseClass):
             # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
             resp_info = Tx.ssh_client.ssh(cmd)
             list_region = handle_resp_data.handle_yaml_to_dict(resp_info).get('region')
-            for i in list_region:
-                print(i)
+            # for i in list_region:
+            #     print(i)
 
             return handle_resp_data.handle_yaml_to_dict(resp_info)
 
@@ -1298,7 +1361,6 @@ class Tx(BaseClass):
 
             return resp_info_list
 
-
         @staticmethod
         def query_list_fixed_deposit_for_username(username):
             """
@@ -1313,6 +1375,23 @@ class Tx(BaseClass):
 
             return resp_info_list
 
+        # TODO 将节点和节点所对应的区组合成一个字典
+        @staticmethod
+        def node_name_zip_region_name():
+            """
+            将node名字和区名字组合匹配起来，
+            """
+            node_name = Tx.Query.query_staking_validator()  # 获取节点信息，包含验node名称和验证者节点地址
+            region_name = Tx.Query.query_staking_list_region()  # 获取区信息，包含区对应的验证者地址和区名称
+            v_dict = {v.get("operator_address"): v.get("description").get("moniker") for v in
+                      node_name.get("validators")}
+            r_dict = {r.get("operator_address"): r.get('name') for r in region_name.get("region")}
+            # print(v_dict)
+            # print(r_dict)
+            node_zip_region = dict(zip(v_dict.values(), r_dict.values()))
+            # print(node_zip_region)
+            return node_zip_region
+
         # TODO 计算块高
         @staticmethod
         def count_height():
@@ -1326,13 +1405,15 @@ if __name__ == '__main__':
     # username = "wangzhibiao001"
 
     # username="wangzhibiao001"
-    username = "wangzhibiao001"
+    # username = "wangzhibiao001"
     # username = "superadmin"
-    yue = "1999900"
-    node_name = "node2"
-    region_name = "USA"
+    # yue = "1999900"
+    # node_name = "node2"
+    # region_name = "USA"
     # adderss = "cosmos1fap8hp3t3xt20qw4sczlyrk6n92uffj4r4kw77"
     print("======" * 5, "初始化起始线", "======" * 5)
+    print(Tx.Staking.creation_validator_region_many())
+    # print(Tx.Query.node_name_zip_region_name())
     # print(Tx.Keys.add(username=username))                         # 添加用戶
     # Tx.SendToAdmin.count_down_5s()
     #
@@ -1345,7 +1426,7 @@ if __name__ == '__main__':
     # Tx.SendToAdmin.count_down_5s()
     # time.sleep(1)
     # print(f"{username}该用户余额为:",Tx.Query.query_bank_balance_username(username=username))   # 查询该用户余额
-    print(f"{username}该用户地址为:", Tx.Keys.private_export_meuser(username=username))  # 查询用户address
+    # print(f"{username}该用户地址为:", Tx.Keys.private_export_meuser(username=username))  # 查询用户address
     # Tx.SendToAdmin.tx_bank_send(from_address_name=username,to_address_name=username,amounts=46725,fees=100) # 用户给用户转账
     # Tx.SendToAdmin.count_down_5s()
     # time.sleep(2)
@@ -1398,7 +1479,7 @@ if __name__ == '__main__':
 
     # print(kyc_list)
 
-    print(Tx.Staking.deposit_fixed(amount=10, months=3, username=username))  # 发起定期委托
+    # print(Tx.Staking.deposit_fixed(amount=10, months=3, username=username))  # 发起定期委托
     # print(Tx.Staking.deposit_fixed(amount=10,months=12,username=username))  #发起定期委托
     # Tx.SendToAdmin.count_down_5s()
     # Tx.Query.query_list_fixed_deposit()                # 查询所有定期委托列表

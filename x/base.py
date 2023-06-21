@@ -42,7 +42,8 @@ class BaseClass(object):
     amout = chain.amout
     # ssh_info = chain.ssh_info["config"]
     test_new_kyc_name = chain.test_new_kyc_nacme
-
+    region_name_many=chain.region_name_many
+    node_id_many=chain.node_id_many
     ssh_client = Host(**ssh_info)
 
     # ssh_home = chain.ssh_info["home"]
