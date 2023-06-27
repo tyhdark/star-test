@@ -3,7 +3,7 @@ import random
 import string
 import uuid
 
-from tools.handle_query import HandleQuery
+from x.query import HttpQuery
 
 
 def handle_region_name():
@@ -54,7 +54,7 @@ def handle_region_name():
 
 def _chain_region_name_list():
     """获取链上已存在的region-name"""
-    regin_list = HandleQuery.get_regin_list()
+    regin_list = HttpQuery().staking.region()
     regin_name_list = [i['regionName'] for i in regin_list["region"]]
     return regin_name_list
 
@@ -70,7 +70,7 @@ def create_region_id_and_name():
             return region_id, region_name
 
 
-def create_username():
+def random_username():
     random_str = string.ascii_letters + string.digits
     username = "user" + ''.join(random.sample(random_str, 12))
     return username

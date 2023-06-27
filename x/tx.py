@@ -4,12 +4,9 @@ import time
 
 from loguru import logger
 
-from config.chain import config
+from config.chain import config, GasLimit, Fees
 from tools import handle_resp_data, handle_console_input
 from x.base import BaseClass
-
-GasLimit = config["chain"]["default_gas_limit"]
-Fees = config["chain"]["default_fees"]
 
 
 class Tx(BaseClass):
@@ -45,19 +42,19 @@ class Tx(BaseClass):
             return Tx.exec_cmd_result(cmd)
 
         @staticmethod
-        def create_region(from_addr, region_name, region_id, total_as, delegators_limit, fee_rate,
-                          totalStakeAllow, userMaxDelegateAC, userMinDelegateAC, fees=Fees, gas=GasLimit):
+        def create_region(from_addr, region_name, region_id, total_as, fee_rate, totalStakeAllow, userMaxDelegateAC,
+                          userMinDelegateAC, delegators_limit=-1, fees=Fees, gas=GasLimit):
             """
             创建区
             :param from_addr: 发起方地址 需要区域管理员
             :param region_name: 区名称
             :param region_id: 区ID
             :param total_as: 区所占AS权重
-            :param delegators_limit: 区内委托上限人数（-1表示没有限制，0表示不允许质押，其他数值表示人数限制）
             :param fee_rate: 区内KYC用户手续费比例
             :param totalStakeAllow: 质押水位上限
             :param userMaxDelegateAC: 区内用户最大质押额
             :param userMinDelegateAC: 区内用户最小质押额
+            :param delegators_limit: 区内委托上限人数（-1表示没有限制，0表示不允许质押，其他数值表示人数限制）
             :param fees: Gas费用
             :param gas: 默认为 200000
             :return:
@@ -75,9 +72,9 @@ class Tx(BaseClass):
             return Tx.exec_cmd_result(cmd)
 
         @staticmethod
-        def update_region(region_id, from_addr, region_name=None, delegators_limit=None,
-                          fee_rate=None, totalStakeAllow=None, userMaxDelegateAC=None,
-                          userMinDelegateAC=None, isUndelegate=None, fees=Fees, gas=GasLimit):
+        def update_region(region_id, from_addr, region_name=None, delegators_limit=None, fee_rate=None,
+                          totalStakeAllow=None, userMaxDelegateAC=None, userMinDelegateAC=None, isUndelegate=None,
+                          fees=Fees, gas=GasLimit):
             """
             修改区信息
             :param region_id: 区ID
@@ -88,7 +85,7 @@ class Tx(BaseClass):
             :param totalStakeAllow: 质押水位上限
             :param userMaxDelegateAC: 区内用户最大质押额
             :param userMinDelegateAC: 区内用户最小质押额
-            :param isUndelegate: 控制区内永久质押开关,默认 True 不可提取
+            :param isUndelegate: 控制区内永久质押开关,默认 false 不可提取
             :param fees: 费用
             :param gas: GasLimit
             :return:

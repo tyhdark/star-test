@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import inspect
 
+import httpx
 from loguru import logger
 
 from tools import handle_resp_data
@@ -172,8 +173,83 @@ class Query(BaseClass):
             return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 
 
+class HttpQuery(BaseClass):
+    client = httpx.Client()
+
+    def __init__(self):
+        self.block = self.Block()
+        self.tx = self.Tx()
+        self.bank = self.Bank()
+        self.staking = self.Staking()
+
+    class Block:
+        @staticmethod
+        def query_block(height=None):
+            if height is None:
+                url = HttpQuery.api_url + HttpQuery.query_block_latest
+            else:
+                url = HttpQuery.api_url + HttpQuery.query_block.format(height=height)
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            response = HttpQuery.client.get(url=url)
+            assert response.status_code == 200
+            return response.json()['block']
+
+    class Tx:
+        @staticmethod
+        def query_tx(tx_hash):
+            url = HttpQuery.api_url + HttpQuery.query_tx_hash.format(hash=tx_hash)
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            response = HttpQuery.client.get(url=url)
+            assert response.status_code == 200
+            return response.json()['tx_response']
+
+    class Bank:
+        @staticmethod
+        def query_balances(addr):
+            url = HttpQuery.api_url + HttpQuery.query_bank_balances.format(address=addr)
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            response = HttpQuery.client.get(url=url)
+            assert response.status_code == 200
+            return response.json()['balances']
+
+    class Staking:
+        @staticmethod
+        def region(region_id=None, region_name=None):
+            """
+            查询区域信息
+            :param region_id: 查询指定region_id的区域信息
+            :param region_name: 查询指定region_name的区域信息
+            :param region_id and region_name 都不传,默认查询所有区域信息
+            """
+            if region_id is not None:
+                url = HttpQuery.api_url + HttpQuery.query_region_id.format(id=region_id)
+            elif region_name is not None:
+                url = HttpQuery.api_url + HttpQuery.query_region_name.format(name=region_name)
+            else:
+                url = HttpQuery.api_url + HttpQuery.query_regions
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            response = HttpQuery.client.get(url=url)
+            assert response.status_code == 200
+            return response.json()
+
+        @staticmethod
+        def delegation(addr=None):
+            """
+            查询委托信息
+            :param addr: 传入addr 查询某个地址委托,不传查询所有委托
+            """
+            if addr is None:
+                url = HttpQuery.api_url + HttpQuery.query_delegations
+            else:
+                url = HttpQuery.api_url + HttpQuery.query_delegation.format(addr=addr)
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            response = HttpQuery.client.get(url=url)
+            assert response.status_code == 200
+            return response.json()['delegation']
+
+
 if __name__ == '__main__':
-    q = Query()
-    r3 = q.mint.params()
+    q = HttpQuery()
+    r3 = q.staking.region()
     print(r3)
     pass
