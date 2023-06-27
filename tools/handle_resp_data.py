@@ -1,10 +1,3 @@
-"""
-@Author  :  Jw
-@Contact :  libai7236@gmail.com
-@Time    :  2022/12/29 16:48
-@Version :  V1.0
-@Desc    :  None
-"""
 import yaml
 
 
@@ -26,19 +19,12 @@ def handle_split_esc_re_code(data: str):
 def handle_input_y_split_esc_re_code(data: str):
     """input_y 后切割控制台esc数据 并按code 匹配"""
     data_info = data.split("")
-    _value = data_info[0]
-    value = 'code:' + _value.split('\r\ncode:')[-1]
-    return yaml.load(value, Loader=yaml.FullLoader)
-
-
-def handle_add_user(data: str):
-    """返回用户数据 和 助记词"""
-    data_info = data.split("**Important**")
-    _value = data_info[0]
-    mnemonic = data_info[1]
-
-    dict_value = yaml.load(_value, Loader=yaml.FullLoader)
-    return dict_value[0], mnemonic
+    # 使用 'code:' 作为分割符查找数据源
+    _value_list = ['code:' + i.split('\r\ncode:')[-1] for i in data_info if 'code:' in i]
+    if len(_value_list) == 1:
+        return yaml.load(_value_list[0], Loader=yaml.FullLoader)
+    else:
+        return _value_list
 
 
 def handle_yaml_to_dict(yaml_path: str, is_file=False):

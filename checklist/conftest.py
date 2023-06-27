@@ -22,6 +22,6 @@ def setup_create_region():
         dict(region_id=region_id, from_addr=region_admin_addr, fees="1", totalStakeAllow="1000"),
         dict(region_id=region_id, from_addr=region_admin_addr, fees="1", userMaxDelegateAC="1000"),
         dict(region_id=region_id, from_addr=region_admin_addr, fees="1", userMinDelegateAC="2"),
-        dict(region_id=region_id, from_addr=region_admin_addr, fees="1", isUndelegate=True),
+        dict(region_id=region_id, from_addr=region_admin_addr, fees="1", isUndelegate=True),  # 控制是否能提取永久质押开关
     ]
     yield region_admin_addr, region_id, region_name, update_region_data

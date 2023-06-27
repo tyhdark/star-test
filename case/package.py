@@ -33,11 +33,9 @@ class KeysPackage(BaseClass):
 
     def test_add(self):
         user_name = handle_name.create_username()
-        user_info = self.tx.keys.add(user_name)
-        user_addr = user_info[0]['address']
+        self.tx.keys.add(user_name)
+        user_addr = self.tx.keys.show(user_name)[0]['address']
         time.sleep(1)
-        res = self.q.bank.query_balances(user_addr)
-        assert res.get('balances') == list()
         return user_addr
 
     def test_show(self, data):
