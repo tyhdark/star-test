@@ -5,7 +5,7 @@ import time
 from loguru import logger
 
 from config.chain import config, GasLimit, Fees
-from tools import handle_resp_data, handle_console_input
+from tools.console import Interaction, Result
 from x.base import BaseClass
 
 
@@ -17,12 +17,12 @@ class Tx(BaseClass):
         self.keys = self.Keys()
 
     @staticmethod
-    def exec_cmd_result(cmd):
+    def _executor(cmd):
         resp_info = Tx.ssh_client.ssh(cmd, strip=False)
         if resp_info.failed:
             logger.info(f"{inspect.stack()[0][3]} resp_info.stderr: {resp_info.stderr}")
             return resp_info.stderr
-        return handle_resp_data.handle_yaml_to_dict(resp_info.stdout)
+        return Result.yaml_to_dict(resp_info.stdout)
 
     class Bank(object):
 
@@ -31,7 +31,7 @@ class Tx(BaseClass):
             """发送转账交易"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx bank send {from_addr} {to_addr} {amount}{Tx.coin['c']} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
     class Staking(object):
 
@@ -39,7 +39,7 @@ class Tx(BaseClass):
         def ag_to_ac(ag_amount, from_addr, fees=Fees, gas=GasLimit):
             cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking ag-to-ac {ag_amount}{Tx.coin['g']} --from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
         @staticmethod
         def create_region(from_addr, region_name, region_id, total_as, fee_rate, totalStakeAllow, userMaxDelegateAC,
@@ -69,7 +69,7 @@ class Tx(BaseClass):
                                  f"--userMinDelegateAC={userMinDelegateAC} " \
                                  f"--from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
         @staticmethod
         def update_region(region_id, from_addr, region_name=None, delegators_limit=None, fee_rate=None,
@@ -108,14 +108,14 @@ class Tx(BaseClass):
                 cmd += f"--isUndelegate={isUndelegate} "
 
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
         @staticmethod
         def create_validator(pubkey, moniker, from_addr, fees=Fees, gas=GasLimit):
             cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking create-validator --pubkey={pubkey} --moniker={moniker} " \
                                  f"--from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
         @staticmethod
         def update_validator(operator_address, region_name, from_addr, fees=Fees, gas=GasLimit):
@@ -130,7 +130,7 @@ class Tx(BaseClass):
             cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking update-validator --validator-address={operator_address} " \
                                  f"--region-name={region_name} --from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
         @staticmethod
         def delegate(from_addr, amount, fees=Fees, gas=GasLimit):
@@ -138,7 +138,7 @@ class Tx(BaseClass):
             cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking delegate --from={from_addr} --amount={amount}{Tx.coin['c']} " \
                                  f"--fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx.exec_cmd_result(cmd)
+            Tx._executor(cmd)
 
         @staticmethod
         def undelegate(from_addr, amount, fees=Fees, gas=GasLimit):
@@ -149,7 +149,7 @@ class Tx(BaseClass):
             """
             cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking undelegate --from={from_addr} --amount={amount}{Tx.coin['c']} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
         @staticmethod
         def exit_delegate(from_addr, delegator_address, fees=Fees, gas=GasLimit):
@@ -164,68 +164,68 @@ class Tx(BaseClass):
                                  f"--delegator-address={delegator_address} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
 
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
         @staticmethod
         def delegate_fixed(from_addr, amount, term, fees=Fees, gas=GasLimit):
             """创建活期周期质押"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking delegate-fixed --from={from_addr} --amount={amount}{Tx.coin['c']} --fixed_delegation_term={term} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
         @staticmethod
         def delegate_infinite(from_addr, amount, fees=Fees, gas=GasLimit):
             """创建活期永久质押"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking delegate-infinite --from={from_addr} --amount={amount}{Tx.coin['c']} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
         @staticmethod
         def undelegate_fixed(from_addr, fixed_delegation_id, fees=Fees, gas=GasLimit):
             """减少活期周期质押"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking undelegate-fixed --from={from_addr} --fixed_delegation_id={fixed_delegation_id} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
         @staticmethod
         def undelegate_infinite(from_addr, amount, fees=Fees, gas=GasLimit):
             """减少活期永久质押"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking undelegate-infinite --from={from_addr} --amount={amount}{Tx.coin['c']} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
         @staticmethod
         def withdraw(addr, fees=Fees, gas=GasLimit):
             """KYC用户提取活期收益"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking withdraw --from={addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
         @staticmethod
         def create_fixed_deposit(amount, period, from_addr, fees=Fees, gas=GasLimit):
             cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking deposit-fixed {amount}{Tx.coin['c']} {period} --from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
         @staticmethod
         def withdraw_fixed_deposit(deposit_id, from_addr, fees=Fees, gas=GasLimit):
             cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking withdraw-fixed {deposit_id} --from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
         @staticmethod
         def set_fixed_delegation_interest_rate(region_id, rate, term, from_addr, fees=Fees, gas=GasLimit):
             cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking set-fixed-deposit-interest-rate {region_id} {rate} {term} " \
                                  f"--from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
         @staticmethod
         def set_fixed_deposit_interest_rate(region_id, rate, period, from_addr, fees=Fees, gas=GasLimit):
             cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking set-fixed-deposit-interest-rate {region_id} {rate} {period} " \
                                  f"--from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
         @staticmethod
         def new_kyc(addr, region_id, role, from_addr, fees=Fees, gas=GasLimit):
@@ -245,13 +245,13 @@ class Tx(BaseClass):
             if from_addr != Tx.super_addr:  # 区管理员 不能创建 KYC_ROlE_ADMIN
                 assert role == config["chain"]["role"]["user"]
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
         @staticmethod
         def remove_kyc(addr, from_addr, fees=Fees, gas=GasLimit):
             cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking remove-kyc {addr} --from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx.exec_cmd_result(cmd)
+            return Tx._executor(cmd)
 
     class Keys(object):
 
@@ -262,10 +262,10 @@ class Tx(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
             time.sleep(1)
-            resp_info = handle_console_input.ready_info(Tx.channel)
+            resp_info = Interaction.ready(Tx.channel)
 
             if "existing" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
+                resp_info = Interaction.yes_or_no(Tx.channel)
 
             assert "**Important**" in resp_info
 
@@ -274,14 +274,14 @@ class Tx(BaseClass):
             """查询本地用户列表"""
             cmd = Tx.work_home + f"{Tx.chain_bin} keys list {Tx.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Tx.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Tx.ssh_client.ssh(cmd))
 
         @staticmethod
         def show(username):
             """查询本地用户信息"""
             cmd = Tx.work_home + f"{Tx.chain_bin} keys show {username} {Tx.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Tx.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Tx.ssh_client.ssh(cmd))
 
         @staticmethod
         def private_export(username):
@@ -290,11 +290,11 @@ class Tx(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
             time.sleep(1)
-            resp_info = handle_console_input.ready_info(Tx.channel)
+            resp_info = Interaction.ready(Tx.channel)
             if "private key will be exported" in resp_info:
-                resp_info = handle_console_input.yes_or_no(Tx.channel)
+                resp_info = Interaction.yes_or_no(Tx.channel)
 
-            return handle_resp_data.handle_split_esc(resp_info)
+            return Result.split_esc(resp_info)
 
 
 if __name__ == '__main__':

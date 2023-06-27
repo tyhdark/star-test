@@ -2,14 +2,12 @@
 import math
 import time
 
-import httpx
-
-from config import chain
-from x.query import Query
+from x.query import Query, HttpQuery
 
 
-class HandleQuery(object):
+class HttpResponse:
     q = Query()
+    hq = HttpQuery()
 
     @classmethod
     def get_block(cls) -> int:
@@ -78,12 +76,3 @@ class HandleQuery(object):
         block_number = cls.q.mint.params()
         block_rewards = math.ceil(chain.FIRST_FIVE_YEARS / int(block_number['blocks_per_year']))
         return block_rewards
-
-
-if __name__ == '__main__':
-    q1 = HandleQuery()
-    # q1.get_region("49b7bc6abeed11ed9fc31e620a42e349")
-    # q1.get_delegate("sil13htu9zqv8nfzdx0939qd6g3u2x582tmneer6xw")
-    q1.get_regin_list()
-    # q1.get_fixed_deposit_by_addr("sil1f85whrg3zsyhe2d52zt0utjx7mh6vepqnhgwll", chain.fixed_type[0])
-    # q1.get_fixed_deposit_by_addr("sil1c4smuqu9f5pv0gsyz89nvglafsud4c02nf6lyq", chain.fixed_type[0])

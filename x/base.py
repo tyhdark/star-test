@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from config.chain import config
 from tools.host import Host
 

@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 import random
 import string
-import uuid
 
 from x.query import HttpQuery
 
 
-def handle_region_name():
+class RegionInfo:
     region_name = '"\nAFG":"阿富汗","\nAGO":"安哥拉","\nAIA":"安圭拉","\nALA":"奥兰","\nALB":"阿尔巴尼亚","\nAND":"安道尔",' \
                   '"\nARE":"阿联酋","\nARG":"阿根廷","\nARM":"亚美":"南极洲","\nATF":"法属南部和南极领地",' \
                   '"\nATG":"安提瓜和巴布达","\nAUS":"澳大利亚","\nAUT":"奥地利","\nAZE":"阿塞拜疆","\nBDI":"布隆迪",' \
@@ -45,38 +44,39 @@ def handle_region_name():
                   '"\nVAT":"梵蒂冈","\nVCT":"圣文森特和格林纳丁斯","\nVEN":"委内瑞拉","\nVGB":"英属维尔京群岛",' \
                   '"\nVIR":"美属维尔京群岛,"\nWLF":"瓦利斯和富图纳群岛","\nWSM":"萨摩亚","\nYEM":"也门","\nZAF":"南非","\nZMB":"赞比亚",' \
                   '"\nZWE":"津巴布韦","\nABW":"阿鲁巴"'
-    region_name_list = region_name.replace('\n', '').replace('"', '').split(',')
-    region_name_item = [i.split(":") for i in region_name_list]
-    region_name_dict = {item[0]: item[-1] for item in region_name_item}
-    region_name_key = [j for j in region_name_dict]
-    return region_name_key, region_name_dict
+    hq = HttpQuery()
+
+    @classmethod
+    def parse_region_name(cls):
+        region_name_list = cls.region_name.replace('\n', '').replace('"', '').split(',')
+        region_name_item = [i.split(":") for i in region_name_list]
+        region_name_dict = {item[0]: item[-1] for item in region_name_item}
+        region_name_key = [j for j in region_name_dict]
+        return region_name_key, region_name_dict
+
+    @classmethod
+    def _chain_region_name_list(cls):
+        """获取链上已存在的region-name"""
+        regin_list = cls.hq.staking.region()
+        regin_name_list = [i['regionName'] for i in regin_list["region"]]
+        return regin_name_list
+
+    @classmethod
+    def create_region_id_and_name(cls):
+        """创建region-id和region-name(链上不存在的region—name)"""
+        region_name_key, _ = cls.parse_region_name()
+        while True:
+            region_key = random.choice(region_name_key)
+            chain_region_name_list = cls._chain_region_name_list()
+            if region_key not in chain_region_name_list:
+                region_id = region_key.lower()
+                return region_id, region_key
 
 
-def _chain_region_name_list():
-    """获取链上已存在的region-name"""
-    regin_list = HttpQuery().staking.region()
-    regin_name_list = [i['regionName'] for i in regin_list["region"]]
-    return regin_name_list
+class UserInfo:
 
-
-def create_region_id_and_name():
-    """创建region-id和region-name(链上不存在的region—name)"""
-    region_id = uuid.uuid1().hex
-    region_name_key, _ = handle_region_name()
-    while True:
-        region_name = random.choice(region_name_key)
-        chain_region_name_list = _chain_region_name_list()
-        if region_name not in chain_region_name_list:
-            return region_id, region_name
-
-
-def random_username():
-    random_str = string.ascii_letters + string.digits
-    username = "user" + ''.join(random.sample(random_str, 12))
-    return username
-
-
-if __name__ == '__main__':
-    for index in range(200):
-        r1 = create_region_id_and_name()
-        print(r1)
+    @classmethod
+    def random_username(cls):
+        random_str = string.ascii_letters + string.digits
+        username = "user" + ''.join(random.sample(random_str, 8))
+        return username

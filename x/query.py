@@ -4,7 +4,7 @@ import inspect
 import httpx
 from loguru import logger
 
-from tools import handle_resp_data
+from tools.console import Result
 from x.base import BaseClass
 
 
@@ -25,9 +25,9 @@ class Query(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             res = Query.ssh_client.ssh(cmd)
             if height:
-                return handle_resp_data.handle_yaml_to_dict(res)
+                return Result.yaml_to_dict(res)
             else:
-                resp = handle_resp_data.handle_yaml_to_dict(res)
+                resp = Result.yaml_to_dict(res)
                 block_height = resp['block']['header']['height']
                 return block_height
 
@@ -37,7 +37,7 @@ class Query(BaseClass):
         def query_tx(tx_hash):
             cmd = Query.work_home + f"{Query.chain_bin} q tx {tx_hash} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
     class Bank(object):
 
@@ -45,7 +45,7 @@ class Query(BaseClass):
         def query_balances(addr):
             cmd = Query.work_home + f"{Query.chain_bin} q bank balances {addr} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
     class Staking(object):
 
@@ -54,35 +54,35 @@ class Query(BaseClass):
             """查询活期质押"""
             cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-delegation {addr} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def list_delegation():
             """所有活期质押信息"""
             cmd = Query.work_home + f"{Query.chain_bin} q srstaking list-delegation {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def list_fixed_delegation():
             """所有活期内周期质押信息"""
             cmd = Query.work_home + f"{Query.chain_bin} q srstaking list-fixed-delegation {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def show_fixed_delegation(addr):
             """活期内周期质押信息"""
             cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-fixed-delegation {addr} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def kyc_by_region(region_id):
             """查询区域KYC列表"""
             cmd = Query.work_home + f"{Query.chain_bin} q srstaking kyc-by-region {region_id} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def show_kyc(addr):
@@ -91,7 +91,7 @@ class Query(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             res = Query.ssh_client.ssh(cmd, strip=False)
             if res.stdout:
-                return handle_resp_data.handle_yaml_to_dict(res.stdout)
+                return Result.yaml_to_dict(res.stdout)
             else:
                 return res.stderr
 
@@ -99,69 +99,69 @@ class Query(BaseClass):
         def list_kyc():
             cmd = Query.work_home + f"{Query.chain_bin} q srstaking list-kyc {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def list_fixed_deposit():
             cmd = Query.work_home + f"{Query.chain_bin} q srstaking list-fixed-deposit {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def show_fixed_deposit_by_id(addr, deposit_id):
             cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-fixed-deposit {addr} {deposit_id} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def show_fixed_deposit_by_addr(addr, query_type):
             cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-fixed-deposit-by-acct {addr} {query_type} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def show_fixed_deposit_by_region(region_id, query_type):
             cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-fixed-deposit-by-region {region_id} {query_type} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def list_region():
             """查询区域列表"""
             cmd = Query.work_home + f"{Query.chain_bin} q srstaking list-region {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def show_region(region_id):
             cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-region {region_id} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def show_region_by_name(region_name):
             cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-region-by-name {region_name} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def list_validator():
             cmd = Query.work_home + f"{Query.chain_bin} q srstaking list-validator {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         # validate 参数是 operator_address
         @staticmethod
         def show_validator(validator):
             cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-validator {validator} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def params():
             cmd = Query.work_home + f"{Query.chain_bin} q srstaking params {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
     class Mint(object):
 
@@ -170,7 +170,7 @@ class Query(BaseClass):
             """Query the current minting parameters"""
             cmd = Query.work_home + f"{Query.chain_bin} q mint params {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
 
 class HttpQuery(BaseClass):

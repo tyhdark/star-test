@@ -6,35 +6,37 @@ import time
 import pytest
 from loguru import logger
 
-from case import package
+from cases import unitcases
 from config import chain
-from tools import calculate, handle_query
+from tools import calculate
 
 
-# logger.add("logs/case_{time}.log", rotation="500MB")
+logger.add("logs/case_{time}.log", rotation="500MB")
 
 
 @pytest.mark.P0
 class TestRegionDelegate(object):
-    test_region = package.RegionPackage()
-    test_del = package.DelegatePackage()
-    test_kyc = package.KycPackage()
-    test_bank = package.BankPackage()
+    test_region = unitcases.RegionCases()
+    test_del = unitcases.DelegateCases()
+    test_kyc = unitcases.KycCases()
+    test_bank = unitcases.BankCases()
     handle_q = handle_query.HandleQuery()
 
-    def test_region_delegate(self):
+    def test_region_delegate(self, setup_create_region):
         """测试新创建区域并质押"""
         logger.info("TestRegionDelegate/test_region_delegate")
-        region_admin_addr, region_id, _ = self.test_region.test_create_region()
+        region_admin_info, region_id, region_name = setup_create_region
+        region_admin_addr = region_admin_info['address']
 
-        new_kyc_data = dict(region_id=f"{region_id}", region_admin_addr=f"{region_admin_addr}")
-        user_addr = self.test_kyc.test_new_kyc_user(new_kyc_data)
+        new_kyc_data = dict(region_id=region_id, region_admin_addr=region_admin_addr)
+        user_info = self.test_kyc.test_new_kyc_user(**new_kyc_data)
+        user_addr = user_info['address']
 
-        send_data = dict(from_addr=f"{chain.super_addr}", to_addr=f"{user_addr}", amount="100", fees="1")
-        self.test_bank.test_send(send_data)
+        send_data = dict(from_addr=self.test_bank.tx.super_addr, to_addr=user_addr, amount=100)
+        self.test_bank.test_send(**send_data)
 
-        del_data = dict(region_id=f"{region_id}", region_user_addr=f"{user_addr}", amount="10", fees="1")
-        self.test_del.test_delegate(del_data)
+        del_data = dict(from_addr=user_addr, amount=10)
+        self.test_del.test_delegate(**del_data)
 
         # 验证用户余额
         user_balance = self.handle_q.get_balance(user_addr, chain.coin['uc'])

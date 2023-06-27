@@ -2,7 +2,7 @@
 import pytest
 from loguru import logger
 
-from case import package
+from cases import package
 from tools import handle_query
 
 

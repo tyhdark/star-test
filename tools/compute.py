@@ -1,31 +1,26 @@
-"""
-@Author  :  Jw
-@Contact :  libai7236@gmail.com
-@Time    :  2022/12/29 18:34
-@Version :  V1.0
-@Desc    :  None
-"""
+# -*- coding: utf-8 -*-
 import decimal
 import time
 
 from loguru import logger
 
-from tools.handle_query import HandleQuery
 from x.query import Query
 
 
-def to_usrc(number, reverse: bool = True):
-    """
-    计算代币SRC 《==》 USRC , (number * 10 ** 8)
-    :param number:
-    :param reverse:
-        - False -> 缩小 usrc转src
-        - True  -> 放大 src转usrc
-    :return:
-    """
-    if reverse:
-        return number * (10 ** 6)
-    return decimal.Decimal(number) / decimal.Decimal(10 ** 6)
+class Compute:
+
+    @staticmethod
+    def to_uc(number, reverse: bool = True):
+        """
+        计算代币AC 《==》 UAC , (number * 10 ** 8)
+        :param number:
+        :param reverse:
+            - True  -> 放大 ac转uac
+            - False -> 缩小 uac转ac
+        """
+        if reverse:
+            return number * (10 ** 6)
+        return decimal.Decimal(number) / decimal.Decimal(10 ** 6)
 
 
 def subtraction(total, pay, fees):
@@ -123,7 +118,6 @@ def border_value2():
 
 
 if __name__ == '__main__':
-
     a = decimal.Decimal(10) / decimal.Decimal(400) / decimal.Decimal(100000)
     a_str = '{:.20f}'.format(a)
     print(a_str)

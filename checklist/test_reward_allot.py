@@ -4,7 +4,7 @@ import time
 import pytest
 from loguru import logger
 
-from case import package
+from cases import package
 from config import chain
 from tools import handle_query, calculate
 

@@ -4,18 +4,18 @@ import time
 
 from loguru import logger
 
-from tools import handle_name
+from tools.name import UserInfo, RegionInfo
 from x.query import Query, HttpQuery
 from x.tx import Tx
 
 
-class BaseClass(object):
+class Base(object):
     tx = Tx()
     hq = HttpQuery()
     q = Query()
 
 
-class BankCases(BaseClass):
+class Bank(Base):
 
     def test_send(self, from_addr, to_addr, amount, **kwargs):
         tx_info = self.tx.bank.send_tx(from_addr, to_addr, amount, **kwargs)
@@ -25,11 +25,11 @@ class BankCases(BaseClass):
         assert resp['code'] == 0, f"test_send failed, resp: {resp}"
 
 
-class KeysCases(BaseClass):
+class Keys(Base):
 
     def test_add(self, user_name=None):
         if user_name is None:
-            user_name = handle_name.random_username()
+            user_name = UserInfo.random_username()
         self.tx.keys.add(user_name)
         user_info = self.tx.keys.show(user_name)
         assert user_info is not None
@@ -46,7 +46,7 @@ class KeysCases(BaseClass):
         return pk
 
 
-class KycCases(KeysCases):
+class Kyc(Keys):
 
     def test_new_kyc_user(self, region_id, region_admin_addr, addr=None, **kwargs):
         # 新创建区 需要等待一个块高才能认证KYC，即区金库要有余额
@@ -65,7 +65,7 @@ class KycCases(KeysCases):
         return user_info
 
     def test_new_kyc_admin(self, **kwargs):
-        region_id, region_name = handle_name.create_region_id_and_name()
+        region_id, region_name = RegionInfo.create_region_id_and_name()
         logger.info(f"new region_id: {region_id}, region_name:{region_name}")
         # 添加用户
         region_admin_info = self.test_add()
@@ -82,7 +82,7 @@ class KycCases(KeysCases):
         return region_admin_info, region_id, region_name
 
 
-class RegionCases(KycCases, BankCases):
+class Region(Kyc, Bank):
 
     def test_create_region(self, **kwargs):
         region_admin_info, region_id, region_name = self.test_new_kyc_admin(**kwargs)
@@ -116,7 +116,7 @@ class RegionCases(KycCases, BankCases):
         assert tx_resp['code'] == 0, f"test_update_region failed, resp: {tx_resp}"
 
 
-class DelegateCases(BaseClass):
+class Delegate(Base):
 
     def test_delegate(self, **kwargs):
         del_info = self.tx.staking.delegate(**kwargs)
@@ -176,7 +176,7 @@ class DelegateCases(BaseClass):
         assert resp['code'] == 0, f"test_undelegate_infinite failed, resp: {resp}"
 
 
-class FixedCases(BaseClass):
+class Fixed(Base):
 
     def test_create_fixed_deposit(self, **kwargs):
         tx_info = self.tx.staking.create_fixed_deposit(**kwargs)
@@ -194,7 +194,7 @@ class FixedCases(BaseClass):
 
 
 if __name__ == '__main__':
-    a = RegionCases()
+    a = Region()
     # data1 = dict(from_addr="gea12g50h9fa7jp4tu47f4mn906s3274urjamcvyrd",
     #              to_addr="gea1pv54mu2fa72vhz9wkx3dmw94f8nf6ncppae9pk",
     #              amount=10,
