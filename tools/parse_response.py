@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-import math
-import time
-
 from x.query import Query, HttpQuery
 
 
@@ -10,39 +7,39 @@ class HttpResponse:
     hq = HttpQuery()
 
     @classmethod
-    def get_block(cls) -> int:
-        current_block = int(cls.q.block.query_block())
-        return current_block
+    def get_current_block(cls) -> int:
+        current_block = cls.hq.block.query_block()
+        return int(current_block["header"]["height"])
 
     @classmethod
-    def get_balance(cls, user_addr, denom):
-        balances_info = cls.q.bank.query_balances(user_addr)
-        user_balance = balances_info['balances']
-        return [i for i in user_balance if i['denom'] == denom][0]
+    def get_balance_unit(cls, user_addr, denom) -> dict:
+        balance_list = cls.hq.bank.query_balances(user_addr)
+        return [i for i in balance_list if i['denom'] == denom][0]
 
     @classmethod
     def get_region(cls, region_id):
-        region_info = cls.q.staking.show_region(region_id)
+        region_info = cls.hq.staking.region(region_id=region_id)
         return region_info
 
     @classmethod
-    def get_delegate(cls, user_addr):
-        # del_info = cls.q.staking.show_delegation(user_addr)
-        data = chain.api['show_delegation']
-        url = data["url"] + user_addr
-        time.sleep(2)
-        def_info = httpx.request(method=data["method"], url=url, )
-        return def_info.json()
-
-    @classmethod
     def get_regin_list(cls):
-        region_list = httpx.request(**chain.api['list_region'])
-        return region_list.json()
+        region_list = cls.hq.staking.region()
+        return region_list
 
     @classmethod
     def get_validator_list(cls):
-        region_list = httpx.request(**chain.api['list_validator'])
-        return region_list.json()
+        validator_list = cls.hq.staking.validator()
+        return validator_list
+
+    @classmethod
+    def get_delegate(cls, user_addr):
+        del_info = cls.hq.staking.delegation(user_addr)
+        return del_info
+
+    @classmethod
+    def show_fixed_delegation(cls, addr):
+        del_info = cls.q.staking.show_fixed_delegation(addr)
+        return del_info
 
     @classmethod
     def get_kyc_by_region(cls, region_id):
@@ -64,15 +61,6 @@ class HttpResponse:
         fixed_info = cls.q.staking.show_fixed_deposit_by_id(addr, deposit_id)
         return fixed_info
 
-    @classmethod
-    def get_test_blocks_per_year(cls):
-        mint_info = cls.q.mint.params()
-        blocks_per_year = int(mint_info['blocks_per_year'])
-        blocks_per_year /= 43800
-        return blocks_per_year
 
-    @classmethod
-    def get_block_reward(cls):
-        block_number = cls.q.mint.params()
-        block_rewards = math.ceil(chain.FIRST_FIVE_YEARS / int(block_number['blocks_per_year']))
-        return block_rewards
+if __name__ == '__main__':
+    pass

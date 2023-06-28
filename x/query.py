@@ -244,8 +244,21 @@ class HttpQuery(BaseClass):
                 url = HttpQuery.api_url + HttpQuery.query_delegation.format(addr=addr)
             logger.info(f"{inspect.stack()[0][3]}: {url}")
             response = HttpQuery.client.get(url=url)
+            logger.info(f"response: {response}")
             assert response.status_code == 200
             return response.json()['delegation']
+
+        @staticmethod
+        def validator(addr=None):
+            if addr is None:
+                url = HttpQuery.api_url + HttpQuery.query_validators
+            else:
+                url = HttpQuery.api_url + HttpQuery.query_validator.format(address=addr)
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            response = HttpQuery.client.get(url=url)
+            logger.info(f"response: {response}")
+            assert response.status_code == 200
+            return response.json()['validator']
 
 
 if __name__ == '__main__':

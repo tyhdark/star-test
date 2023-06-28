@@ -138,7 +138,7 @@ class Tx(BaseClass):
             cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking delegate --from={from_addr} --amount={amount}{Tx.coin['c']} " \
                                  f"--fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            Tx._executor(cmd)
+            return Tx._executor(cmd)
 
         @staticmethod
         def undelegate(from_addr, amount, fees=Fees, gas=GasLimit):

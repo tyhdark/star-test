@@ -40,7 +40,6 @@ class Interaction:
     @staticmethod
     def yes_or_no(channel, boolean: bool = True):
         """
-        #TODO 只对输入y的情况整理了数据，n的情况待处理
         :param channel:
         :param boolean:
         :return:
