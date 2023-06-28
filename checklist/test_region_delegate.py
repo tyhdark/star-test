@@ -39,11 +39,11 @@ class TestRegionDelegate(object):
         self.test_del.test_delegate(**del_data)
 
         user_balance = HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])
-        assert user_balance['amount'] == str(Compute.to_uc(100 - 10 - self.base_cfg.fees))
+        assert user_balance['amount'] == str(Compute.to_u(100 - 10 - self.base_cfg.fees))
 
         # 验证区信息
         region_info = HttpResponse.get_region(region_id)
-        assert region_info['region_commission']['currentDemandTotalUAC'] == str(Compute.to_uc(10 + 1))
+        assert region_info['region_commission']['currentDemandTotalUAC'] == str(Compute.to_u(10 + 1))
         assert user_addr in region_info['delegators']['delegators']
 
         return region_admin_addr, region_id, user_addr
@@ -65,10 +65,10 @@ class TestRegionDelegate(object):
         self.test_del.test_delegate(**del_data)
 
         user_balance = HttpResponse.get_balance_unit(user_addr2, self.base_cfg.coin['uc'])
-        assert user_balance['amount'] == str(Compute.to_uc(100 - 10 - self.base_cfg.fees))
+        assert user_balance['amount'] == str(Compute.to_u(100 - 10 - self.base_cfg.fees))
 
         region_info = HttpResponse.get_region(region_id)
-        assert region_info['region_commission']['currentDemandTotalUAC'] == str(Compute.to_uc(10 + 1 + 10 + 1))
+        assert region_info['region_commission']['currentDemandTotalUAC'] == str(Compute.to_u(10 + 1 + 10 + 1))
         assert user_addr1 and user_addr2 in region_info['delegators']['delegators']
         logger.info(f"collect_addr_list:{region_admin_addr, region_id, user_addr1, user_addr2}")
         return region_admin_addr, region_id, user_addr1, user_addr2
@@ -83,7 +83,7 @@ class TestRegionDelegate(object):
 
             - user2 赎回小数值
             - user2 赎回小数值超过6位小数,截取字符
-            + expect: user2 还剩下2usrc活期质押,还存在KYC赠送质押
+            + expect: user2 还剩下2uac活期质押,还存在KYC赠送质押
 
             - user2 调用exit退出活期质押
             + expect: user2 无活期质押,还存在KYC赠送质押
@@ -100,7 +100,7 @@ class TestRegionDelegate(object):
         self.test_del.test_undelegate(**del_data)
 
         resp_balance_1 = int(HttpResponse.get_balance_unit(user_addr1, self.base_cfg.coin['uc'])['amount'])
-        assert resp_balance_1 == user1_balance + int(Compute.to_uc(amount - self.base_cfg.fees))
+        assert resp_balance_1 == user1_balance + int(Compute.to_u(amount - self.base_cfg.fees))
 
         logger.info(f'{"- user1 赎回大于额 > 剩余活期质押额":*^50s}')
         amount2 = 6
@@ -109,12 +109,12 @@ class TestRegionDelegate(object):
 
         # 赎回6acc但是余额只是增加5ac
         resp_balance_2 = int(HttpResponse.get_balance_unit(user_addr1, self.base_cfg.coin['uc'])['amount'])
-        assert resp_balance_2 == resp_balance_1 + int(Compute.to_uc(amount - self.base_cfg.fees))
+        assert resp_balance_2 == resp_balance_1 + int(Compute.to_u(amount - self.base_cfg.fees))
         logger.info(f'{"+ expect: user1 无活期质押,还存在KYC赠送质押":*^50s}')
         user1_del_info = HttpResponse.get_delegate(user_addr1)
         # ["delegation"]["amountAC"] 代币单位 uac
         assert int(user1_del_info['amountAC']) == 0
-        assert int(user1_del_info["unmovableAmount"]) == Compute.to_uc(1)
+        assert int(user1_del_info["unmovableAmount"]) == Compute.to_u(1)
 
         user2_balance = int(HttpResponse.get_balance_unit(user_addr2, self.base_cfg.coin['uc'])['amount'])
         logger.info(f'{"- user2 赎回小数值":*^50s}')
@@ -123,7 +123,7 @@ class TestRegionDelegate(object):
         self.test_del.test_undelegate(**del_data)
 
         resp_balance_3 = int(HttpResponse.get_balance_unit(user_addr2, self.base_cfg.coin['uc'])['amount'])
-        assert resp_balance_3 == user2_balance + int(Compute.to_uc(amount3 - self.base_cfg.fees))
+        assert resp_balance_3 == user2_balance + int(Compute.to_u(amount3 - self.base_cfg.fees))
 
         logger.info(f'{"- user2 赎回小数值超过6位小数,截取字符进行赎回":*^50s}')
         amount4 = 4.9999999
@@ -131,25 +131,25 @@ class TestRegionDelegate(object):
         self.test_del.test_undelegate(**del_data)
 
         resp_balance_4 = int(HttpResponse.get_balance_unit(user_addr2, self.base_cfg.coin['uc'])['amount'])
-        assert resp_balance_4 == resp_balance_3 + int(Compute.to_uc(amount3 - self.base_cfg.fees))
+        assert resp_balance_4 == resp_balance_3 + int(Compute.to_u(amount3 - self.base_cfg.fees))
 
         logger.info(f'{"+ expect: user2 还剩下2uac活期质押,还存在KYC赠送质押":*^50s}')
         user2_del_info = HttpResponse.get_delegate(user_addr2)
         logger.info(f'user2_del_info:{user2_del_info}')
         assert int(user2_del_info["amountAC"]) == 2
-        assert int(user2_del_info["unmovableAmount"]) == Compute.to_uc(1)
+        assert int(user2_del_info["unmovableAmount"]) == Compute.to_u(1)
 
         logger.info(f'{"- user2 调用exit退出活期质押":*^50s}')
         del_data = dict(from_addr=user_addr2, delegator_address=user_addr2)
         self.test_del.test_exit_delegate(**del_data)
 
         resp_balance_5 = int(HttpResponse.get_balance_unit(user_addr2, self.base_cfg.coin['uc'])['amount'])
-        assert resp_balance_5 == resp_balance_4 + 2 - Compute.to_uc(self.base_cfg.fees)
+        assert resp_balance_5 == resp_balance_4 + 2 - Compute.to_u(self.base_cfg.fees)
 
         logger.info(f'{"+ expect: user2 无活期质押,还存在KYC赠送质押":*^50s}')
         user2_del_info = HttpResponse.get_delegate(user_addr2)
         assert int(user2_del_info["amountAC"]) == 0
-        assert int(user2_del_info["unmovableAmount"]) == Compute.to_uc(1)
+        assert int(user2_del_info["unmovableAmount"]) == Compute.to_u(1)
 
     def test_region_more_exit_delegate(self, setup_create_region):
         """
@@ -173,14 +173,14 @@ class TestRegionDelegate(object):
         del_data = dict(from_addr=self.base_cfg.super_addr, delegator_address=user_addr1)
         self.test_del.test_exit_delegate(**del_data)
 
-        u_delegate_amount = Compute.to_uc(10)
+        u_delegate_amount = Compute.to_u(10)
         resp_balance_1 = int(HttpResponse.get_balance_unit(user_addr1, self.base_cfg.coin['uc'])['amount'])
         assert resp_balance_1 == user1_balance + u_delegate_amount
         logger.info(f'{"+ expect: user1 无活期质押,还剩下kyc赠送质押":*^50s}')
         user1_del_info = HttpResponse.get_delegate(user_addr1)
         # ["delegation"]["amountAC"] 代币单位 uac
         assert int(user1_del_info["amountAC"]) == 0
-        assert int(user1_del_info["unmovableAmount"]) == Compute.to_uc(1)
+        assert int(user1_del_info["unmovableAmount"]) == Compute.to_u(1)
 
         user2_balance = int(HttpResponse.get_balance_unit(user_addr2, self.base_cfg.coin['uc'])['amount'])
         logger.info(f'{"- user2 regionAmin发起清退":*^50s}')
@@ -193,7 +193,7 @@ class TestRegionDelegate(object):
         logger.info(f'{"+ expect: user2 无活期质押,还剩下kyc赠送质押":*^50s}')
         user2_del_info = HttpResponse.get_delegate(user_addr2)
         assert int(user2_del_info["amountAC"]) == 0
-        assert int(user2_del_info["unmovableAmount"]) == Compute.to_uc(1)
+        assert int(user2_del_info["unmovableAmount"]) == Compute.to_u(1)
 
         user2_balance2 = int(HttpResponse.get_balance_unit(user_addr2, self.base_cfg.coin['uc'])['amount'])
         logger.info(f'{"- user2 regionAmin多次发起清退":*^50s}')
@@ -230,20 +230,20 @@ class TestRegionDelegate(object):
 
         user_addr_balance = int(HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])["amount"])
 
-        assert user_addr_balance == Compute.to_uc(100 - 10 - self.base_cfg.fees)
+        assert user_addr_balance == Compute.to_u(100 - 10 - self.base_cfg.fees)
         delegate_info = HttpResponse.get_delegate(user_addr)
-        assert delegate_info["fixedAmount"] == str(Compute.to_uc(10))
+        assert delegate_info["fixedAmount"] == str(Compute.to_u(10))
         x = decimal.Decimal(10) / decimal.Decimal(400) / decimal.Decimal(self.base_cfg.region_as)
         assert delegate_info["fixedASRate"] == '{:.18f}'.format(x)
 
         resp = HttpResponse.show_fixed_delegation(user_addr)
         assert len(resp['items']) == 1
-        assert resp['items'][0]['amount']['amount'] == str(Compute.to_uc(10))
+        assert resp['items'][0]['amount']['amount'] == str(Compute.to_u(10))
 
         # Compute revenue over the period
         interests = set([i['amount'] for i in resp['items'][0]['interests']])
         assert len(interests) == 1
-        y = self.base_cfg.annual_rate[1] * 1 / 12 * Compute.to_uc(10)
+        y = self.base_cfg.annual_rate[1] * 1 / 12 * Compute.to_u(10)
         assert int(interests.pop()) == y
 
         return region_admin_addr, region_id, region_name, user_addr
@@ -288,10 +288,10 @@ class TestRegionDelegate(object):
         self.test_del.test_delegate_infinite(**del_data)
 
         user_addr_balance = int(HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])["amount"])
-        assert user_addr_balance == Compute.to_uc(100 - 10 - self.base_cfg.fees)
+        assert user_addr_balance == Compute.to_u(100 - 10 - self.base_cfg.fees)
         delegate_info = HttpResponse.get_delegate(user_addr)
         # 包含new-kyc的 1coin
-        assert delegate_info["unmovableAmount"] == str(Compute.to_uc(10 + 1))
+        assert delegate_info["unmovableAmount"] == str(Compute.to_u(10 + 1))
         x = decimal.Decimal(11) / decimal.Decimal(400) / decimal.Decimal(self.base_cfg.region_as)
         assert delegate_info["unmovableASRate"] == '{:.18f}'.format(x)
 
@@ -330,7 +330,7 @@ class TestRegionDelegate(object):
         start_user_addr_balance = int(HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])["amount"])
         self.test_del.test_undelegate_infinite(**del_data)
         end_user_addr_balance = int(HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])["amount"])
-        assert end_user_addr_balance == start_user_addr_balance + Compute.to_uc(5 - self.base_cfg.fees)
+        assert end_user_addr_balance == start_user_addr_balance + Compute.to_u(5 - self.base_cfg.fees)
 
         # update isUndelegate to False
         region_data = dict(region_id=region_id, from_addr=self.base_cfg.super_addr, isUndelegate=False)
@@ -366,7 +366,7 @@ class TestRegionDelegate(object):
 
         end_user_addr_balance2 = int(HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])["amount"])
         # 剩余8本金 - 1手续费 + 活期收益(手动永久质押+kyc收益)
-        assert end_user_addr_balance2 == start_user_addr_balance2 + Compute.to_uc(10 - self.base_cfg.fees) + x
+        assert end_user_addr_balance2 == start_user_addr_balance2 + Compute.to_u(10 - self.base_cfg.fees) + x
 
     def test_withdraw(self, setup_create_region):
         """活期收益提取"""
@@ -392,7 +392,7 @@ class TestRegionDelegate(object):
         self.test_del.test_delegate_fixed(**del_data)
 
         start_user_addr_balance = int(HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])["amount"])
-        assert start_user_addr_balance == Compute.to_uc(100 - (10 * 3) - (self.base_cfg.fees * 3))
+        assert start_user_addr_balance == Compute.to_u(100 - (10 * 3) - (self.base_cfg.fees * 3))
 
         time.sleep(30)
 
@@ -404,4 +404,4 @@ class TestRegionDelegate(object):
         self.test_del.test_withdraw(**withdraw_data)
 
         end_user_addr_balance = int(HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])["amount"])
-        assert end_user_addr_balance == start_user_addr_balance - Compute.to_uc(self.base_cfg.fees) + x
+        assert end_user_addr_balance == start_user_addr_balance - Compute.to_u(self.base_cfg.fees) + x

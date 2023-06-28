@@ -2,8 +2,7 @@
 import pytest
 from loguru import logger
 
-from cases import package
-from tools import handle_query
+from cases import unitcases
 
 
 # logger.add("logs/case_{time}.log", rotation="500MB")
@@ -11,17 +10,14 @@ from tools import handle_query
 
 @pytest.mark.P0
 class TestRegionInfo(object):
-    test_region = package.RegionPackage()
-    handle_q = handle_query.HandleQuery()
+    test_region = unitcases.Region()
 
-    def test_update_region(self, setup_create_region):
+    def test_update_region(self, setup_update_region_data):
         """测试修改区域信息"""
         logger.info("TestRegionInfo/test_update_region")
-        logger.info(f"setup_update_region:{setup_create_region}")
-        region_admin_addr, region_id, region_name, update_region_data = setup_create_region
-        for i in update_region_data:
-            logger.info(f"request: {i}")
-            self.test_region.test_update_region(i)
-        # TODO assert
+
+        for data in setup_update_region_data:
+            logger.info(f"update_region_data: {data}")
+            self.test_region.test_update_region(**data)
 
     # TODO 水位异常场景测试

@@ -2,82 +2,85 @@
 import pytest
 from loguru import logger
 
-from cases import package
-from config import chain
-from tools import handle_query, calculate
+from cases import unitcases
+from tools.compute import Compute, WaitBlock
+from tools.parse_response import HttpResponse
 
 
 @pytest.mark.P0
 class TestSendCoin(object):
-    test_region = package.RegionPackage()
-    test_fixed = package.FixedPackage()
-    test_kyc = package.KycPackage()
-    test_bank = package.BankPackage()
-    test_keys = package.KeysPackage()
-    handle_q = handle_query.HandleQuery()
+    test_region = unitcases.Region()
+    test_fixed = unitcases.Fixed()
+    test_kyc = unitcases.Kyc()
+    test_bank = unitcases.Bank()
+    test_keys = unitcases.Keys()
+    base_cfg = test_bank.tx
 
-    def test_ag_to_ac(self):
-        """测试ag兑换ac"""
+    def test_ag_to_ac(self, setup_create_region):
         logger.info("TestSendCoin/test_ag_to_ac")
-        region_admin_addr, region_id, _ = self.test_region.test_create_region()
+        region_admin_info, region_id, region_name = setup_create_region
+        region_admin_addr = region_admin_info['address']
 
-        new_kyc_data = dict(region_id=f"{region_id}", region_admin_addr=f"{region_admin_addr}")
-        user_addr = self.test_kyc.test_new_kyc_user(new_kyc_data)
+        new_kyc_data = dict(region_id=region_id, region_admin_addr=region_admin_addr)
+        user_info = self.test_kyc.test_new_kyc_user(**new_kyc_data)
+        user_addr = user_info['address']
 
-        send_data = dict(from_addr=f"{chain.super_addr}", to_addr=f"{user_addr}", amount="500", fees="1")
-        self.test_bank.test_send(send_data)
-        # 计算定期收益 0.06 * 1 / 12 * (200 * 1000000) * 400 = 400000000usrg  区金库:1100000000usrg
-        region_info = self.handle_q.get_region(region_id)
-        region_fixed_addr = region_info['region']['baseAccountAddr']
-        fixed_usrc_balance = self.handle_q.get_balance(region_fixed_addr, chain.coin['uc'])
-        fixed_usrg_balance = self.handle_q.get_balance(region_fixed_addr, chain.coin['ug'])
-        logger.info(f"fixed_usrc_balance:{fixed_usrc_balance}, fixed_usrg_balance:{fixed_usrg_balance}")
+        send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr, amount=500)
+        self.test_bank.test_send(**send_data)
 
-        fixed_data = dict(amount="200", period=f"{chain.period[1]}", from_addr=f"{user_addr}", fees=2, gas=400000)
-        self.test_fixed.test_create_fixed_deposit(fixed_data)
+        region_info = HttpResponse.get_region(region_id)
+        region_base_addr = region_info['region']['baseAccountAddr']
+        base_uc_balance = HttpResponse.get_balance_unit(region_base_addr, self.base_cfg.coin['uc'])
+        base_ug_balance = HttpResponse.get_balance_unit(region_base_addr, self.base_cfg.coin['ug'])
+        logger.info(f"base_uc_balance: {base_uc_balance}, base_ug_balance: {base_ug_balance}")
+
+        fixed_data = dict(amount=200, period=self.base_cfg.period[1], from_addr=user_addr)
+        self.test_fixed.test_create_fixed_deposit(**fixed_data)
 
         # 验证用户余额
-        user_balance = self.handle_q.get_balance(user_addr, chain.coin['uc'])
-        assert user_balance['amount'] == str(calculate.subtraction(500, 200, 2))
+        user_balance_uc = HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])
+        assert int(user_balance_uc['amount']) == Compute.to_u(500 - 200 - self.base_cfg.fees)
 
         # 验证区金库信息
-        region_info = self.handle_q.get_region(region_id)
         region_fixed_addr = region_info['region']['fixedDepositAccountAddr']
-        fixed_addr_balance = self.handle_q.get_balance(region_fixed_addr, chain.coin['uc'])
-        assert fixed_addr_balance['amount'] == str(calculate.to_usrc(200))
+        fixed_balance_uc = HttpResponse.get_balance_unit(region_fixed_addr, self.base_cfg.coin['uc'])
+        assert int(fixed_balance_uc['amount']) == Compute.to_u(200)
 
         # 查用户定期信息
-        user_fixed_info = self.handle_q.get_fixed_deposit_by_addr(user_addr, chain.fixed_type[0])
+        user_fixed_info = HttpResponse.get_fixed_deposit_by_addr(user_addr, self.base_cfg.fixed_type['all'])
         fixed_list = user_fixed_info['FixedDeposit']
         fixed_info = [i for i in fixed_list if i['account'] == user_addr][0]
         _fixed_id = fixed_info['id']
         _fixed_end_height = fixed_info['end_height']
         user1_fixed_info = [i for i in fixed_list if i['account'] == user_addr][0]
-        assert str(calculate.to_usrc(200)) == user1_fixed_info['amount']
+        assert int(user1_fixed_info['amount']) == Compute.to_u(200)
 
         # 需要wait-block
         logger.info(f'{"到期赎回质押":*^50s}')
-        calculate.wait_block_for_height(height=_fixed_end_height)
-        u_fees = calculate.to_usrc(2)
+        WaitBlock.wait_block_for_height(height=_fixed_end_height)
+        u_fees = Compute.to_u(self.base_cfg.fees)
 
-        fixed_data = dict(deposit_id=f'{_fixed_id}', from_addr=f"{user_addr}", fees=2, gas=400000)
-        self.test_fixed.test_withdraw_fixed_deposit(fixed_data)
-        logger.info(f'{"无定期质押,返回质押本金+定期收益":*^50s}')
-        resp_user_usrc = self.handle_q.get_balance(user_addr, chain.coin['uc'])
-        assert resp_user_usrc['amount'] == str(int(user_balance['amount']) + calculate.to_usrc(200) - u_fees)
-        resp_user_usrg = self.handle_q.get_balance(user_addr, chain.coin['ug'])
-        assert resp_user_usrg['amount'] == str(calculate.to_usrc(400))
+        fixed_data = dict(deposit_id=_fixed_id, from_addr=user_addr)
+        self.test_fixed.test_withdraw_fixed_deposit(**fixed_data)
+
+        logger.info(f'{"返回质押本金+定期收益, 并且无定期质押":*^50s}')
+        resp_user_uc = HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])
+        assert int(resp_user_uc['amount']) == int(fixed_balance_uc['amount']) + Compute.to_u(200) - u_fees
+        resp_user_ug = HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['ug'])
+        # 计算定期收益 0.06 * 1 / 12 * (200 * 1000000) * 400 = 400000000ug  区金库:1100000000ug
+        uac = Compute.to_u(Compute.interest(200, 1, self.base_cfg.annual_rate[1]))
+        uag = Compute.ag_to_ac(number=uac, reverse=True)
+        assert int(resp_user_ug['amount']) == uag
 
         # ag to ac
-        uag_balance = resp_user_usrg['amount']
-        ag = calculate.to_usrc(uag_balance, False)
-        ag_data = dict(ag_amount=f"{ag}", from_addr=f"{user_addr}", fees=1)
+        ag = Compute.to_u(uag, reverse=True)
+        ag_data = dict(ag_amount=ag, from_addr=user_addr)
         self.test_kyc.tx.Staking.ag_to_ac(**ag_data)
-        u_fees = calculate.to_usrc(1)
-        to_uac = calculate.ag_to_ac(uag_balance)
+
         # check balances
-        resp2_user_usrc = self.handle_q.get_balance(user_addr, chain.coin['uc'])
-        assert resp2_user_usrc['amount'] == str(int(resp_user_usrc['amount']) - u_fees + to_uac)
+        to_uac = Compute.ag_to_ac(uag)
+        resp2_user_uc = HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])
+        assert int(resp2_user_uc['amount']) == int(resp_user_uc['amount']) - u_fees + to_uac
 
     def test_transfer(self, setup_create_region):
         logger.info("TestSendCoin/test_transfer")
@@ -85,7 +88,7 @@ class TestSendCoin(object):
 
         user_addr = self.test_keys.test_add()
 
-        region_admin_balance = self.handle_q.get_balance(region_admin_addr, chain.coin['uc'])
+        region_admin_balance = HttpResponse.get_balance(region_admin_addr, self.base_cfg.coin['uc'])
 
         data = dict(from_addr=f"{region_admin_addr}", to_addr=f"{user_addr}", amount="10", fees="1")
         tx_info = self.test_bank.tx.bank.send_tx(**data)
@@ -93,11 +96,11 @@ class TestSendCoin(object):
         resp = self.test_bank.q.tx.query_tx(tx_info['txhash'])
         assert resp['code'] == 0
 
-        region_admin_balance2 = self.handle_q.get_balance(region_admin_addr, chain.coin['uc'])
+        region_admin_balance2 = HttpResponse.get_balance(region_admin_addr, self.base_cfg.coin['uc'])
         expect_data = int(region_admin_balance['amount']) - calculate.to_usrc(10) - (calculate.to_usrc(1) * 0.5)
         assert region_admin_balance2['amount'] == str(int(expect_data))
 
-        user_balance2 = self.handle_q.get_balance(user_addr, chain.coin['uc'])
+        user_balance2 = HttpResponse.get_balance(user_addr, self.base_cfg.coin['uc'])
         assert user_balance2['amount'] == str(calculate.to_usrc(10))
 
     def test_fee_rate(self):
@@ -107,16 +110,17 @@ class TestSendCoin(object):
         new_kyc_data = dict(region_id=f"{region_id}", region_admin_addr=f"{region_admin_addr}")
         user_addr = self.test_kyc.test_new_kyc_user(new_kyc_data)
 
-        send_data = dict(from_addr=f"{chain.super_addr}", to_addr=f"{user_addr}", amount="500", fees="1")
+        send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=f"{user_addr}", amount="500", fees="1")
         self.test_bank.test_send(send_data)
 
-        start_region = self.handle_q.get_balance(region_admin_addr, chain.coin['uc'])
+        start_region = HttpResponse.get_balance(region_admin_addr, self.base_cfg.coin['uc'])
 
         send_data = dict(from_addr=user_addr, to_addr=region_admin_addr, amount=100, fees=1)
         self.test_bank.test_send(send_data)
 
-        end_region = self.handle_q.get_balance(region_admin_addr, chain.coin['uc'])
-        user_balance = self.handle_q.get_balance(user_addr, chain.coin['uc'])
+        end_region = HttpResponse.get_balance(region_admin_addr, self.base_cfg.coin['uc'])
+        user_balance = HttpResponse.get_balance(user_addr, self.base_cfg.coin['uc'])
 
-        assert int(end_region['amount']) - int(start_region['amount']) == calculate.to_usrc(1) / 2 + calculate.to_usrc(100)
+        assert int(end_region['amount']) - int(start_region['amount']) == calculate.to_usrc(1) / 2 + calculate.to_usrc(
+            100)
         assert int(user_balance['amount']) == calculate.to_usrc(500 - 100 - 1)

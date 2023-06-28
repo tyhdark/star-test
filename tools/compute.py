@@ -11,27 +11,34 @@ from tools.parse_response import HttpResponse
 class Compute:
 
     @classmethod
-    def to_uc(cls, number, reverse: bool = True):
+    def to_u(cls, number, reverse: bool = False):
         """
         计算代币AC 《==》 UAC , (number * 10 ** 8)
         :param number:
         :param reverse:
-            - True  -> 放大 ac转uac
-            - False -> 缩小 uac转ac
+            - False  ->  ac转uac
+            - True   ->  uac转ac
         """
-        if reverse:
+        if not reverse:
             return number * (10 ** 6)
         return decimal.Decimal(number) / decimal.Decimal(10 ** 6)
 
     @classmethod
-    def ag_to_ac(cls, number: int):
+    def ag_to_ac(cls, number: int, reverse: bool = False):
         """转换ag to ac"""
-        return decimal.Decimal(number) / decimal.Decimal(400)
+        if not reverse:
+            return decimal.Decimal(number) / decimal.Decimal(400)
+        return number * 400
 
     @classmethod
     def all_to_uc(cls, *args):
         for i in args:
-            yield cls.to_uc(i)
+            yield cls.to_u(i)
+
+    @classmethod
+    def interest(cls, amount: int, period: int, rate: float):
+        """计算利息"""
+        return rate * period / 12 * amount
 
 
 class WaitBlock:
@@ -72,5 +79,5 @@ if __name__ == '__main__':
     # a = decimal.Decimal(10) / decimal.Decimal(400) / decimal.Decimal(100000)
     # a_str = '{:.20f}'.format(a)
     # print(a_str)
-    b = Compute.to_uc(4.999999 - 1)
+    b = Compute.interest(10, 1, 0.06)
     print(b, type(b))

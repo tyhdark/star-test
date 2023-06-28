@@ -158,6 +158,7 @@ class Tx(BaseClass):
             :param from_addr: 发起方地址  【超管、区管理员、用户自己】
             :param delegator_address: 被清退质押者地址
             :param fees:
+            :param gas:
             :return:
             """
             cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking exit-delegate --from={from_addr} " \
