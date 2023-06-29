@@ -84,43 +84,48 @@ class TestSendCoin(object):
 
     def test_transfer(self, setup_create_region):
         logger.info("TestSendCoin/test_transfer")
-        region_admin_addr, region_id, region_name, _ = setup_create_region
+        region_admin_info, region_id, region_name = setup_create_region
+        region_admin_addr = region_admin_info['address']
 
-        user_addr = self.test_keys.test_add()
+        user_info = self.test_keys.test_add()
+        user_addr = user_info['address']
 
-        region_admin_balance = HttpResponse.get_balance(region_admin_addr, self.base_cfg.coin['uc'])
+        region_admin_uc = HttpResponse.get_balance_unit(region_admin_addr, self.base_cfg.coin['uc'])
 
-        data = dict(from_addr=f"{region_admin_addr}", to_addr=f"{user_addr}", amount="10", fees="1")
-        tx_info = self.test_bank.tx.bank.send_tx(**data)
-        logger.info(f"Sent transaction:{tx_info}")
-        resp = self.test_bank.q.tx.query_tx(tx_info['txhash'])
-        assert resp['code'] == 0
+        data = dict(from_addr=region_admin_addr, to_addr=user_addr, amount=10)
+        self.test_bank.test_send(**data)
 
-        region_admin_balance2 = HttpResponse.get_balance(region_admin_addr, self.base_cfg.coin['uc'])
-        expect_data = int(region_admin_balance['amount']) - calculate.to_usrc(10) - (calculate.to_usrc(1) * 0.5)
-        assert region_admin_balance2['amount'] == str(int(expect_data))
+        region_admin_uc2 = HttpResponse.get_balance_unit(region_admin_addr, self.base_cfg.coin['uc'])
+        expect_data = int(region_admin_uc['amount']) - Compute.to_u(10 + (self.base_cfg.fees * self.base_cfg.fee_rate))
+        assert int(region_admin_uc2['amount']) == expect_data
 
-        user_balance2 = HttpResponse.get_balance(user_addr, self.base_cfg.coin['uc'])
-        assert user_balance2['amount'] == str(calculate.to_usrc(10))
+        user_uc = HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])
+        assert int(user_uc['amount']) == Compute.to_u(10)
 
-    def test_fee_rate(self):
+    def test_fee_rate(self, setup_create_region):
         """测试交易手续费收取比例"""
-        region_admin_addr, region_id, _ = self.test_region.test_create_region()
+        region_admin_info, region_id, region_name = setup_create_region
+        region_admin_addr = region_admin_info['address']
 
-        new_kyc_data = dict(region_id=f"{region_id}", region_admin_addr=f"{region_admin_addr}")
-        user_addr = self.test_kyc.test_new_kyc_user(new_kyc_data)
+        new_kyc_data = dict(region_id=region_id, region_admin_addr=region_admin_addr)
+        user_info = self.test_kyc.test_new_kyc_user(**new_kyc_data)
+        user_addr = user_info['address']
 
-        send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=f"{user_addr}", amount="500", fees="1")
-        self.test_bank.test_send(send_data)
+        send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr, amount=500)
+        self.test_bank.test_send(**send_data)
 
-        start_region = HttpResponse.get_balance(region_admin_addr, self.base_cfg.coin['uc'])
+        start_region_uc = HttpResponse.get_balance_unit(region_admin_addr, self.base_cfg.coin['uc'])
+        start_admin_uc = HttpResponse.get_balance_unit(self.base_cfg.super_addr, self.base_cfg.coin['uc'])
 
-        send_data = dict(from_addr=user_addr, to_addr=region_admin_addr, amount=100, fees=1)
-        self.test_bank.test_send(send_data)
+        send_data = dict(from_addr=user_addr, to_addr=region_admin_addr, amount=100)
+        self.test_bank.test_send(**send_data)
 
-        end_region = HttpResponse.get_balance(region_admin_addr, self.base_cfg.coin['uc'])
-        user_balance = HttpResponse.get_balance(user_addr, self.base_cfg.coin['uc'])
+        region_admin_uc = HttpResponse.get_balance_unit(region_admin_addr, self.base_cfg.coin['uc'])
+        user_uc = HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])
+        super_admin_uc = HttpResponse.get_balance_unit(self.base_cfg.super_addr, self.base_cfg.coin['uc'])
 
-        assert int(end_region['amount']) - int(start_region['amount']) == calculate.to_usrc(1) / 2 + calculate.to_usrc(
-            100)
-        assert int(user_balance['amount']) == calculate.to_usrc(500 - 100 - 1)
+        region_admin_expect_amt = Compute.to_u(self.base_cfg.fees * self.base_cfg.fee_rate) + Compute.to_u(100)
+        super_admin_expect_amt = Compute.to_u(self.base_cfg.fees * (1 - self.base_cfg.fee_rate))
+        assert int(region_admin_uc['amount']) - int(start_region_uc['amount']) == region_admin_expect_amt
+        assert int(user_uc['amount']) == Compute.to_u(500 - 100 - 1)
+        assert int(super_admin_uc['amount']) - int(start_admin_uc['amount']) == super_admin_expect_amt

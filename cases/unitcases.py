@@ -9,7 +9,7 @@ from x.query import Query, HttpQuery
 from x.tx import Tx
 
 
-class Base(object):
+class Base:
     tx = Tx()
     hq = HttpQuery()
     q = Query()
@@ -23,6 +23,7 @@ class Bank(Base):
         time.sleep(self.tx.sleep_time)
         resp = self.hq.tx.query_tx(tx_info['txhash'])
         assert resp['code'] == 0, f"test_send failed, resp: {resp}"
+        return resp
 
 
 class Keys(Base):
@@ -58,10 +59,10 @@ class Kyc(Keys):
         logger.info(f"user_info: {user_info}")
         tx_info = self.tx.staking.new_kyc(addr=user_info["address"], region_id=region_id,
                                           role=self.tx.role["user"], from_addr=region_admin_addr, **kwargs)
-        logger.info(f"region_id: {region_id} , new_kyc: {tx_info}")
         time.sleep(self.tx.sleep_time)
         resp = self.hq.tx.query_tx(tx_info['txhash'])
         assert resp['code'] == 0, f"test_new_kyc_user failed, resp: {resp}"
+        logger.info(f"region_id: {region_id} , new_kyc: {user_info}")
         return user_info
 
     def test_new_kyc_admin(self, **kwargs):
@@ -75,10 +76,10 @@ class Kyc(Keys):
         tx_info = self.tx.staking.new_kyc(addr=region_admin_info["address"], region_id=region_id,
                                           role=self.tx.role["admin"],
                                           from_addr=self.tx.super_addr, **kwargs)
-        logger.info(f"new_region_admin_kyc: {tx_info}")
         time.sleep(self.tx.sleep_time)
         resp = self.hq.tx.query_tx(tx_info['txhash'])
         assert resp['code'] == 0, f"test_new_kyc_admin failed, resp: {resp}"
+        logger.info(f"region_id: {region_id} , region_admin_info: {region_admin_info}")
         return region_admin_info, region_id, region_name
 
 
@@ -99,7 +100,6 @@ class Region(Kyc, Bank):
                                                     totalStakeAllow=self.tx.region_as,
                                                     userMaxDelegateAC=self.tx.max_delegate,
                                                     userMinDelegateAC=self.tx.min_delegate, **kwargs)
-        logger.info(f"create_region_info: {region_info}")
         time.sleep(self.tx.sleep_time)
         tx_resp = self.hq.tx.query_tx(region_info['txhash'])
         assert tx_resp['code'] == 0, f"test_create_region failed, resp: {tx_resp}"
@@ -112,8 +112,9 @@ class Region(Kyc, Bank):
         region_info = self.tx.staking.update_region(**kwargs)
         logger.info(f"update_region_info: {region_info}")
         time.sleep(self.tx.sleep_time)
-        tx_resp = self.hq.tx.query_tx(region_info['txhash'])
-        assert tx_resp['code'] == 0, f"test_update_region failed, resp: {tx_resp}"
+        resp = self.hq.tx.query_tx(region_info['txhash'])
+        assert resp['code'] == 0, f"test_update_region failed, resp: {resp}"
+        return resp
 
 
 class Delegate(Base):
@@ -124,6 +125,7 @@ class Delegate(Base):
         time.sleep(self.tx.sleep_time)
         resp = self.hq.tx.query_tx(del_info['txhash'])
         assert resp['code'] == 0, f"test_delegate failed, resp: {resp}"
+        return resp
 
     def test_withdraw(self, **kwargs):
         withdraw_info = self.tx.staking.withdraw(**kwargs)
@@ -131,6 +133,7 @@ class Delegate(Base):
         time.sleep(self.tx.sleep_time)
         resp = self.hq.tx.query_tx(withdraw_info['txhash'])
         assert resp['code'] == 0, f"test_withdraw failed, resp: {resp}"
+        return resp
 
     def test_undelegate(self, **kwargs):
         del_info = self.tx.staking.undelegate(**kwargs)
@@ -138,6 +141,7 @@ class Delegate(Base):
         time.sleep(self.tx.sleep_time)
         resp = self.hq.tx.query_tx(del_info['txhash'])
         assert resp['code'] == 0, f"test_undelegate failed, resp: {resp}"
+        return resp
 
     def test_exit_delegate(self, **kwargs):
         del_info = self.tx.staking.exit_delegate(**kwargs)
@@ -145,6 +149,7 @@ class Delegate(Base):
         time.sleep(self.tx.sleep_time)
         resp = self.hq.tx.query_tx(del_info['txhash'])
         assert resp['code'] == 0, f"test_exit_delegate failed, resp: {resp}"
+        return resp
 
     def test_delegate_fixed(self, **kwargs):
         del_info = self.tx.staking.delegate_fixed(**kwargs)
@@ -152,6 +157,7 @@ class Delegate(Base):
         time.sleep(self.tx.sleep_time)
         resp = self.hq.tx.query_tx(del_info['txhash'])
         assert resp['code'] == 0, f"test_delegate_fixed failed, resp: {resp}"
+        return resp
 
     def test_delegate_infinite(self, **kwargs):
         del_info = self.tx.staking.delegate_infinite(**kwargs)
@@ -159,6 +165,7 @@ class Delegate(Base):
         time.sleep(self.tx.sleep_time)
         resp = self.hq.tx.query_tx(del_info['txhash'])
         assert resp['code'] == 0, f"test_delegate_infinite failed, resp: {resp}"
+        return resp
 
     def test_undelegate_fixed(self, **kwargs):
         """提取定期内周期质押"""
@@ -167,6 +174,7 @@ class Delegate(Base):
         time.sleep(self.tx.sleep_time)
         resp = self.hq.tx.query_tx(del_info['txhash'])
         assert resp['code'] == 0, f"test_undelegate_fixed failed, resp: {resp}"
+        return resp
 
     def test_undelegate_infinite(self, **kwargs):
         del_info = self.tx.staking.undelegate_infinite(**kwargs)
@@ -174,6 +182,7 @@ class Delegate(Base):
         time.sleep(self.tx.sleep_time)
         resp = self.hq.tx.query_tx(del_info['txhash'])
         assert resp['code'] == 0, f"test_undelegate_infinite failed, resp: {resp}"
+        return resp
 
 
 class Fixed(Base):
@@ -184,6 +193,7 @@ class Fixed(Base):
         time.sleep(self.tx.sleep_time)
         resp = self.hq.tx.query_tx(tx_info['txhash'])
         assert resp['code'] == 0, f"test_create_fixed_deposit failed, resp: {resp}"
+        return resp
 
     def test_withdraw_fixed_deposit(self, **kwargs):
         tx_info = self.tx.staking.withdraw_fixed_deposit(**kwargs)
@@ -191,6 +201,7 @@ class Fixed(Base):
         time.sleep(self.tx.sleep_time)
         resp = self.hq.tx.query_tx(tx_info['txhash'])
         assert resp['code'] == 0, f"test_withdraw_fixed_deposit failed, resp: {resp}"
+        return resp
 
 
 if __name__ == '__main__':

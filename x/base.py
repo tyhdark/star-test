@@ -1,60 +1,121 @@
 # -*- coding: utf-8 -*-
+from dataclasses import dataclass
+
 from config.chain import config
 from tools.host import Host
 
 
-class BaseClass(object):
-    # host config
-    host_config = config["host"]
-    ssh_client = Host(**host_config)
+@dataclass
+class HostCfg:
+    ip: str
+    port: int
+    username: str
+    password: str
+
+
+@dataclass
+class ChainCfg:
+    work_dir: str
+    chain_id: str
+    chain_bin: str
+    connect_node: str
+    super_addr: str
+    keyring_backend: str
+    sleep_time: int
+    token_unit: dict
+    role: dict
+    period: dict
+    delegate_term: dict
+    annual_rate: dict
+    fixed_type: dict
+
+
+@dataclass
+class ComputeCfg:
+    Precision: int
+    DefaultRegionAS: int
+    TotalAS: int
+    TotalMintACCoins: int
+    FirstFiveYearsACCoins: int
+    BlocksPerYear: int
+    InitialMintACAmount: int
+    DefaultFeeRate: int
+    DefaultGasLimit: int
+    DefaultFees: int
+    DefaultSuperToRegionAdminAC: int
+    DefaultMaxDelegateAC: int
+    DefaultMinDelegateAC: int
+
+
+@dataclass
+class HttpCfg:
+    api_url: str
+    base: dict
+    tx: dict
+    bank: dict
+    staking: dict
+
+
+class BaseClass:
+    _host = HostCfg(**config["host"])
+    ssh_client = Host(ip=_host.ip, port=_host.port, username=_host.username, password=_host.password)
     channel = ssh_client.create_invoke_shell()
 
+    chain = ChainCfg(**config["chain"])
+    compute = ComputeCfg(**config["compute"])
+    http = HttpCfg(**config["http"])
+
     # chain base config
-    work_home = config["chain"]["work_dir"]
-    chain_id = config["chain"]["chain_id"]
-    chain_bin = config["chain"]["chain_bin"]
-    connect_node = config["chain"]["connect_node"]
-    super_addr = config["chain"]["super_addr"]
-    keyring_backend = config["chain"]["keyring_backend"]
-    sleep_time = config["chain"]["sleep_time"]
-    coin = config["chain"]["token_unit"]
-    role = config["chain"]["role"]
-    period = config["chain"]["period"]
-    delegate_term = config["chain"]["delegate_term"]
-    annual_rate = config["chain"]["annual_rate"]
-    fixed_type = config["chain"]["fixed_type"]
+    work_home = chain.work_dir
+    chain_id = chain.chain_id
+    chain_bin = chain.chain_bin
+    connect_node = chain.connect_node
+    super_addr = chain.super_addr
+    keyring_backend = chain.keyring_backend
+    sleep_time = chain.sleep_time
+    coin = chain.token_unit
+    role = chain.role
+    period = chain.period
+    delegate_term = chain.delegate_term
+    annual_rate = chain.annual_rate
+    fixed_type = chain.fixed_type
 
     # compute
-    precision = config["compute"]["Precision"]
-    region_as = config["compute"]["DefaultRegionAS"]
-    total_as = config["compute"]["TotalAS"]
-    total_ac = config["compute"]["TotalMintACCoins"]
-    first_five_years_ac = config["compute"]["FirstFiveYearsACCoins"]
-    block_per_year = config["compute"]["BlocksPerYear"]
-    init_mint_ac = config["compute"]["InitialMintACAmount"]
-    fee_rate = config["compute"]["DefaultFeeRate"]
-    gas = config["compute"]["DefaultGasLimit"]
-    fees = config["compute"]["DefaultFees"]
-    super_to_region_admin_amt = config["compute"]["DefaultSuperToRegionAdminAC"]
-    max_delegate = config["compute"]["DefaultMaxDelegateAC"]
-    min_delegate = config["compute"]["DefaultMinDelegateAC"]
+    precision = compute.Precision
+    region_as = compute.DefaultRegionAS
+    total_as = compute.TotalAS
+    total_ac = compute.TotalMintACCoins
+    first_five_years_ac = compute.FirstFiveYearsACCoins
+    block_per_year = compute.BlocksPerYear
+    init_mint_ac = compute.InitialMintACAmount
+    fee_rate = compute.DefaultFeeRate
+    gas = compute.DefaultGasLimit
+    fees = compute.DefaultFees
+    super_to_region_admin_amt = compute.DefaultSuperToRegionAdminAC
+    max_delegate = compute.DefaultMaxDelegateAC
+    min_delegate = compute.DefaultMinDelegateAC
 
     # http config
-    api_url = config["http"]["api_url"]
+    api_url = http.api_url
     # base module
-    query_block = config["http"]["base"]["block"]
-    query_block_latest = config["http"]["base"]["block_latest"]
+    query_block = http.base["block"]
+    query_block_latest = http.base["block_latest"]
     # tx module
-    query_tx_hash = config["http"]["tx"]["hash"]
+    query_tx_hash = http.tx["hash"]
     # bank module
-    query_bank_balances = config["http"]["bank"]["balances"]
+    query_bank_balances = http.bank["balances"]
     # staking module
-    query_delegation = config["http"]["staking"]["delegation"]
-    query_delegations = config["http"]["staking"]["delegations"]
+    query_delegation = http.staking["delegation"]
+    query_delegations = http.staking["delegations"]
 
-    query_region_id = config["http"]["staking"]["region_id"]
-    query_region_name = config["http"]["staking"]["region_name"]
-    query_regions = config["http"]["staking"]["region_list"]
+    query_region_id = http.staking["region_id"]
+    query_region_name = http.staking["region_name"]
+    query_regions = http.staking["region_list"]
 
-    query_validator = config["http"]["staking"]["validator"]
-    query_validators = config["http"]["staking"]["validators"]
+    query_validator = http.staking["validator"]
+    query_validators = http.staking["validators"]
+
+
+if __name__ == '__main__':
+    a = BaseClass()
+    pass

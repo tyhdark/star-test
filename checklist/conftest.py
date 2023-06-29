@@ -6,6 +6,7 @@ from cases import unitcases
 from tools.name import RegionInfo
 
 region = unitcases.Region()
+kyc = unitcases.Kyc()
 
 
 @pytest.fixture(scope="session")
@@ -13,6 +14,18 @@ def setup_create_region():
     logger.info("fixture: setup_create_region")
     region_admin_info, region_id, region_name = region.test_create_region()
     yield region_admin_info, region_id, region_name
+
+
+@pytest.fixture(scope="function")
+def setup_create_region_and_kyc_user():
+    logger.info("fixture: setup_create_region_and_kyc_user")
+    region_admin_info, region_id, region_name = region.test_create_region()
+    region_admin_addr = region_admin_info['address']
+    kyc_data = dict(region_id=region_id, region_admin_addr=region_admin_addr)
+    user_info = kyc.test_new_kyc_user(**kyc_data)
+    user_addr = user_info['address']
+
+    yield region_admin_addr, region_id, region_name, user_addr
 
 
 @pytest.fixture(scope="function")

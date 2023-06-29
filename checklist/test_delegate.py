@@ -201,7 +201,7 @@ class TestRegionDelegate(object):
         logger.info(f'{"+ expect: 无效清退 error_code: 2097"}')
         with pytest.raises(AssertionError) as ex:
             self.test_del.test_exit_delegate(**del_data)
-        assert str(ex.value) == 'error_code: 2097 != 0'
+        assert "'code': 2097" in str(ex.value)
 
         resp_balance2 = int(HttpResponse.get_balance_unit(user_addr2, self.base_cfg.coin['uc'])['amount'])
         assert resp_balance2 == user2_balance2
@@ -212,8 +212,8 @@ class TestRegionDelegate(object):
         :param setup_create_region:
         :Desc
             - user1 申请kyc,发送100 coin
-            - user1 活期质押内周期质押 10 coin + fees 1 coin
-            + expect: user1 余额 89 coin
+            - user1 活期质押内周期质押 10 coin + fees
+            + expect: user1 余额 100 coin - 10 coin - fees
         """
         region_admin_info, region_id, region_name = setup_create_region
         region_admin_addr = region_admin_info["address"]
@@ -243,7 +243,7 @@ class TestRegionDelegate(object):
         # Compute revenue over the period
         interests = set([i['amount'] for i in resp['items'][0]['interests']])
         assert len(interests) == 1
-        y = self.base_cfg.annual_rate[1] * 1 / 12 * Compute.to_u(10)
+        y = Compute.interest(amount=Compute.to_u(10), period=1, rate=self.base_cfg.annual_rate[1])
         assert int(interests.pop()) == y
 
         return region_admin_addr, region_id, region_name, user_addr
@@ -255,7 +255,8 @@ class TestRegionDelegate(object):
         region_admin_addr = region_admin_info["address"]
 
         new_kyc_data = dict(region_id=region_id, region_admin_addr=region_admin_addr)
-        user_addr = self.test_kyc.test_new_kyc_user(**new_kyc_data)
+        user_info = self.test_kyc.test_new_kyc_user(**new_kyc_data)
+        user_addr = user_info["address"]
 
         send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr, amount=100)
         self.test_bank.test_send(**send_data)
@@ -268,7 +269,7 @@ class TestRegionDelegate(object):
         undelegate_fixed_data = dict(from_addr=user_addr, fixed_delegation_id=fixed_delegation_id)
         with pytest.raises(AssertionError) as ex:
             self.test_del.test_undelegate_fixed(**undelegate_fixed_data)
-        assert str(ex.value) == 'error_code: 2161 != 0'  # fixed delegation not reach deadline
+        assert "'code': 2161" in str(ex.value)  # fixed delegation not reach deadline
 
         time.sleep(30)  # 30s is equal to one month
         self.test_del.test_undelegate_fixed(**undelegate_fixed_data)
@@ -310,7 +311,7 @@ class TestRegionDelegate(object):
         del_data = dict(from_addr=user_addr, amount=5)
         with pytest.raises(AssertionError) as ex:
             self.test_del.test_undelegate_infinite(**del_data)
-        assert str(ex.value) == 'error_code: 2098 != 0'
+        assert "'code': 2098" in str(ex.value)
 
         # region_admin update region info todo: code is not 0
         region_data = dict(region_id=region_id, from_addr=region_admin_addr, isUndelegate=True)
@@ -341,7 +342,7 @@ class TestRegionDelegate(object):
         assert region_info['region']['isUndelegate'] is False
         with pytest.raises(AssertionError) as ex:
             self.test_del.test_undelegate_infinite(**del_data)
-        assert str(ex.value) == 'error_code: 2098 != 0'
+        assert "'code': 2098" in str(ex.value)
 
     def test_undelegate_infinite_excess(self, setup_create_region):
         """活期永久质押 超额提取"""
@@ -358,7 +359,7 @@ class TestRegionDelegate(object):
         start_user_addr_balance2 = int(HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])["amount"])
 
         # 查询活期收益 和 提取活期 !应该保证其在同一个区块内,目前代码无法保证
-        interest_amount = float(HttpResponse.get_delegate(user_addr)['delegation']['interestAmount'])
+        interest_amount = float(HttpResponse.get_delegate(user_addr)['interestAmount'])
         logger.info(f"interest_amount: {interest_amount}")
         x = math.floor(interest_amount) if interest_amount >= 1 else 0
         del_data = dict(from_addr=user_addr, amount=100)
@@ -396,12 +397,11 @@ class TestRegionDelegate(object):
 
         time.sleep(30)
 
-        interest_amount = float(HttpResponse.get_delegate(user_addr)['delegation']['interestAmount'])
+        interest_amount = float(HttpResponse.get_delegate(user_addr)['interestAmount'])
         logger.info(f"interest_amount: {interest_amount}")
         x = math.floor(interest_amount) if interest_amount >= 1 else 0
         # 提取活期收益
-        withdraw_data = dict(user_addr=user_addr)
-        self.test_del.test_withdraw(**withdraw_data)
+        self.test_del.test_withdraw(**dict(addr=user_addr))
 
         end_user_addr_balance = int(HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])["amount"])
         assert end_user_addr_balance == start_user_addr_balance - Compute.to_u(self.base_cfg.fees) + x
