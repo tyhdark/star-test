@@ -31,6 +31,12 @@ class Compute:
         return number * 400
 
     @classmethod
+    def as_to_ac(cls, number: int, reverse: bool = False):
+        if reverse:
+            return decimal.Decimal(number) / decimal.Decimal(400)
+        return number * 400
+
+    @classmethod
     def all_to_uc(cls, *args):
         for i in args:
             yield cls.to_u(i)

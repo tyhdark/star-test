@@ -1,24 +1,29 @@
 # -*- coding: utf-8 -*-
 import random
 import time
+from pathlib import Path
 
 import pytest
+import yaml
 from loguru import logger
 
-from config.chain import config
 from tools.parse_response import HttpResponse
 from x.query import Query
 from x.tx import Tx
 
+
 # logger.add("logs/case_{time}.log", rotation="500MB")
 
-validator_data = [
-    dict(
-        pubkey='\'{"type": "tendermint/PubKeyEd25519","value": "asficaxnM8TGS+v9snwnnxhJidFbJ3Sn1GXTAR7xslE="}\'',
-        moniker="node16",
-        from_addr=config['chain']['super_addr'],
-    ),
-]
+
+def read_file(filepath):
+    filepath = Path(filepath)
+    with filepath.open("r") as f:
+        content = f.read()
+    data = yaml.safe_load(content)
+    return data
+
+
+validator_data = read_file("../data/data.yml")
 
 
 @pytest.mark.P0
@@ -28,11 +33,16 @@ class TestRegionInfo:
 
     @pytest.mark.parametrize("data", validator_data)
     def test_create_validator(self, data):
-        tx_resp = self.tx.staking.create_validator(**data)
-        logger.info(f"create_validator tx_resp: {tx_resp}")
-        time.sleep(self.tx.sleep_time)
-        tx_resp = self.q.tx.query_tx(tx_resp['txhash'])
-        assert tx_resp['code'] == 0
+        if not data["moniker"] == "node1":
+            pub_key = f'\'{{"type": "tendermint/PubKeyEd25519", "value": "{data["pub_key"]["value"]}"}}\''
+            # pub_key='\'{"type": "tendermint/PubKeyEd25519","value": "asficaxnM8TGS+v9snwnnxhJidFbJ3Sn1GXTAR7xslE="}\'',
+            data["from_addr"] = self.tx.super_addr
+            tx_resp = self.tx.staking.create_validator(pub_key=pub_key, moniker=data["moniker"],
+                                                       from_addr=data["from_addr"])
+            logger.info(f"create_validator tx_resp: {tx_resp}")
+            time.sleep(self.tx.sleep_time)
+            tx_resp = self.q.tx.query_tx(tx_resp['txhash'])
+            assert tx_resp['code'] == 0
 
     def test_update_validator(self, setup_create_region):
         region_admin_info, region_id, region_name = setup_create_region

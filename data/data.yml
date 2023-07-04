@@ -1,0 +1,35 @@
+- address: DB850481F6BEC61D851151AB8CBBE2A57F27BAC1
+  moniker: node7
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: Km0Nj6ExMe6hSs0nliq71ni+JPd6Q0yG/7okh+NQL68=
+- address: 6B71A1D5C98CD22F0470B218D6CE9FD720A3930F
+  moniker: node6
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: 7bJ6bmmnLmnW0vcmSFALAbDEOiGsPFeusvpLfSH62tA=
+- address: 0F580C39F01D8C91CE68F743B7D4D67AC138397F
+  moniker: node1
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: f7G+fKRLtXlL+U1gVmA0WErJXVRQn6PSorPPCX7aiCs=
+- address: 6C5987F19AB9DB105BE0CF16FF8563144394476A
+  moniker: node4
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: JwXvjb3xBhtKaW6HQ3C4odyH7pWAQBgpiGNCZ4St3Ac=
+- address: 3558B4A40E996AB8C0E3E495BF66F145C2BEB165
+  moniker: node3
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: rJx0Yz3GQ40FzAAgWWbAFToYdxhrHuSUoZMY4Zry48Y=
+- address: E405B87EEB7FA807EC74CFBE421922BFCB8977F8
+  moniker: node2
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: 1wSUiGaOl/8gEIiuzma27yUJTeNGHN88l2MYDQN8i1A=
+- address: 17F8C156910BDEC538F5BCC7A6C7454CD38FC626
+  moniker: node5
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: 8AtSeGUHPBdJpS77LN5Xfv0/t7Aaea7NUmNpolgFYVc=

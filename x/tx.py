@@ -111,8 +111,8 @@ class Tx(BaseClass):
             return Tx._executor(cmd)
 
         @staticmethod
-        def create_validator(pubkey, moniker, from_addr, fees=Fees, gas=GasLimit):
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking create-validator --pubkey={pubkey} --moniker={moniker} " \
+        def create_validator(pub_key, moniker, from_addr, fees=Fees, gas=GasLimit):
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking create-validator --pubkey={pub_key} --moniker={moniker} " \
                                  f"--from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)

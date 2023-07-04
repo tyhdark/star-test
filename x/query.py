@@ -200,6 +200,7 @@ class HttpQuery(BaseClass):
             url = HttpQuery.api_url + HttpQuery.query_tx_hash.format(hash=tx_hash)
             logger.info(f"{inspect.stack()[0][3]}: {url}")
             response = HttpQuery.client.get(url=url)
+            logger.debug(f"response: {response}")
             assert response.status_code == 200
             return response.json()['tx_response']
 

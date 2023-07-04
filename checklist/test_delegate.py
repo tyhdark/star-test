@@ -313,13 +313,13 @@ class TestRegionDelegate(object):
             self.test_del.test_undelegate_infinite(**del_data)
         assert "'code': 2098" in str(ex.value)
 
-        # region_admin update region info todo: code is not 0
+        # region_admin update isUndelegate, The tx can be successfully but not modifying the attribute value
         region_data = dict(region_id=region_id, from_addr=region_admin_addr, isUndelegate=True)
         self.test_region.test_update_region(**region_data)
         region_info = HttpResponse.get_region(region_id)
         assert region_info['region']['isUndelegate'] is False
 
-        # superadmin update region info
+        # superadmin update isUndelegate
         region_data = dict(region_id=region_id, from_addr=self.base_cfg.super_addr, isUndelegate=True)
         self.test_region.test_update_region(**region_data)
 
@@ -405,3 +405,31 @@ class TestRegionDelegate(object):
 
         end_user_addr_balance = int(HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])["amount"])
         assert end_user_addr_balance == start_user_addr_balance - Compute.to_u(self.base_cfg.fees) + x
+
+    def test_exceed_delegate_limit(self, setup_create_region):
+        region_admin_info, region_id, region_name = setup_create_region
+        region_admin_addr = region_admin_info["address"]
+
+        new_kyc_data = dict(region_id=region_id, region_admin_addr=region_admin_addr)
+        user_info = self.test_kyc.test_new_kyc_user(**new_kyc_data)
+        user_addr = user_info["address"]
+
+        gas_limit = (200000 * 210)  # tx 1/10000 fee included
+        fees = Compute.to_u(gas_limit * 5, reverse=True)
+        send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr,
+                         amount=self.base_cfg.max_delegate * 2, gas=gas_limit, fees=fees)
+        self.test_bank.test_send(**send_data)
+
+        del_data = dict(from_addr=user_addr, amount=self.base_cfg.max_delegate)
+
+        with pytest.raises(AssertionError) as ex:
+            self.test_del.test_delegate(**del_data)
+        assert "'code': 2063" in str(ex.value)  # Amount exceeds limit,max delegate amount:1000000ac
+
+        del_data = dict(from_addr=user_addr, amount=self.base_cfg.max_delegate - 1)
+        self.test_del.test_delegate(**del_data)
+
+        del_data = dict(from_addr=user_addr, amount=1)
+        with pytest.raises(AssertionError) as ex:
+            self.test_del.test_delegate_infinite(**del_data)
+        assert "'code': 2063" in str(ex.value)  # Amount exceeds limit,max delegate amount:1000000ac
