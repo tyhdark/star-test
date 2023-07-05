@@ -20,7 +20,6 @@ pipeline {
       post {
         failure {
           echo 'Deployment failed!'
-          currentBuild.result = 'FAILURE'
         }
       }
     }
