@@ -30,6 +30,6 @@ pipeline {
 //           currentBuild.result = 'FAILURE'
 //         }
 //       }
-    }
+//     }
   }
 }
