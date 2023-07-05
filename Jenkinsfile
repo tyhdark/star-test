@@ -16,14 +16,14 @@ pipeline {
 
     stage('Check Directory Permissions') {
         steps {
-            sh 'sudo ls -l /home/xingdao/qa-home/roles'
+            sh 'ls -l /home/xingdao/qa-home/roles'
         }
     }
 
-    stage('Deploy') {
-      steps {
-        sh 'sudo cd /home/xingdao/qa-home && ansible-playbook roles/gea-chain/tests/test.yml -i roles/gea-chain/tests/inventory --tags redeploy --become --become-user=root'
-      }
+//     stage('Deploy') {
+//       steps {
+//         sh 'sudo cd /home/xingdao/qa-home && ansible-playbook roles/gea-chain/tests/test.yml -i roles/gea-chain/tests/inventory --tags redeploy --become --become-user=root'
+//       }
 //       post {
 //         failure {
 //           echo 'Deployment failed!'
