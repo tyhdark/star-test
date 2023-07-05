@@ -17,12 +17,12 @@ pipeline {
       steps {
         sh 'ansible-playbook /home/xingdao/qa-home/roles/gea-chain/tests/test.yml -i /home/xingdao/qa-home/roles/gea-chain/tests/inventory --tags redeploy'
       }
-      post {
-        failure {
-          echo 'Deployment failed!'
-          currentBuild.result = 'FAILURE'
-        }
-      }
+//       post {
+//         failure {
+//           echo 'Deployment failed!'
+//           currentBuild.result = 'FAILURE'
+//         }
+//       }
     }
   }
 }
