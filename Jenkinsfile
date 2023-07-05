@@ -15,7 +15,7 @@ pipeline {
 
     stage('Deploy') {
       steps {
-        sh 'ansible-playbook /home/xingdao/qa-home/roles/gea-chain/tests/test.yml -i /home/xingdao/qa-home/roles/gea-chain/tests/inventory --tags redeploy'
+        sh 'ansible-playbook /home/xingdao/qa-home/roles/gea-chain/tests/test.yml -i /home/xingdao/qa-home/roles/gea-chain/tests/inventory --tags redeploy --become --become-user=xingdao'
       }
 //       post {
 //         failure {
