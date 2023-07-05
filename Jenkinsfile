@@ -13,23 +13,16 @@ pipeline {
       }
     }
 
-
-    stage('Check Directory Permissions') {
-        steps {
-            sh 'ls -l /home/xingdao/qa-home/roles'
-        }
-    }
-
     stage('Deploy') {
       steps {
-        sh 'cd /home/xingdao/qa-home && ansible-playbook roles/gea-chain/tests/test.yml -i roles/gea-chain/tests/inventory --tags redeploy'
+        sh 'cd /home/xingdao/qa-home && ansible-playbook roles/gea-chain/tests/test.yml -i roles/gea-chain/tests/inventory --tags "$ansible_tags"'
       }
-//       post {
-//         failure {
-//           echo 'Deployment failed!'
-//           currentBuild.result = 'FAILURE'
-//         }
-//       }
+      post {
+        failure {
+          echo 'Deployment failed!'
+          currentBuild.result = 'FAILURE'
+        }
+      }
     }
   }
 }
