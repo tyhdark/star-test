@@ -17,11 +17,11 @@ pipeline {
       steps {
           script {
             if (params.ENVIRONMENT == 'development') {
-              sh 'cd /home/xingdao/qa-home && ansible-playbook roles/gea-chain/tests/development/test.yml -i roles/gea-chain/tests/development/inventory --tags "$ansible_tags"'
+              sh 'cd /home/xingdao/qa-home && ansible-playbook roles/gea-chain/tests/test.yml -i roles/gea-chain/tests/development/inventory --tags "$ansible_tags"'
             } else if (params.ENVIRONMENT == 'alpha-test') {
-              sh 'cd /home/xingdao/qa-home && ansible-playbook roles/gea-chain/tests/alpha/test.yml -i roles/gea-chain/tests/alpha/inventory --tags "$ansible_tags"'
+              sh 'cd /home/xingdao/qa-home && ansible-playbook roles/gea-chain/tests/test.yml -i roles/gea-chain/tests/alpha/inventory --tags "$ansible_tags"'
             } else if (params.ENVIRONMENT == 'beta-test') {
-              sh 'cd /home/xingdao/qa-home && ansible-playbook roles/gea-chain/tests/beta/test.yml -i roles/gea-chain/tests/beta/inventory --tags "$ansible_tags"'
+              sh 'cd /home/xingdao/qa-home && ansible-playbook roles/gea-chain/tests/test.yml -i roles/gea-chain/tests/beta/inventory --tags "$ansible_tags"'
             } else {
               error('Invalid environment specified!')
             }
