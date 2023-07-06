@@ -1,10 +1,11 @@
-
+# -*- coding: utf-8 -*-
 import inspect
 import time
 
+import httpx
 from loguru import logger
 
-from tools import handle_resp_data
+from tools.console import Result
 from x.base import BaseClass
 """查询用的,查询各种信息,  (第四)
 查询区块
@@ -26,208 +27,255 @@ class Query(BaseClass):
         self.staking = self.Staking()
         self.mint = self.Mint()
 
-    class Block(object):  # 区块
+    class Block(object):
 
-        @staticmethod  # 静态方法装饰器
-        def query_block(height=""):  # 查询区块
-            """
-            返回当前块高
-            """
-            cmd = Query.ssh_home + f"{Query.chain_bin} q block {height} {Query.custom_node}"
+        @staticmethod
+        def query_block(height=""):
+            cmd = Query.work_home + f"{Query.chain_bin} q block {height} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             res = Query.ssh_client.ssh(cmd)
             if height:
-                return handle_resp_data.handle_yaml_to_dict(res)  # 直接返回
+                return Result.yaml_to_dict(res)
             else:
-                resp = handle_resp_data.handle_yaml_to_dict(res)
-                block_height = resp['block']['header']['height']  # 返回块的高度
+                resp = Result.yaml_to_dict(res)
+                block_height = resp['block']['header']['height']
                 return block_height
 
-    class Tx(object):  # 转账
+    class Tx(object):
 
         @staticmethod
         def query_tx(tx_hash):
-            """查询 tx_hash,1.3可以直接用"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q tx {tx_hash} {Query.custom_node}"
+            cmd = Query.work_home + f"{Query.chain_bin} q tx {tx_hash} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            time.sleep(5)
-            res = Query.ssh_client.ssh(cmd)
-            time.sleep(2)
-            return handle_resp_data.handle_yaml_to_dict(res)  # 返回对应的cmd
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
-    class Bank(object):  # 钱
+    class Bank(object):
 
         @staticmethod
         def query_balances(addr):
-            """根据地址查询余额 1.3可用"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q bank balances {addr} {Query.custom_node}"
+            cmd = Query.work_home + f"{Query.chain_bin} q bank balances {addr} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            res = Query.ssh_client.ssh(cmd)
-            return handle_resp_data.handle_yaml_to_dict(res)
-
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
 
     class Staking(object):  # 权益质押
 
         @staticmethod
-        def show_delegation(addr):  # 展示对应用户的货期委托本金
-            """查询货期质押"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q staking show-delegation {addr} {Query.chain_id} {Query.custom_node}"
+        def show_delegation(addr):
+            """查询活期质押"""
+            cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-delegation {addr} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            time.sleep(5)
-            return handle_resp_data.handle_yaml_to_dict(cmd)
-        def delegation(addr):  # 展示对应用户的货期委托本金
-            """查询货期质押"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q staking show-delegation {addr} {Query.chain_id}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            time.sleep(5)
-            return handle_resp_data.handle_yaml_to_dict(cmd)
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
-        def list_delegation():  # 委托列表
-            """查询所有活期质押信息"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q staking list-delegation {Query.chain_id} {Query.custom_node}"
+        def list_delegation():
+            """所有活期质押信息"""
+            cmd = Query.work_home + f"{Query.chain_bin} q srstaking list-delegation {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            res = Query.ssh_client.ssh(cmd)
-            return handle_resp_data.handle_yaml_to_dict(res)
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def list_fixed_delegation():  # 固定委托列表,展示所有活期内周期质押信息
             """所有活期内周期质押信息"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q staking list-fixed-delegation {Query.chain_id} {Query.custom_node}"
+            cmd = Query.work_home + f"{Query.chain_bin} q srstaking list-fixed-delegation {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def show_fixed_delegation(addr):  # 展示 固定质押 在活期内 传地址
             """活期内周期质押信息"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q staking show-fixed-delegation {addr} {Query.chain_id} {Query.custom_node}"
+            cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-fixed-delegation {addr} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def kyc_by_region(region_id):  # KYC 用户表示, 用户归属区
             """查询区域KYC列表"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q staking kyc-by-region {region_id} {Query.chain_id} {Query.custom_node}"
+            cmd = Query.work_home + f"{Query.chain_bin} q srstaking kyc-by-region {region_id} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            res = Query.ssh_client.ssh(cmd)
-            return handle_resp_data.handle_yaml_to_dict(res)
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
-        def show_kyc(addr):  # 查询KYC 通过地址
-            """查看地址是否为KYC用户,不是就返回错误"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q staking show-kyc {addr} {Query.chain_id} {Query.custom_node}"
+        def show_kyc(addr):
+            """查看地址是否为kyc用户,不是将返回错误"""
+            cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-kyc {addr} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             res = Query.ssh_client.ssh(cmd, strip=False)
             if res.stdout:
-                return handle_resp_data.handle_yaml_to_dict(res.stdout)
+                return Result.yaml_to_dict(res.stdout)
             else:
                 return res.stderr
 
         @staticmethod
-        def list_kyc():  # KYC列表
-            """查询kyc列表,"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q staking list-kyc {Query.chain_id} {Query.custom_node}"
+        def list_kyc():
+            cmd = Query.work_home + f"{Query.chain_bin} q srstaking list-kyc {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            res = Query.ssh_client.ssh(cmd)
-            return handle_resp_data.handle_yaml_to_dict(res)
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
-        def list_fixed_deposit():  # 固定质押列表
-            """查询固定质押的列表"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q staking list-fixed-deposit {Query.chain_id} {Query.custom_node}"
+        def list_fixed_deposit():
+            cmd = Query.work_home + f"{Query.chain_bin} q srstaking list-fixed-deposit {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
-        def show_fixed_deposit_by_id(addr, deposit_id):  # 通过id查询固定质押
-            """传入地址,和id  查询固定质押"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q staking show-fixed-deposit {addr} {deposit_id} {Query.chain_id} {Query.custom_node}"
+        def show_fixed_deposit_by_id(addr, deposit_id):
+            cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-fixed-deposit {addr} {deposit_id} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
-        def show_fixed_deposit_by_addr(addr, query_type):  # 通过地址和类型,查询固定质押
-            """ 传入地址,和查询类型,查询固定质押"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q staking show-fixed-deposit-by-acct {addr} {query_type} {Query.chain_id} {Query.custom_node}"
+        def show_fixed_deposit_by_addr(addr, query_type):
+            cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-fixed-deposit-by-acct {addr} {query_type} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
-        def show_fixed_deposit_by_region(region_id, query_type):  # 通过地区id,类型查询固定质押
-            """ 传入地区id,查询类型,查询固定质押"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q staking show-fixed-deposit-by-region {region_id} {query_type} {Query.chain_id} {Query.custom_node}"
+        def show_fixed_deposit_by_region(region_id, query_type):
+            cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-fixed-deposit-by-region {region_id} {query_type} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
-        def list_region():  # 地区列表
+        def list_region():
             """查询区域列表"""
+            cmd = Query.work_home + f"{Query.chain_bin} q srstaking list-region {Query.chain_id} {Query.connect_node}"
             cmd = Query.ssh_home + f"{Query.chain_bin} q staking list-region {Query.chain_id} {Query.custom_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            res = Query.ssh_client.ssh(cmd)
-            return handle_resp_data.handle_yaml_to_dict(res)
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
-        def show_region(region_id):  # 区金库信息.
-            """区金库信息"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q staking show-region {region_id} {Query.chain_id} {Query.custom_node}"
+        def show_region(region_id):
+            cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-region {region_id} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
-        def show_region_by_name(region_name):  # 通过地区名字查询.
-            """传入地区名,查询"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q staking show-region-by-name {region_name} {Query.chain_id} {Query.custom_node}"
+        def show_region_by_name(region_name):
+            cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-region-by-name {region_name} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
-        def list_validator():  # 验证列表
-            """ 查询验证列表,"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q staking list-validator {Query.chain_id} {Query.custom_node}"
+        def list_validator():
+            cmd = Query.work_home + f"{Query.chain_bin} q srstaking list-validator {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         # validate 参数是 operator_address
         @staticmethod
-        def show_validator(validator):  # 展示验证信息,
-            """ 传入验证信息,展示"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q staking show-validator {validator} {Query.chain_id} {Query.custom_node}"
+        def show_validator(validator):
+            cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-validator {validator} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
-
-        @staticmethod
-        def params():  # 参数,
-            """ 查询参数"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q staking params {Query.chain_id} {Query.custom_node}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
-
-    class Mint(object):  # 造币厂,铸造厂
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def params():
-            """查询铸造参数,Query the current minting parameters"""
-            cmd = Query.ssh_home + f"{Query.chain_bin} q mint params {Query.chain_id} {Query.custom_node}"
+            cmd = Query.work_home + f"{Query.chain_bin} q srstaking params {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
+
+    class Mint(object):
+
+        @staticmethod
+        def params():
+            """Query the current minting parameters"""
+            cmd = Query.work_home + f"{Query.chain_bin} q mint params {Query.chain_id} {Query.connect_node}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
+
+
+class HttpQuery(BaseClass):
+    client = httpx.Client()
+
+    def __init__(self):
+        self.block = self.Block()
+        self.tx = self.Tx()
+        self.bank = self.Bank()
+        self.staking = self.Staking()
+
+    class Block:
+        @staticmethod
+        def query_block(height=None):
+            if height is None:
+                url = HttpQuery.api_url + HttpQuery.query_block_latest
+            else:
+                url = HttpQuery.api_url + HttpQuery.query_block.format(height=height)
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            response = HttpQuery.client.get(url=url)
+            assert response.status_code == 200
+            return response.json()['block']
+
+    class Tx:
+        @staticmethod
+        def query_tx(tx_hash):
+            url = HttpQuery.api_url + HttpQuery.query_tx_hash.format(hash=tx_hash)
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            response = HttpQuery.client.get(url=url)
+            logger.debug(f"response: {response}")
+            assert response.status_code == 200
+            return response.json()['tx_response']
+
+    class Bank:
+        @staticmethod
+        def query_balances(addr):
+            url = HttpQuery.api_url + HttpQuery.query_bank_balances.format(address=addr)
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            response = HttpQuery.client.get(url=url)
+            assert response.status_code == 200
+            return response.json()['balances']
+
+    class Staking:
+        @staticmethod
+        def region(region_id=None, region_name=None):
+            """
+            查询区域信息
+            :param region_id: 查询指定region_id的区域信息
+            :param region_name: 查询指定region_name的区域信息
+            :param region_id and region_name 都不传,默认查询所有区域信息
+            """
+            if region_id is not None:
+                url = HttpQuery.api_url + HttpQuery.query_region_id.format(id=region_id)
+            elif region_name is not None:
+                url = HttpQuery.api_url + HttpQuery.query_region_name.format(name=region_name)
+            else:
+                url = HttpQuery.api_url + HttpQuery.query_regions
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            response = HttpQuery.client.get(url=url)
+            assert response.status_code == 200
+            return response.json()
+
+        @staticmethod
+        def delegation(addr=None):
+            """
+            查询委托信息
+            :param addr: 传入addr 查询某个地址委托,不传查询所有委托
+            """
+            if addr is None:
+                url = HttpQuery.api_url + HttpQuery.query_delegations
+            else:
+                url = HttpQuery.api_url + HttpQuery.query_delegation.format(addr=addr)
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            response = HttpQuery.client.get(url=url)
+            logger.info(f"response: {response}")
+            assert response.status_code == 200
+            return response.json()['delegation']
+
+        @staticmethod
+        def validator(addr=None):
+            if addr is None:
+                url = HttpQuery.api_url + HttpQuery.query_validators
+            else:
+                url = HttpQuery.api_url + HttpQuery.query_validator.format(address=addr)
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            response = HttpQuery.client.get(url=url)
+            logger.info(f"response: {response}")
+            assert response.status_code == 200
+            return response.json()['validator']
 
 
 if __name__ == '__main__':
-    # q = Query()
-    # k = q.staking.list_validator()
-    # print(k)
-    q = Query()
-    print(q.Bank.query_balances(addr="cosmos15rm6lr2w667yzcdkvp6r5j59hz6wxfshkdpmaw"))
-
-    # r = q.staking.show_region("bfdf8d44bc9211ed83a91e620a42e349")
-    # r1 = q.staking.show_region_by_name("CZE")
-    # # from deepdiff import DeepDiff
-    # #
-    # # res = DeepDiff(r, r1)
-    # r2 = q.staking.params()
-    # r3 = q.mint.params()
-    # print(r3)
-    # res = q.Block.query_block()
-    # pass
+    q = HttpQuery()
+    r3 = q.staking.region()
+    print(r3)
+    pass
