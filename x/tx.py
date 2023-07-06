@@ -204,9 +204,9 @@ class Tx(BaseClass):
             return handle_resp_data.handle_input_y_split_esc_re_code(resp_info)
 
         @staticmethod
-        def send_admin_to_user(to_account: str, amounts=100, fees=100):
+        def send_admin_to_user( to_username:str,amounts=100, fees=100, ):
             """创世后超管往个人打钱，前提是超管有钱！"""
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank send $({Tx.chain_bin} keys show superadmin -a {Tx.keyring_backend}) $({Tx.chain_bin} keys show {to_account} -a {Tx.keyring_backend}) {amounts}mec {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')} "
+            cmd = Tx.ssh_home + f"{Tx.chain_bin} tx bank send {Tx.Keys.private_export_meuser('superadmin')} {Tx.Keys.private_export_meuser(to_username)} {amounts}mec {Tx.chain_id} {Tx.keyring_backend} --fees={fees}{Tx.coin.get('uc')} "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             Tx.channel.send(cmd + "\n")
             resp_info = handle_console_input.ready_info(Tx.channel)
@@ -363,6 +363,33 @@ class Tx(BaseClass):
                 print(kycs)
 
             print("恭喜，所有的方法都执行成功了，初始化成功，")
+
+        # TODO 部链后用户数据
+        @staticmethod
+        def restart_data(username=None, region_name=None):
+
+            # 国库给管理员转钱
+            Tx.SendToAdmin.send_to_admin_fees(amount=10001,fees=100)
+            Tx.SendToAdmin.count_down_5s()
+            time.sleep(1)
+            # 管理员给用户转钱
+            Tx.SendToAdmin.send_admin_to_user(to_account=username,amounts=10000,fees=100)
+            Tx.SendToAdmin.count_down_5s()
+            time.sleep(1)
+            # 用户发起委托
+            Tx.Staking.delegate(amount=3000,username=username,fees=100)
+            Tx.SendToAdmin.count_down_5s()
+            time.sleep(1)
+            # 用户认证KYC
+            Tx.Staking.new_kyc_for_username(user_name=username,region_name=region_name,fees=100)
+            Tx.SendToAdmin.count_down_5s()
+            time.sleep(1)
+            # KYC用户发起委托
+            Tx.Staking.delegate(amount=4000,username=username,fees=100)
+            Tx.SendToAdmin.count_down_5s()
+            # 查询KYC委托
+            r = Tx.Query.query_staking_delegate(username=username)
+            return r
 
     class Staking(object):
         #
@@ -989,9 +1016,15 @@ class Tx(BaseClass):
 
         # TODO 批量创建区和验证者节点
         @staticmethod
-        def creation_validator_region_many():
-            region_node = dict(zip(Tx.region_name_many, Tx.node_id_many))
-            Tx.SendToAdmin.send_to_admin_fees(amount=100)
+        def creation_validator_region_many(region_name_many,node_id_many):
+            """
+            此方法用来做重新部链后的批量创建节点和创建区用
+            Args:
+                region_name_many:批量区域名称，用Tx.region_name_many调出来就可以
+                node_id_many:批量node_id，用Tx.node_id_many调用出来就可以，
+            """
+            region_node = dict(zip(region_name_many, node_id_many))
+            Tx.SendToAdmin.send_to_admin_fees(amount=100,fees=100)
             Tx.SendToAdmin.count_down_5s()
             time.sleep(1)
             for k, v in region_node.items():
@@ -1388,9 +1421,16 @@ class Tx(BaseClass):
             r_dict = {r.get("operator_address"): r.get('name') for r in region_name.get("region")}
             # print(v_dict)
             # print(r_dict)
-            node_zip_region = dict(zip(v_dict.values(), r_dict.values()))
-            # print(node_zip_region)
-            return node_zip_region
+            # 用普通方式写
+            node_region = { }
+            for key,value in v_dict.items():
+                if key in r_dict:
+                    node_region[value] =r_dict[key]
+
+            # 用推导式写：
+            new_node_region = {v_dict[key]:r_dict[key] for key in v_dict if key in r_dict}
+            # print(new_node_region)
+            return node_region
 
         # TODO 计算块高
         @staticmethod
