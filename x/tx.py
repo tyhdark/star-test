@@ -301,5 +301,5 @@ class Tx(BaseClass):
 if __name__ == '__main__':
     # py_01 = Tx().bank.send_tx("gea12g50h9fa7jp4tu47f4mn906s3274urjamcvyrd",
     #                           "gea1pv54mu2fa72vhz9wkx3dmw94f8nf6ncppae9pk", 1000, 1)
-    # print(py_01)
+    # print(py_0111)
     pass
