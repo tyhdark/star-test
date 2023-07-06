@@ -16,7 +16,7 @@ pipeline {
     stage('Deploy') {
       steps {
           script {
-            if (params.ENVIRONMENT == 'development') {
+            if (params.ENVIRONMENT == 'develop') {
               sh 'cd /home/xingdao/qa-home && ansible-playbook roles/gea-chain/tests/test.yml -i roles/gea-chain/tests/develop/inventory --tags "$ansible_tags"'
             } else if (params.ENVIRONMENT == 'alpha-test') {
               sh 'cd /home/xingdao/qa-home && ansible-playbook roles/gea-chain/tests/test.yml -i roles/gea-chain/tests/alpha/inventory --tags "$ansible_tags"'
