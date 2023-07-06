@@ -717,5 +717,5 @@ if __name__ == '__main__':
     # print(f"{username}该用户余额为:", Tx.Query.query_bank_balance_username(username=username))  # 查询该用户余额
 
     # print(Tx.Bank.rewards_nokyc_for_course_height_amount(amount=10000, course_height=1))
-    #
+    #提交一下
     print("======" * 5, "最后结束线", "======" * 5)
