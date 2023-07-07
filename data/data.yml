@@ -1,35 +1,150 @@
-- address: DB850481F6BEC61D851151AB8CBBE2A57F27BAC1
+- address: 63705222B3D670E0850C95F5C6EB3F0EF40AE07B
+  moniker: node17
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: HWY3OEzkdl9+2soEzrQFEYTGFECw4Pcb1Q0l3nEckY8=
+- address: 3163164A73B17739B099DD15BCB8B64D97FDEB73
+  moniker: node28
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: u9Ll7NleOduO9a1AiTf9pPan+r0jRRVMVj3fXfZJIHY=
+- address: A6032D7425C1AFFF5570066485FEC9E30E31DB0F
+  moniker: node10
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: GuFxaW1xE46uELaZbbpBiUEuPKwcqL9TvcrI1hBVO54=
+- address: A283CD7805CF05DA9749FAACF3F39CAD6FA86F10
+  moniker: node26
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: 0Q+o77MAVmN7e7D6pSw8sxx1shlGuYxFuizXDwD/eyQ=
+- address: AC0C455883014BB49E14A10641A7A69F908D175D
+  moniker: node19
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: En6OMUyGGOcQ6cy4WMrmQz41LufmM/OC7V7KfTRAtbc=
+- address: 914517447B2BE53FD0E6D8B87E210700652C81BE
+  moniker: node21
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: 11FHVddLs60q92t71vHRo505oveGDJPhjLWuUgRiX6c=
+- address: 6E922B4B073E63E31B4A6CCCD78A3201517F5174
+  moniker: node9
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: Ss8tpJK9BsvF6ZQOl4XWajozm3NCw/pR/UNVcEWDaak=
+- address: 70FB60DFA47A0B93AC815908E7669E7C703E740A
   moniker: node7
   pub_key:
     type: tendermint/PubKeyEd25519
-    value: Km0Nj6ExMe6hSs0nliq71ni+JPd6Q0yG/7okh+NQL68=
-- address: 6B71A1D5C98CD22F0470B218D6CE9FD720A3930F
+    value: 6ohH9UvHWhcgB6oLTI6RTVs7CrSMGmaN83aKBFi+1D0=
+- address: CC51B0E549BE205BCA843276278E040716863AEB
+  moniker: node20
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: jU7Vjvu1zAnFTd2EntJ1nuzZ4LbvE2uDFMOy/OSlKus=
+- address: 1189B77388A522BE97912E702E27EE0A45A8EE16
+  moniker: node27
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: 0thW4B02Y4z21LatxrjFk+Bi1kPM3zwESaGdEKkImLQ=
+- address: BF85D7FE6064EC14DCDB139E6B5FC20304F62E88
+  moniker: node18
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: GrSlFS2KLwAvkl960GE8npePNrhkFBdfR9AGyy01X6c=
+- address: 4A79A295714B5326138FD925E4018DD5B77225B0
+  moniker: node11
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: +pVhJCfKWQtxo3mDm63R56hKOXTuZKg4zQx3mihZYG8=
+- address: ACF62CD6EE0DFD919ED2B4E3607021D43D503791
+  moniker: node16
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: LR9C9JY+87bKLxER5ngbtcPwOPMgVAvzwhPNPocC1Gg=
+- address: C81E44A5F0A2F2653EEC7BC31A524858C8B07FC5
+  moniker: node29
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: y+sWq6SBglisF/quLCxQJftkp3TnJXvSyfPK4ZiQoGQ=
+- address: 132D030B4AAD4BE9BA7D91AB43F2F373DE3A0889
   moniker: node6
   pub_key:
     type: tendermint/PubKeyEd25519
-    value: 7bJ6bmmnLmnW0vcmSFALAbDEOiGsPFeusvpLfSH62tA=
-- address: 0F580C39F01D8C91CE68F743B7D4D67AC138397F
+    value: ligLfkpDs05b7B7xWhKIYqQ70Kdol4mkvcYNtmYYtoc=
+- address: C5FDC897BFC57507FE69B7DE39BC5EF29898E744
   moniker: node1
   pub_key:
     type: tendermint/PubKeyEd25519
-    value: f7G+fKRLtXlL+U1gVmA0WErJXVRQn6PSorPPCX7aiCs=
-- address: 6C5987F19AB9DB105BE0CF16FF8563144394476A
+    value: PQi089xBeaYNrxFLyQRECIBxn/PWrJo1Lj6f62QNgcw=
+- address: 024F4E86FDBE3D13A580E44315A8A4187C34EA95
+  moniker: node8
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: hGIJY2uO/nUunYRon0ZRytCIoZRi13tqe9OkMLw3wVo=
+- address: 65C83D5295B13A67F93253E35BFB41113743D27D
   moniker: node4
   pub_key:
     type: tendermint/PubKeyEd25519
-    value: JwXvjb3xBhtKaW6HQ3C4odyH7pWAQBgpiGNCZ4St3Ac=
-- address: 3558B4A40E996AB8C0E3E495BF66F145C2BEB165
+    value: AAhnhdNVO/HfwXwiY4FdElCQq3AXwkA28sxb90P64Ik=
+- address: C350172023297F560DD3128F4B0E07389E1EAC3B
   moniker: node3
   pub_key:
     type: tendermint/PubKeyEd25519
-    value: rJx0Yz3GQ40FzAAgWWbAFToYdxhrHuSUoZMY4Zry48Y=
-- address: E405B87EEB7FA807EC74CFBE421922BFCB8977F8
+    value: 9CbZNYBRjs5e4dGLX4PaM3sBTCF+nr64QUiesBgwh4M=
+- address: 0F37514ED96D6AA340AFB7EE5ECF50B0AAC04923
+  moniker: node13
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: K5PEpgAL1hQdmROWQ+NI6T93cMygmOtQJUgetFFtxIM=
+- address: 35545D3BD052DE9EE2E3B916C1FB943AA2DEB3DB
+  moniker: node14
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: 2fsgLr/HZtNJUWHcgANCeNiJcGyg6K0YTg4vYjPIuGE=
+- address: D0A2042072D8F4F8EE0D47D19CE896D11C04FFBF
+  moniker: node22
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: KJhJhNLgwv8MU92RNWSqLGCyr5sTrgrnwwG6Y4VD0Gk=
+- address: D7A8ACF346E49E38D66A0998F7760D77B6C97072
+  moniker: node25
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: wWCM2KaFNNNdoJ/c+DF+uA5F/q4W13ckNzr+pJmFsxc=
+- address: 5E49DC179F84055E3960C1041E9F949F13968BA7
   moniker: node2
   pub_key:
     type: tendermint/PubKeyEd25519
-    value: 1wSUiGaOl/8gEIiuzma27yUJTeNGHN88l2MYDQN8i1A=
-- address: 17F8C156910BDEC538F5BCC7A6C7454CD38FC626
+    value: VzteJ/y+2tkmEh2hXVhVu+x2fR4SioUxpMrb1fonOcs=
+- address: 6F666FF47EEBD9676F54B0225EF36E87F6B4C0F9
   moniker: node5
   pub_key:
     type: tendermint/PubKeyEd25519
-    value: 8AtSeGUHPBdJpS77LN5Xfv0/t7Aaea7NUmNpolgFYVc=
+    value: kNDLsW5+VGZZX97wUYcYxemuiIoy64ODsf06sAawlLA=
+- address: 52CF5CB4358BFF817C9B87B01419AF41CF672A5D
+  moniker: node24
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: 3XLaFBeHzD1ankkbuLY5YVm9viWGnPOgbfsIT/lNbG8=
+- address: 30396389F8ECB037BE2DA0056F82EE7940DB1A2F
+  moniker: node23
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: sPIOycfmgdTee1i0YSh4P2nKQaNyzm1u2Ekvvxbvlp0=
+- address: E4D1FC717F2726F4D25E3B72A778477B2E731930
+  moniker: node15
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: +4RPJHaMR5IDPayhWOjYMifUfq4Nsg0C8yft+jmjy+c=
+- address: 753F6242CEBFECA0DFC9F340221093C2940AA697
+  moniker: node12
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: D7cyAhDZvzc3+FXRzDs5A0RW9KZl4FAvEltt6AOndbg=
+- address: 43227F15D5656149D6FB732A85041ADF43627400
+  moniker: node30
+  pub_key:
+    type: tendermint/PubKeyEd25519
+    value: q4dpVUQP2YXZlCNbUFc1a3Mdp0WG5DsG9eC0cYImrdk=
