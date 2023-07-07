@@ -17,6 +17,7 @@ class HostCfg:
     password: str
 
 
+
 @dataclass
 class ChainCfg:
     work_dir: str
@@ -58,33 +59,37 @@ class HttpCfg:
     tx: dict
     bank: dict
     staking: dict
+    account: dict
 
 
 class BaseClass:
+    # **
     _host = HostCfg(**config["host"])
+    # 实例化对象，Host类
     ssh_client = Host(ip=_host.ip, port=_host.port, username=_host.username, password=_host.password)
-    channel = ssh_client.create_invoke_shell()
+    channel = ssh_client.create_invoke_shell() # 开启虚拟窗口连接
 
-    chain = ChainCfg(**config["chain"])
-    compute = ComputeCfg(**config["compute"])
-    http = HttpCfg(**config["http"])
+    chain = ChainCfg(**config["chain"]) # 定义chain
+    compute = ComputeCfg(**config["compute"]) # 定义计算
+    http = HttpCfg(**config["http"]) # 定义http
 
     # chain base config
-    work_home = chain.work_dir
-    chain_id = chain.chain_id
-    chain_bin = chain.chain_bin
-    connect_node = chain.connect_node
-    super_addr = chain.super_addr
-    keyring_backend = chain.keyring_backend
-    sleep_time = chain.sleep_time
-    coin = chain.token_unit
-    role = chain.role
-    period = chain.period
-    delegate_term = chain.delegate_term
-    annual_rate = chain.annual_rate
-    fixed_type = chain.fixed_type
+    work_home = chain.work_dir # work_home就是me-chian所在目录
+    chain_id = chain.chain_id # chian-id
+    chain_bin = chain.chain_bin # "./me-chiand"
+    connect_node = chain.connect_node # 节点
+    super_addr = chain.super_addr # 超管地址
+    keyring_backend = chain.keyring_backend #
+    sleep_time = chain.sleep_time # 等待时间
+    coin = chain.token_unit # 币单位
+    # role = chain.role # 这个用不上
+    # period = chain.period # 这个用不上
+    delegate_term = chain.delegate_term #定期的月数
+    annual_rate = chain.annual_rate # 定期费率设置
+    fixed_type = chain.fixed_type # 定期查询用的
 
-    # compute
+
+    # compute 计算用的数据
     precision = compute.Precision
     region_as = compute.DefaultRegionAS
     total_as = compute.TotalAS
@@ -94,12 +99,12 @@ class BaseClass:
     init_mint_ac = compute.InitialMintACAmount
     fee_rate = compute.DefaultFeeRate
     gas = compute.DefaultGasLimit
-    fees = compute.DefaultFees
+    fees = compute.DefaultFees # fees
     super_to_region_admin_amt = compute.DefaultSuperToRegionAdminAC
     max_delegate = compute.DefaultMaxDelegateAC
     min_delegate = compute.DefaultMinDelegateAC
 
-    # http config
+    # http config 接口文档连接
     api_url = http.api_url
     # base module
     query_block = http.base["block"]
@@ -119,9 +124,17 @@ class BaseClass:
     query_validator = http.staking["validator"]
     query_validators = http.staking["validators"]
 
+    # 查询用户
+    query_address = http.account["account"]
+
 
 if __name__ == '__main__':
     a = BaseClass()
+    print(a.work_home)
+    print(a.query_address)
+    # print(a.chain_bin,a.chain_id,a.work_home,a.api_url,a.channel,a.coin)
+    # print(a)
+    print("1")
     pass
 
     """

@@ -27,12 +27,18 @@ class Tx(BaseClass):
     class Bank(object):
 
         @staticmethod
-        def send_tx(from_addr, to_addr, amount, fees=Fees, gas=GasLimit):
+        def send_tx(from_addr, to_addr, amount, fees=Fees):
             """发送转账交易"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx bank send {from_addr} {to_addr} {amount}{Tx.coin['c']} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx bank send {from_addr} {to_addr} {amount}{Tx.coin['c']} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
+        @staticmethod
+        def send_to_admin(amout:int, fees=Fees):
+            """国库往超管转钱，不需要传参,传金额就行"""
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx bank sendToAdmin {amout}{Tx.coin['c']} --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return Tx._executor(cmd)
     class Staking(object):
 
         @staticmethod
@@ -608,12 +614,12 @@ if __name__ == '__main__':
     # region_name = "USA"
     # adderss = "cosmos1fap8hp3t3xt20qw4sczlyrk6n92uffj4r4kw77"
     print("======" * 5, "初始化起始线", "======" * 5)
-    print(Tx.Staking.creation_validator_region_many())
+    # print(Tx.Staking.creation_validator_region_many())
     # print(Tx.Query.node_name_zip_region_name())
     # print(Tx.Keys.add(username=username))                         # 添加用戶
     # Tx.SendToAdmin.count_down_5s()
     #
-    # Tx.SendToAdmin.send_to_admin_fees(amount=10000, fees=100) # 国库转给管理员
+    Tx.Bank.send_to_admin(amout=100)
     # Tx.SendToAdmin.count_down_5s()
     # time.sleep(2)
     # print("查询管理员余额：",Tx.Query.query_bank_balance_username("superadmin")) # 查询管理员余额

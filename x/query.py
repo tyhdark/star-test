@@ -53,12 +53,13 @@ class Query(BaseClass):
 
         @staticmethod
         def query_balances(addr):
+            """查询用户余额，可用"""
             cmd = Query.work_home + f"{Query.chain_bin} q bank balances {addr} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
 
-    class Staking(object):  # 权益质押
+    class Staking(object):  # 查询Staking
 
         @staticmethod
         def show_delegation(addr):
@@ -157,10 +158,11 @@ class Query(BaseClass):
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
-        def list_validator():
-            cmd = Query.work_home + f"{Query.chain_bin} q srstaking list-validator {Query.chain_id} {Query.connect_node}"
+        def validators_list():
+            """查询验证者节点列表"""
+            cmd = Query.work_home + f"{Query.chain_bin} q staking validators {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return handle_resp_data.handle_yaml_to_dict(Query.ssh_client.ssh(cmd))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         # validate 参数是 operator_address
         @staticmethod
@@ -219,6 +221,7 @@ class HttpQuery(BaseClass):
     class Bank:
         @staticmethod
         def query_balances(addr):
+            """接口文档查询用户余额，可以用"""
             url = HttpQuery.api_url + HttpQuery.query_bank_balances.format(address=addr)
             logger.info(f"{inspect.stack()[0][3]}: {url}")
             response = HttpQuery.client.get(url=url)
@@ -276,6 +279,11 @@ class HttpQuery(BaseClass):
 
 if __name__ == '__main__':
     q = HttpQuery()
-    r3 = q.staking.region()
-    print(r3)
+    # r3 = q.staking.region()
+    # print(r3)
+    # print(q.Bank.query_balances(addr=Query.super_addr))
+    q_ssh =Query()
+    print(q_ssh.Staking.validators_list())
+    # print(q_ssh.Bank.query_balances("me1f5mcf4cw8av4jzh2zygnjcmvsqgygac77zsrtu"))
+
     pass
