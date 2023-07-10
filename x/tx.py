@@ -34,26 +34,27 @@ class Tx(BaseClass):
             return Tx._executor(cmd)
 
         @staticmethod
-        def send_to_admin(amout:int, fees=Fees):
+        def send_to_admin(amout: int, fees=Fees):
             """国库往超管转钱，不需要传参,传金额就行"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx bank sendToAdmin {amout}{Tx.coin['c']} --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
+
     class Staking(object):
 
-        @staticmethod
-        def ag_to_ac(ag_amount, from_addr, fees=Fees, gas=GasLimit):
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking ag-to-ac {ag_amount}{Tx.coin['g']} --from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx._executor(cmd)
+        # @staticmethod
+        # def ag_to_ac(ag_amount, from_addr, fees=Fees, gas=GasLimit):
+        #     cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking ag-to-ac {ag_amount}{Tx.coin['g']} --from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
+        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+        #     return Tx._executor(cmd)
 
         @staticmethod
-        def create_region(from_addr, region_name, region_id, total_as, fee_rate, totalStakeAllow, userMaxDelegateAC,
-                          userMinDelegateAC, delegators_limit=-1, fees=Fees, gas=GasLimit):
+        def create_region(from_addr, region_name, node_name, fees=Fees):
             """
-            创建区
+            创建一个区
             :param from_addr: 发起方地址 需要区域管理员
             :param region_name: 区名称
+            :param node_name: 节点名称，方便找节点地址
             :param region_id: 区ID
             :param total_as: 区所占AS权重
             :param fee_rate: 区内KYC用户手续费比例
@@ -65,15 +66,11 @@ class Tx(BaseClass):
             :param gas: 默认为 200000
             :return:
             """
-
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking create-region --region-name={region_name} " \
-                                 f"--region-id={region_id} --total-as={total_as} " \
-                                 f"--delegators-limit={delegators_limit} " \
-                                 f"--totalStakeAllow={totalStakeAllow} " \
-                                 f"--fee-rate={fee_rate} " \
-                                 f"--userMaxDelegateAC={userMaxDelegateAC} " \
-                                 f"--userMinDelegateAC={userMinDelegateAC} " \
-                                 f"--from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
+            params_a="region_id, total_as, fee_rate, totalStakeAllow, userMaxDelegateAC,userMinDelegateAC, delegators_limit=-1,  gas=GasLimit,"
+            # c = "./me-chaind tx staking new-region  CHN  #验证者节点地址  --from=#超管地址  --keyring-backend=test --chain-id=me-chain --fees=0.00mec "
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking new-region {region_name}  " \
+                                 f"$(./me-chaind q staking validators | grep \"{node_name}\" -A 6 | awk '/address/{{print$2}}')" \
+                                 f" --from={from_addr} --fees={fees}{Tx.coin['c']}  {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -117,9 +114,14 @@ class Tx(BaseClass):
             return Tx._executor(cmd)
 
         @staticmethod
-        def create_validator(pub_key, moniker, from_addr, fees=Fees, gas=GasLimit):
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking create-validator --pubkey={pub_key} --moniker={moniker} " \
-                                 f"--from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
+        def create_validator(node_name: str, amout=None, fees=Fees, ):
+            """创建验证者节点，需要传入对应的node几,可用"""
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking create-validator  --amount={amout}{Tx.coin['c']}  " \
+                                 f"--pubkey=$({Tx.chain_bin} tendermint show-validator --home=../nodes/{node_name})  " \
+                                 f"--moniker=\"{node_name}\" " \
+                                 f" --commission-rate=\"0.10\" --commission-max-rate=\"0.20\"  " \
+                                 f" --commission-max-change-rate=\"0.01\" --from={Tx.super_addr}  " \
+                                 f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -235,9 +237,9 @@ class Tx(BaseClass):
             return Tx._executor(cmd)
 
         @staticmethod
-        def new_kyc(addr, region_id, role, from_addr, fees=Fees, gas=GasLimit):
+        def new_kyc(user_addr, region_id, role, from_addr, fees=Fees, gas=GasLimit):
             """
-            创建KYC用户
+            把用户认证成KYC
             :param addr: kyc address
             :param region_id: 所绑定区域ID
             :param role: 区内角色  KYC_ROLE_USER  or KYC_ROLE_ADMIN
@@ -246,7 +248,7 @@ class Tx(BaseClass):
             :param gas: 默认200000
             :return: tx Hash
             """
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking new-kyc {addr} {region_id} {role} --from {from_addr} " \
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking new-kyc {user_addr} {region_id} {role} --from {from_addr} " \
                                  f"--fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
 
             if from_addr != Tx.super_addr:  # 区管理员 不能创建 KYC_ROlE_ADMIN
@@ -584,13 +586,13 @@ class Tx(BaseClass):
             # print(v_dict)
             # print(r_dict)
             # 用普通方式写
-            node_region = { }
-            for key,value in v_dict.items():
+            node_region = {}
+            for key, value in v_dict.items():
                 if key in r_dict:
-                    node_region[value] =r_dict[key]
+                    node_region[value] = r_dict[key]
 
             # 用推导式写：
-            new_node_region = {v_dict[key]:r_dict[key] for key in v_dict if key in r_dict}
+            new_node_region = {v_dict[key]: r_dict[key] for key in v_dict if key in r_dict}
             # print(new_node_region)
             return node_region
 
@@ -598,6 +600,14 @@ class Tx(BaseClass):
         @staticmethod
         def count_height():
             pass
+
+    class Wait(object):
+        @staticmethod
+        def wait_five_seconds():
+            for i in range(6):
+                print(i)
+                i += 1
+                time.sleep(1)
 
 
 if __name__ == '__main__':
@@ -619,10 +629,9 @@ if __name__ == '__main__':
     # print(Tx.Keys.add(username=username))                         # 添加用戶
     # Tx.SendToAdmin.count_down_5s()
     #
-    Tx.Bank.send_to_admin(amout=100)
-    # Tx.SendToAdmin.count_down_5s()
+    # print(Tx.Bank.send_to_admin(amout=100)) # 国库转钱给管理员
+    Tx.Wait.wait_five_seconds()
     # time.sleep(2)
-    # print("查询管理员余额：",Tx.Query.query_bank_balance_username("superadmin")) # 查询管理员余额
 
     # Tx.SendToAdmin.send_admin_to_user(to_account=username, amounts=10001, fees=100) # 管理员给用户转账
     # Tx.SendToAdmin.count_down_5s()
@@ -723,5 +732,5 @@ if __name__ == '__main__':
     # print(f"{username}该用户余额为:", Tx.Query.query_bank_balance_username(username=username))  # 查询该用户余额
 
     # print(Tx.Bank.rewards_nokyc_for_course_height_amount(amount=10000, course_height=1))
-    #提交一下
+    # 提交一下
     print("======" * 5, "最后结束线", "======" * 5)
