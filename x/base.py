@@ -124,6 +124,9 @@ class BaseClass:
     query_validator = http.staking["validator"]
     query_validators = http.staking["validators"]
 
+    query_kyc = http.staking["kyc"]
+    query_kycs = http.staking["kycs"]
+
     # 查询用户
     query_address = http.account["account"]
 
@@ -135,6 +138,7 @@ if __name__ == '__main__':
     # print(a.chain_bin,a.chain_id,a.work_home,a.api_url,a.channel,a.coin)
     # print(a)
     print("1")
+    print(a.query_kyc)
     pass
 
     """

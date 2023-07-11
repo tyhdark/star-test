@@ -26,6 +26,7 @@ class Query(BaseClass):
         self.bank = self.Bank()
         self.staking = self.Staking()
         self.mint = self.Mint()
+        self.key = self.Key()
 
     class Block(object):
 
@@ -177,7 +178,28 @@ class Query(BaseClass):
         #     cmd = Query.work_home + f"{Query.chain_bin} q srstaking params {Query.chain_id} {Query.connect_node}"
         #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         #     return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
+    class Key(object):
+        @staticmethod
+        def keys_list():
+            """
+            查询本地用户列表
+            """
+            cmd = Query.work_home + f"{Query.chain_bin} keys list {Query.chain_bin} {Query.keyring_backend}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return  Result.yaml_to_dict(Query.ssh_client.ssh((cmd)))
+        @staticmethod
+        def address_of_name(username=None):
+            """
+            根据用户名称导出用户的地址
+            :param username: 用户的名称
+            :return: 用户的地址
+            """
 
+            cmd = Query.work_home + f"{Query.chain_bin} keys show {username} -a {Query.keyring_backend}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            # resp_info = Tx.ssh_client.ssh(cmd)
+
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
     class Mint(object):
 
         @staticmethod
@@ -227,7 +249,12 @@ class HttpQuery(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {url}")
             response = HttpQuery.client.get(url=url)
             assert response.status_code == 200
-            return response.json()['balances']
+            # 返回int格式，方便计算
+            # return int(response.json().get('balances')[0]['amount'])
+            if not response.json().get('balances'):
+                return 0
+            else:
+                return int(response.json().get('balances')[0]['amount'])
 
     class Staking:
         @staticmethod
@@ -275,7 +302,22 @@ class HttpQuery(BaseClass):
             response = HttpQuery.client.get(url=url)
             logger.info(f"response: {response}")
             assert response.status_code == 200
-            return response.json()['validator']
+            return response.json().get("validators")
+        # TODO 查询KYC列表
+        @staticmethod
+        def kyc(addr=None):
+            if addr is None:
+                url =  HttpQuery.api_url + HttpQuery.query_kycs
+            else:
+                url = HttpQuery.api_url + HttpQuery.query_kyc.format(account=addr)
+
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            response = HttpQuery.client.get(url=url)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                return None
+
 
 
 if __name__ == '__main__':
@@ -284,13 +326,28 @@ if __name__ == '__main__':
     # print(r3)
     # print(q.Bank.query_balances(addr=Query.super_addr))
     q_ssh =Query()
-    print(q_ssh.Staking.validators_list()) # 验证者列表
-    print(q_ssh.Staking.list_region()) # 区列表
-    print(q_ssh.Staking.list_kyc()) # KYC
-    print(q_ssh.Staking.list_fixed_delegation()) # 定期
-    print(q_ssh.Staking.delegation("me1qsx0a3ysfmvum803gqf7qwn9rznzk7cdunlxne")) # 活期委托
-    print(q_ssh.Staking.kyc_by_region(region_id="jpn"))
-    print(q_ssh.Staking.list_fixed_deposit())
+
+    # print(q_ssh.Staking.validators_list()) # 验证者列表
+    # print(q_ssh.Staking.list_region()) # 区列表
+    # print(q_ssh.Staking.list_kyc()) # KYC
+    # print(q_ssh.Staking.list_fixed_delegation()) # 定期
+    # print(q_ssh.Staking.delegation("me1qsx0a3ysfmvum803gqf7qwn9rznzk7cdunlxne")) # 活期委托
+    # print(q_ssh.Staking.kyc_by_region(region_id="jpn"))
+    # print(q_ssh.Staking.list_fixed_deposit())
+    hq = HttpQuery()
+    # v = hq.Staking.validator()
+    # print(v)
+    # l = [i.get('description').get('moniker') for i in v]
+    # print(l)
+    # r = hq.Staking.region()
+    # print(r.get('region'))
+    # for i in r.get('region'):
+    #     print(i.get('name'))
+    # l = [i.get('name') for i in hq.Staking.region().get('region')]
+    # print(r)
+    # print(r)
+    print(hq.Staking.kyc(addr="me1q6v4ud6dy0dh3k0jnpva287n7m3wlv3w2qgnwc"))
+
     # print(q_ssh.Bank.query_balances("me1f5mcf4cw8av4jzh2zygnjcmvsqgygac77zsrtu"))
 
     pass

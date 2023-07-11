@@ -70,7 +70,7 @@ class Tx(BaseClass):
             # c = "./me-chaind tx staking new-region  CHN  #验证者节点地址  --from=#超管地址  --keyring-backend=test --chain-id=me-chain --fees=0.00mec "
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking new-region {region_name}  " \
                                  f"$(./me-chaind q staking validators | grep \"{node_name}\" -A 6 | awk '/address/{{print$2}}')" \
-                                 f" --from={from_addr} --fees={fees}{Tx.coin['c']}  {Tx.chain_id} {Tx.keyring_backend} -y"
+                                 f" --from={from_addr} --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -237,7 +237,7 @@ class Tx(BaseClass):
             return Tx._executor(cmd)
 
         @staticmethod
-        def new_kyc(user_addr, region_id, role, from_addr, fees=Fees, gas=GasLimit):
+        def new_kyc(user_addr, region_id, from_addr, fees=Fees, gas=GasLimit):
             """
             把用户认证成KYC
             :param addr: kyc address
@@ -245,14 +245,14 @@ class Tx(BaseClass):
             :param role: 区内角色  KYC_ROLE_USER  or KYC_ROLE_ADMIN
             :param from_addr: 发起地址 区管理员 or 全局管理员
             :param fees: Gas费用 {Tx.coin['c']}
-            :param gas: 默认200000
+            :param gas: 默认100
             :return: tx Hash
             """
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking new-kyc {user_addr} {region_id} {role} --from {from_addr} " \
-                                 f"--fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking new-kyc {user_addr} {region_id}  --from {from_addr} " \
+                                 f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
 
-            if from_addr != Tx.super_addr:  # 区管理员 不能创建 KYC_ROlE_ADMIN
-                assert role == config["chain"]["role"]["user"]
+            # if from_addr != Tx.super_addr:  # 区管理员 不能创建 KYC_ROlE_ADMIN
+            #     assert role == config["chain"]["role"]["user"]
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -278,27 +278,7 @@ class Tx(BaseClass):
 
             assert "**Important**" in resp_info
 
-        @staticmethod
-        def list():
-            """查询本地用户列表"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} keys list {Tx.keyring_backend}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Result.yaml_to_dict(Tx.ssh_client.ssh(cmd))
 
-        @staticmethod
-        def lists_test():
-            """
-            查询用户列表 返回出去的是用户姓名的列表
-             """
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} keys list {Tx.keyring_backend}"
-            # logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            keys_list = handle_resp_data.handle_yaml_to_dict(Tx.ssh_client.ssh(cmd))
-            name = []
-            for i in keys_list:
-                a = i.get('name')
-                name.append(a)
-
-            return name
 
         @staticmethod
         def show(username):
@@ -320,22 +300,7 @@ class Tx(BaseClass):
 
             return Result.split_esc(resp_info)
 
-        @staticmethod
-        def private_export_meuser(username=None):
-            """
-            传入name导出用户地址，1.3可用
 
-            Args:
-                username(str): 用户名称
-
-            Return:
-                返回用户的地址
-            """
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} keys show {username} -a {Tx.keyring_backend}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            resp_info = Tx.ssh_client.ssh(cmd)
-
-            return handle_resp_data.handle_yaml_to_dict(resp_info)
 
     class Query(object):
         """ 这个类主要用来查询相关操作"""
@@ -434,7 +399,7 @@ class Tx(BaseClass):
         @staticmethod
         def query_staking_list_kyc():
             """查看kyc用戶列表"""
-            cmd = Tx.ssh_home + f"{Tx.chain_bin} q staking list-kyc {Tx.chain_id}"
+            cmd = Tx.work_home + f"{Tx.chain_bin} q staking list-kyc {Tx.chain_id}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")  # logger插入
             # 如果是没有交互的话，直接查询这种情况，就调用Tx下的ssh_client.ssh方法就可以了
             resp_info = Tx.ssh_client.ssh(cmd)
