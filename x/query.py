@@ -282,15 +282,14 @@ class HttpQuery(BaseClass):
             查询委托信息
             :param addr: 传入addr 查询某个地址委托,不传查询所有委托
             """
-            if addr is None:
-                url = HttpQuery.api_url + HttpQuery.query_delegations
-            else:
-                url = HttpQuery.api_url + HttpQuery.query_delegation.format(addr=addr)
+
+            url = HttpQuery.api_url + HttpQuery.query_delegation.format(delegator_addr=addr)
             logger.info(f"{inspect.stack()[0][3]}: {url}")
             response = HttpQuery.client.get(url=url)
             logger.info(f"response: {response}")
             assert response.status_code == 200
-            return response.json()['delegation']
+
+            return response.json().get('delegation_response').get('delegation')
 
         @staticmethod
         def validator(addr=None):
@@ -303,7 +302,7 @@ class HttpQuery(BaseClass):
             logger.info(f"response: {response}")
             assert response.status_code == 200
             return response.json().get("validators")
-        # TODO 查询KYC列表
+
         @staticmethod
         def kyc(addr=None):
             if addr is None:
@@ -317,7 +316,28 @@ class HttpQuery(BaseClass):
                 return response.json()
             else:
                 return None
+        # TODO 通过浏览器查询定期委托列表
+        @staticmethod
+        def fixed_deposit(addr=None):
+            if addr is None:
+                url = HttpQuery.api_url + HttpQuery.query_deposits
+            else:
+                url = HttpQuery.api_url + HttpQuery.query_deposit.format(account=addr)
 
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            respose = HttpQuery.client.get(url=url)
+            return respose.json().get('FixedDeposit')
+
+        @staticmethod
+        def fixed_deposit_rate(month=None):
+
+            url = HttpQuery.api_url + "/cosmos/staking/v1beta1/fixed_deposit_interest_rate"
+            logger.info((f"{inspect.stack()[0][3]}: {url}"))
+            respose = HttpQuery.client.get(url=url)
+            if month is None:
+                return respose.json().get('FixedDepositAnnualRate')
+            else:
+                return respose.json().get('FixedDepositAnnualRate').get(f'annualRate_{month}_months')
 
 
 if __name__ == '__main__':
@@ -335,6 +355,7 @@ if __name__ == '__main__':
     # print(q_ssh.Staking.kyc_by_region(region_id="jpn"))
     # print(q_ssh.Staking.list_fixed_deposit())
     hq = HttpQuery()
+    # print(hq.Tx.query_tx(tx_hash="36B83E7A30FB8D45FB24860E95EC95968F566CFAF4E5020EFA58936B475C25F6"))
     # v = hq.Staking.validator()
     # print(v)
     # l = [i.get('description').get('moniker') for i in v]
@@ -346,8 +367,12 @@ if __name__ == '__main__':
     # l = [i.get('name') for i in hq.Staking.region().get('region')]
     # print(r)
     # print(r)
-    print(hq.Staking.kyc(addr="me1q6v4ud6dy0dh3k0jnpva287n7m3wlv3w2qgnwc"))
-
+    # print(hq.Staking.kyc(addr="me1q6v4ud6dy0dh3k0jnpva287n7m3wlv3w2qgnwc"))
+    # l = hq.Staking.fixed_deposit(addr="me10xujye2ceftjakuzhx6pg7ecaj7x0qrrg0kexa")
+    # print(l)
+    ll = [i.get('id') for i in hq.Staking.fixed_deposit(addr="me10xujye2ceftjakuzhx6pg7ecaj7x0qrrg0kexa")]
+    print(ll)
+    # print(hq.Staking.fixed_deposit_rate())
     # print(q_ssh.Bank.query_balances("me1f5mcf4cw8av4jzh2zygnjcmvsqgygac77zsrtu"))
 
     pass

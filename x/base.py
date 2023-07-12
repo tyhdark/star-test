@@ -63,7 +63,7 @@ class HttpCfg:
 
 
 class BaseClass:
-    # **
+    # **,下滑线表示私有，一个下划线和两个下划线
     _host = HostCfg(**config["host"])
     # 实例化对象，Host类
     ssh_client = Host(ip=_host.ip, port=_host.port, username=_host.username, password=_host.password)
@@ -78,7 +78,10 @@ class BaseClass:
     chain_id = chain.chain_id # chian-id
     chain_bin = chain.chain_bin # "./me-chiand"
     connect_node = chain.connect_node # 节点
-    super_addr = chain.super_addr # 超管地址
+    cmd = work_home + f"{chain_bin} keys show superadmin -a --keyring-backend=test"
+    # a = ssh_client.ssh(cmd)
+    super_addr = ssh_client.ssh(cmd)  # 超管地址
+    # super_addr = chain.super_addr # 超管地址
     keyring_backend = chain.keyring_backend #
     sleep_time = chain.sleep_time # 等待时间
     coin = chain.token_unit # 币单位
@@ -127,18 +130,22 @@ class BaseClass:
     query_kyc = http.staking["kyc"]
     query_kycs = http.staking["kycs"]
 
+    query_deposit = http.staking['deposit']
+    query_deposits = http.staking['deposits']
+
     # 查询用户
     query_address = http.account["account"]
 
 
 if __name__ == '__main__':
     a = BaseClass()
-    print(a.work_home)
-    print(a.query_address)
+    # print(a.work_home)
+    # print(a.query_address)
     # print(a.chain_bin,a.chain_id,a.work_home,a.api_url,a.channel,a.coin)
     # print(a)
     print("1")
-    print(a.query_kyc)
+    # print(a.query_kyc)
+    print(a.a)
     pass
 
     """
