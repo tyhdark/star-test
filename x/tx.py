@@ -118,6 +118,13 @@ class Tx(BaseClass):
             return Tx._executor(cmd)
 
         @staticmethod
+        def new_validator_cmd(pub_key, moniker, from_addr, fees=Fees, gas=GasLimit):
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking create-validator --pubkey={pub_key} --moniker={moniker} " \
+                                 f"--from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return cmd
+
+        @staticmethod
         def update_validator(operator_address, region_name, from_addr, fees=Fees, gas=GasLimit):
             """
             Only used to modify the Region ID of the verifier
