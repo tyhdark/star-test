@@ -22,10 +22,10 @@ class TestRegionDelegate(object):
     test_bank = unitcases.Bank()
     base_cfg = test_bank.tx
 
-    def test_region_delegate(self, setup_create_region):
+    def test_region_delegate(self):
         """测试新创建区域并质押"""
         logger.info("TestRegionDelegate/test_region_delegate")
-        region_admin_info, region_id, region_name = setup_create_region
+        region_admin_info, region_id, region_name = self.test_region.test_create_region()
         region_admin_addr = region_admin_info['address']
 
         new_kyc_data = dict(region_id=region_id, region_admin_addr=region_admin_addr)
@@ -48,10 +48,10 @@ class TestRegionDelegate(object):
 
         return region_admin_addr, region_id, user_addr
 
-    def test_region_more_delegate(self, setup_create_region):
+    def test_region_more_delegate(self):
         """多用户质押"""
         logger.info("TestRegionDelegate/test_region_more_delegate")
-        region_admin_addr, region_id, user_addr1 = self.test_region_delegate(setup_create_region)
+        region_admin_addr, region_id, user_addr1 = self.test_region_delegate()
         logger.info(f'{"setup test_region_delegate finish":*^50s}')
 
         new_kyc_data = dict(region_id=region_id, region_admin_addr=region_admin_addr)
@@ -73,7 +73,7 @@ class TestRegionDelegate(object):
         logger.info(f"collect_addr_list:{region_admin_addr, region_id, user_addr1, user_addr2}")
         return region_admin_addr, region_id, user_addr1, user_addr2
 
-    def test_region_more_undelegate(self, setup_create_region):
+    def test_region_more_undelegate(self):
         """
         多用户减少/退出活期质押
         @Desc:
@@ -89,7 +89,7 @@ class TestRegionDelegate(object):
             + expect: user2 无活期质押,还存在KYC赠送质押
         """
         logger.info("TestRegionDelegate/test_region_more_undelegate")
-        region_admin_addr, region_id, user_addr1, user_addr2 = self.test_region_more_delegate(setup_create_region)
+        region_admin_addr, region_id, user_addr1, user_addr2 = self.test_region_more_delegate()
         logger.info(f'{"setup test_region_more_delegate finish":*^50s}')
 
         user1_balance = int(HttpResponse.get_balance_unit(user_addr1, self.base_cfg.coin['uc'])['amount'])
@@ -151,7 +151,7 @@ class TestRegionDelegate(object):
         assert int(user2_del_info["amountAC"]) == 0
         assert int(user2_del_info["unmovableAmount"]) == Compute.to_u(1)
 
-    def test_region_more_exit_delegate(self, setup_create_region):
+    def test_region_more_exit_delegate(self):
         """
         不同角色发起清退活期质押
         @Desc:
@@ -165,7 +165,7 @@ class TestRegionDelegate(object):
             + expect: 无效清退 error_code: 2097
         """
         logger.info("TestRegionDelegate/test_region_more_exit_delegate")
-        region_admin_addr, region_id, user_addr1, user_addr2 = self.test_region_more_delegate(setup_create_region)
+        region_admin_addr, region_id, user_addr1, user_addr2 = self.test_region_more_delegate()
         logger.info(f'{"setup test_region_more_delegate finish":*^50s}')
 
         user1_balance = int(HttpResponse.get_balance_unit(user_addr1, self.base_cfg.coin['uc'])['amount'])
@@ -395,12 +395,12 @@ class TestRegionDelegate(object):
         start_user_addr_balance = int(HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])["amount"])
         assert start_user_addr_balance == Compute.to_u(100 - (10 * 3) - (self.base_cfg.fees * 3))
 
-        time.sleep(30)
+        time.sleep(20)
 
         interest_amount = float(HttpResponse.get_delegate(user_addr)['interestAmount'])
         logger.info(f"interest_amount: {interest_amount}")
         x = math.floor(interest_amount) if interest_amount >= 1 else 0
-        # 提取活期收益
+        # 提取活期收益 之前查询的收益 和 实际提取时，会存在一定的差异,查和取可能已经不是同一个块高，导致收益不一致
         self.test_del.test_withdraw(**dict(addr=user_addr))
 
         end_user_addr_balance = int(HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])["amount"])

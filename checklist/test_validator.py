@@ -32,7 +32,7 @@ validator_data = read_file(DATA_FILE)
 #  1.节点异常作弊场景
 #  2.各节点手续费收费标准不一致
 
-@pytest.mark.P0
+@pytest.mark.P1
 class TestValidator:
     tx = Tx()
     q = Query()
@@ -75,7 +75,7 @@ class TestValidator:
         # 先处理validator_data数据
         for data in validator_data:
             if not data["moniker"] == "node1":
-                pub_key = f'\'{{"type": "tendermint/PubKeyEd25519", "value": "{data["pub_key"]["value"]}"}}\''
+                pub_key = f'\'{{"@type": "/cosmos.crypto.ed25519.PubKey", "key": "{data["pub_key"]["value"]}"}}\''
                 data["from_addr"] = self.tx.super_addr
                 cmd = self.tx.staking.new_validator_cmd(pub_key=pub_key, moniker=data["moniker"],
                                                         from_addr=data["from_addr"])

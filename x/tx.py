@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import inspect
 import time
+import random
 
 from loguru import logger
 
@@ -119,8 +120,9 @@ class Tx(BaseClass):
 
         @staticmethod
         def new_validator_cmd(pub_key, moniker, from_addr, fees=Fees, gas=GasLimit):
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking create-validator --pubkey={pub_key} --moniker={moniker} " \
-                                 f"--from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
+            amount = random.randint(1000000, 100000000)
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking create-validator --pubkey={pub_key} --moniker={moniker} " \
+                                 f"--from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y --amount={amount}geac --commission-rate=0.10 --commission-max-rate=0.20 --commission-max-change-rate=0.01 --min-self-delegation=1"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return cmd
 

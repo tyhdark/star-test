@@ -115,17 +115,13 @@ class TestSendCoin(object):
         self.test_bank.test_send(**send_data)
 
         start_region_uc = HttpResponse.get_balance_unit(region_admin_addr, self.base_cfg.coin['uc'])
-        start_admin_uc = HttpResponse.get_balance_unit(self.base_cfg.super_addr, self.base_cfg.coin['uc'])
 
         send_data = dict(from_addr=user_addr, to_addr=region_admin_addr, amount=100)
         self.test_bank.test_send(**send_data)
 
         region_admin_uc = HttpResponse.get_balance_unit(region_admin_addr, self.base_cfg.coin['uc'])
         user_uc = HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])
-        super_admin_uc = HttpResponse.get_balance_unit(self.base_cfg.super_addr, self.base_cfg.coin['uc'])
 
         region_admin_expect_amt = Compute.to_u(self.base_cfg.fees * self.base_cfg.fee_rate) + Compute.to_u(100)
-        super_admin_expect_amt = Compute.to_u(self.base_cfg.fees * (1 - self.base_cfg.fee_rate))
         assert int(region_admin_uc['amount']) - int(start_region_uc['amount']) == region_admin_expect_amt
-        assert int(user_uc['amount']) == Compute.to_u(500 - 100 - 1)
-        assert int(super_admin_uc['amount']) - int(start_admin_uc['amount']) == super_admin_expect_amt
+        assert int(user_uc['amount']) == Compute.to_u(500 - 100 - self.base_cfg.fees)

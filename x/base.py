@@ -19,7 +19,6 @@ class ChainCfg:
     chain_id: str
     chain_bin: str
     connect_node: str
-    super_addr: str
     keyring_backend: str
     sleep_time: int
     token_unit: dict
@@ -70,8 +69,9 @@ class BaseClass:
     chain_id = chain.chain_id
     chain_bin = chain.chain_bin
     connect_node = chain.connect_node
-    super_addr = chain.super_addr
     keyring_backend = chain.keyring_backend
+    get_superadmin = f"{work_home} {chain_bin} keys show superadmin -a {keyring_backend}"
+    super_addr = ssh_client.ssh(command=get_superadmin)
     sleep_time = chain.sleep_time
     coin = chain.token_unit
     role = chain.role
