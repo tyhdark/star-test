@@ -62,7 +62,7 @@ class RegionInfo:
         return regin_name_list
 
     @classmethod
-    def create_region_id_and_name(cls, id_or_name=None):
+    def region_name_for_create(cls):
         """创建region-id和region-name(链上不存在的region—name)"""
         region_name_key, _ = cls.parse_region_name()
         while True:
@@ -78,7 +78,15 @@ class RegionInfo:
                 # else:
                 #     return region_id,region_key
                 # return region_id, region_key
-
+    @classmethod
+    def region_for_id_existing(cls):
+        "返回链上已经存在的区id"
+        region_name_key, _ = cls.parse_region_name()
+        while True:
+            region_key = random.choice(region_name_key)
+            chain_region_name_list = cls._chain_region_name_list()
+            region_id = (random.choice(chain_region_name_list)).lower()
+            return region_id
 
 class UserInfo:
 
@@ -109,6 +117,7 @@ class ValidatorInfo:
 
     @classmethod
     def validator_node_for_create(cls,node=None):
+        """创建验证者节点的时候传nodename用的，链上不存在的Node"""
         ture_node = cls._validator_node_list()
         # f_node = []
         # for i in cls.node_name:
@@ -123,6 +132,7 @@ class ValidatorInfo:
 
 if __name__ == '__main__':
     # print(UserInfo.random_username())
-    # print(RegionInfo.create_region_id_and_name())
+    # print(RegionInfo.region_name_for_create())
+    print(RegionInfo.region_for_id_existing())
     # print(ValidatorInfo._validator_node_list())
-    print(ValidatorInfo.validator_node_for_create())
+    # print(ValidatorInfo.validator_node_for_create())

@@ -316,7 +316,7 @@ class HttpQuery(BaseClass):
                 return response.json()
             else:
                 return None
-        # TODO 通过浏览器查询定期委托列表
+
         @staticmethod
         def fixed_deposit(addr=None):
             if addr is None:

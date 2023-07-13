@@ -33,6 +33,7 @@ class ChainCfg:
     delegate_term: dict
     annual_rate: dict
     fixed_type: dict
+    # validatortoken: dict
 
 
 @dataclass
@@ -92,6 +93,7 @@ class BaseClass:
     delegate_term = chain.delegate_term #定期的月数
     annual_rate = chain.annual_rate # 定期费率设置
     fixed_type = chain.fixed_type # 定期查询用的
+    # validatortoken = chain.validatortoken
 
 
     # compute 计算用的数据

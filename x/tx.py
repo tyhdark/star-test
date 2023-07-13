@@ -150,7 +150,7 @@ class Tx(BaseClass):
             """创建/追加 活期质押 可用
             :param from_addr: 用户地址
             :param amount: 金额
-            """
+            :return 交易结果，含哈希，记得提取"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking delegate {amount}{Tx.coin['c']} --from={from_addr} " \
                                  f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
@@ -227,9 +227,9 @@ class Tx(BaseClass):
         #     return Tx._executor(cmd)
 
         @staticmethod
-        def withdraw_rewards(addr, fees=Fees, gas=GasLimit):
+        def withdraw_rewards(from_addr, fees=Fees, gas=GasLimit):
             """不分KYC用户提取活期收益"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx distribution withdraw-rewards --from={addr} --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y"
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx distribution withdraw-rewards --from={from_addr} --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 

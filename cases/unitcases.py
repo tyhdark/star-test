@@ -18,7 +18,7 @@ class Base:
 class Bank(Base):
 
     def test_send(self, from_addr, to_addr, amount, **kwargs):
-        """用户发起转账"""
+        """用户发起转账 好"""
         tx_info = self.tx.bank.send_tx(from_addr, to_addr, amount, **kwargs)
         logger.info(f"{inspect.stack()[0][3]}: {tx_info}")
         time.sleep(self.tx.sleep_time)
@@ -30,6 +30,7 @@ class Bank(Base):
 class Keys(Base):
 
     def test_add(self, user_name=None):
+        """ 添加用户 好"""
         if user_name is None:
             user_name = UserInfo.random_username()
         self.tx.keys.add(user_name)
@@ -38,13 +39,13 @@ class Keys(Base):
         return user_info[0]
 
     def test_show(self, user_name):
-        """展示用户信息，包括地址，可以提取"""
+        """展示用户信息，包括地址，可以提取 好"""
         user_info = self.tx.keys.show(user_name)
         assert user_info is not None
         return user_info[0]
 
     def test_private_export(self, user_name):
-        """传入名称，导出私钥"""
+        """传入名称，导出私钥 好"""
         pk = self.tx.keys.private_export(user_name)
         assert pk is not None
         return pk
@@ -68,12 +69,13 @@ class Kyc(Keys):
     #     logger.info(f"region_id: {region_id} , new_kyc: {user_info}")
     #     return user_info
 
-    def test_new_kyc_user(self, addr=None, region_id=None):
-        """认证kyc,传如区id和用户就可以，管理员addre配置文件写了"""
+    def test_new_kyc_user(self, addr=None):
+        """认证kyc,用户就可以，区id会自动拿线上存在的，管理员addre配置文件写了 好了"""
         if addr is None:
             user_info = self.test_add()
         else:
             user_info = dict(address=addr)
+        region_id =RegionInfo.region_for_id_existing()
         logger.info(f"user_info:{user_info}")
         tx_info = self.tx.staking.new_kyc(user_addr=user_info["address"],
                                           region_id=region_id,from_addr=self.tx.super_addr)
@@ -83,23 +85,34 @@ class Kyc(Keys):
         logger.info(f"region_id: {region_id},new_kyc_addr:{user_info}")
         return user_info
 
-    def test_new_kyc_admin(self, **kwargs):
-        region_id, region_name = RegionInfo.create_region_id_and_name()
-        logger.info(f"new region_id: {region_id}, region_name:{region_name}")
-        # 添加用户
-        region_admin_info = self.test_add()
-        logger.info(f"region_admin_info: {region_admin_info}")
-
-        # 超管认证区域管理员为KYC-admin
-        tx_info = self.tx.staking.new_kyc(addr=region_admin_info["address"], region_id=region_id,
-                                          role=self.tx.role["admin"],
-                                          from_addr=self.tx.super_addr, **kwargs)
+    # def test_new_kyc_admin(self, **kwargs):
+    #     region_id, region_name = RegionInfo.create_region_id_and_name()
+    #     logger.info(f"new region_id: {region_id}, region_name:{region_name}")
+    #     # 添加用户
+    #     region_admin_info = self.test_add()
+    #     logger.info(f"region_admin_info: {region_admin_info}")
+    #
+    #     # 超管认证区域管理员为KYC-admin
+    #     tx_info = self.tx.staking.new_kyc(addr=region_admin_info["address"], region_id=region_id,
+    #                                       role=self.tx.role["admin"],
+    #                                       from_addr=self.tx.super_addr, **kwargs)
+    #     time.sleep(self.tx.sleep_time)
+    #     resp = self.hq.tx.query_tx(tx_info['txhash'])
+    #     assert resp['code'] == 0, f"test_new_kyc_admin failed, resp: {resp}"
+    #     logger.info(f"region_id: {region_id} , region_admin_info: {region_admin_info}")
+    #     return region_admin_info, region_id, region_name
+class Validator(Base):
+    def test_create_validator(self):
+        """创建验证者节点，node名称会自动去拿线上没有的，token金额要写到配置文件里面去"""
+        node_name = ValidatorInfo.validator_node_for_create()
+        amout=5000000
+        validator_info = self.tx.Staking.create_validator(node_name=node_name,amout=amout)
         time.sleep(self.tx.sleep_time)
-        resp = self.hq.tx.query_tx(tx_info['txhash'])
-        assert resp['code'] == 0, f"test_new_kyc_admin failed, resp: {resp}"
-        logger.info(f"region_id: {region_id} , region_admin_info: {region_admin_info}")
-        return region_admin_info, region_id, region_name
-
+        tx_resp = self.hq.tx.query_tx(validator_info['txhash'])
+        assert tx_resp['code'] == 0,f"test_create_validator failed,resp:{tx_resp}"
+        a = [1,2,3,4,5,6]
+        print(a[1])
+        return node_name,amout
 
 class Region(Kyc, Bank):
 
@@ -126,9 +139,10 @@ class Region(Kyc, Bank):
         time.sleep((self.tx.sleep_time * 4) * 2)
         return region_admin_info, region_id, region_name
 
+    # TODO 下次写取没有绑定区的节点名称出来，
     def test_create_region_wang(self):
-        """创建区"""
-        region_name = "NLA"
+        """创建区(绑定区),用链上不存在的区的名字，该怎么取出没有绑定取的节点呢？"""
+        region_name = RegionInfo.region_name_for_create()
         node_name = "node5"
         region_info = self.tx.staking.create_region(from_addr=self.tx.super_addr,region_name=region_name,node_name=node_name)
         time.sleep(self.tx.sleep_time)
@@ -146,11 +160,11 @@ class Region(Kyc, Bank):
         assert resp['code'] == 0, f"test_update_region failed, resp: {resp}"
         return resp
 
-class Validator():
-    pass
+
 class Delegate(Base):
 
     def test_delegate(self, **kwargs):
+        """发起活期委托，KYC和非KYC都是这个命令，可变传参传用户地址和金额"""
         del_info = self.tx.staking.delegate(**kwargs)
         logger.info(f"delegate_info: {del_info}")
         time.sleep(self.tx.sleep_time)
@@ -159,21 +173,28 @@ class Delegate(Base):
         return resp
 
     def test_withdraw(self, **kwargs):
-        withdraw_info = self.tx.staking.withdraw(**kwargs)
+        """用户提取自己的活期收益金额"""
+        withdraw_info = self.tx.staking.withdraw_rewards(**kwargs)
         logger.info(f"withdraw_info: {withdraw_info}")
         time.sleep(self.tx.sleep_time)
         resp = self.hq.tx.query_tx(withdraw_info['txhash'])
         assert resp['code'] == 0, f"test_withdraw failed, resp: {resp}"
         return resp
 
-    def test_undelegate(self, **kwargs):
+    def test_unkycundelegate(self, **kwargs):
         del_info = self.tx.staking.undelegate(**kwargs)
         logger.info(f"undelegate_info: {del_info}")
         time.sleep(self.tx.sleep_time)
         resp = self.hq.tx.query_tx(del_info['txhash'])
         assert resp['code'] == 0, f"test_undelegate failed, resp: {resp}"
         return resp
-
+    def test_kycundelegate(self, **kwargs):
+        del_info = self.tx.staking.undelegate(**kwargs)
+        logger.info(f"undelegate_info: {del_info}")
+        time.sleep(self.tx.sleep_time)
+        resp = self.hq.tx.query_tx(del_info['txhash'])
+        assert resp['code'] == 0, f"test_undelegate failed, resp: {resp}"
+        return resp
     def test_exit_delegate(self, **kwargs):
         del_info = self.tx.staking.exit_delegate(**kwargs)
         logger.info(f"exit_delegate_info: {del_info}")
@@ -237,21 +258,27 @@ class Fixed(Base):
 
 if __name__ == '__main__':
     a = Region()
+    d = Delegate()
+    b =Bank()
     # u_name =
     # a.test_add(user_name="testnamekyc005")
     # time.sleep(Tx.sleep_time)
     u_add = Query.Key.address_of_name(username="testnamekyc005")
     s_add=Query.Key.address_of_name(username="superadmin")
-    print(u_add)
-    print(s_add)
-    data1 =dict(from_addr = s_add,to_addr=u_add,amount=10)
-    data_new_kyc= dict(addr=u_add,region_id="kor")
+    # print(u_add)
+    # print(s_add)
+    data_send =dict(from_addr = s_add,to_addr=u_add,amount=10000)
+    # data_new_kyc= dict(addr=u_add,region_id="kor")
+    data_del = dict(from_addr=u_add,amount=10)
+    data_u = dict(from_addr=u_add)
+
+    # print(b.test_send(**data_send))
 
     # data1 = dict(from_addr="gea12g50h9fa7jp4tu47f4mn906s3274urjamcvyrd",
     #              to_addr="gea1pv54mu2fa72vhz9wkx3dmw94f8nf6ncppae9pk",
     #              amount=10,
     #              fees=2)
     # print(a.test_send(**data1))
-    print(a.test_new_kyc_user_wang(**data_new_kyc))
-
+    # print(d.test_delegate(**data_del))
+    print(d.test_withdraw(**data_u))
     pass
