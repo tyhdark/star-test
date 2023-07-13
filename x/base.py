@@ -78,9 +78,11 @@ class BaseClass:
     chain_id = chain.chain_id # chian-id
     chain_bin = chain.chain_bin # "./me-chiand"
     connect_node = chain.connect_node # 节点
-    cmd = work_home + f"{chain_bin} keys show superadmin -a --keyring-backend=test"
+    keyring_backend = chain.keyring_backend  #
+    cmd = work_home + f"{chain_bin} keys show superadmin -a {keyring_backend}"
     # a = ssh_client.ssh(cmd)
     super_addr = ssh_client.ssh(cmd)  # 超管地址
+
     # super_addr = chain.super_addr # 超管地址
     keyring_backend = chain.keyring_backend #
     sleep_time = chain.sleep_time # 等待时间
@@ -139,13 +141,12 @@ class BaseClass:
 
 if __name__ == '__main__':
     a = BaseClass()
-    # print(a.work_home)
+    print(a.super_addr)
     # print(a.query_address)
     # print(a.chain_bin,a.chain_id,a.work_home,a.api_url,a.channel,a.coin)
     # print(a)
     print("1")
-    # print(a.query_kyc)
-    print(a.a)
+    # print(a.a)
     pass
 
     """

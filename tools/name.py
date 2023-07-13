@@ -58,11 +58,11 @@ class RegionInfo:
     def _chain_region_name_list(cls):
         """获取链上已存在的region-name"""
         regin_list = cls.hq.staking.region()
-        regin_name_list = [i['regionName'] for i in regin_list["region"]]
+        regin_name_list = [i['name'] for i in regin_list["region"]]
         return regin_name_list
 
     @classmethod
-    def create_region_id_and_name(cls):
+    def create_region_id_and_name(cls, id_or_name=None):
         """创建region-id和region-name(链上不存在的region—name)"""
         region_name_key, _ = cls.parse_region_name()
         while True:
@@ -70,7 +70,14 @@ class RegionInfo:
             chain_region_name_list = cls._chain_region_name_list()
             if region_key not in chain_region_name_list:
                 region_id = region_key.lower()
-                return region_id, region_key
+                return region_key
+                # if id_or_name == "id":
+                #     return region_id
+                # elif id_or_name == "name":
+                #     return region_key
+                # else:
+                #     return region_id,region_key
+                # return region_id, region_key
 
 
 class UserInfo:
@@ -80,3 +87,42 @@ class UserInfo:
         random_str = string.ascii_letters + string.digits
         username = "user" + ''.join(random.sample(random_str, 8))
         return username
+
+
+class ValidatorInfo:
+    node_name = ['node1','node2','node3','node4','node5','node6','node7','node8','node9','node10']
+    hq = HttpQuery()
+
+    @classmethod
+    def _validator_node_list(cls):
+        """返回一个链上存在的node"""
+        validator = cls.hq.Staking.validator()
+        radom_node = [i['description']['moniker'] for i in validator]
+        return radom_node
+
+    @classmethod
+    def validator_node_for_kyc(cls,node=None):
+        if node is None:
+            return random.choice(cls._validator_node_list())
+        else:
+            return node
+
+    @classmethod
+    def validator_node_for_create(cls,node=None):
+        ture_node = cls._validator_node_list()
+        # f_node = []
+        # for i in cls.node_name:
+        #     if i not in ture_node:
+        #         f_node.append(i)
+        false_node = [i for i in cls.node_name if i not in ture_node]
+        if node is None:
+
+            return random.choice(false_node)
+        else:
+            return node
+
+if __name__ == '__main__':
+    # print(UserInfo.random_username())
+    # print(RegionInfo.create_region_id_and_name())
+    # print(ValidatorInfo._validator_node_list())
+    print(ValidatorInfo.validator_node_for_create())

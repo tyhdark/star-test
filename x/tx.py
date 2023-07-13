@@ -310,7 +310,7 @@ class Tx(BaseClass):
 
         @staticmethod
         def private_export(username):
-            """导出私钥"""
+            """导出私钥 有用"""
             cmd = Tx.work_home + f"{Tx.chain_bin} keys export {username} --unsafe --unarmored-hex {Tx.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
