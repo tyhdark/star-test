@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import time
+
 import pytest
 from loguru import logger
 
@@ -65,7 +67,7 @@ class TestSendCoin(object):
 
         logger.info(f'{"返回质押本金+定期收益, 并且无定期质押":*^50s}')
         resp_user_uc = HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])
-        assert int(resp_user_uc['amount']) == int(fixed_balance_uc['amount']) + Compute.to_u(200) - u_fees
+        assert int(resp_user_uc['amount']) == int(user_balance_uc['amount']) + Compute.to_u(200) - u_fees
         resp_user_ug = HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['ug'])
         # 计算定期收益 0.06 * 1 / 12 * (200 * 1000000) * 400 = 400000000ug  区金库:1100000000ug
         uac = Compute.to_u(Compute.interest(200, 1, self.base_cfg.annual_rate[1]))
@@ -76,6 +78,7 @@ class TestSendCoin(object):
         ag = Compute.to_u(uag, reverse=True)
         ag_data = dict(ag_amount=ag, from_addr=user_addr)
         self.test_kyc.tx.Staking.ag_to_ac(**ag_data)
+        time.sleep(self.base_cfg.sleep_time)
 
         # check balances
         to_uac = Compute.ag_to_ac(uag)

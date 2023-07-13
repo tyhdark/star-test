@@ -3,6 +3,7 @@ import inspect
 
 import httpx
 from loguru import logger
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 from tools.console import Result
 from x.base import BaseClass
@@ -174,7 +175,7 @@ class Query(BaseClass):
 
 
 class HttpQuery(BaseClass):
-    client = httpx.Client()
+    client = httpx.Client(timeout=10)
 
     def __init__(self):
         self.block = self.Block()
@@ -184,6 +185,7 @@ class HttpQuery(BaseClass):
 
     class Block:
         @staticmethod
+        @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
         def query_block(height=None):
             if height is None:
                 url = HttpQuery.api_url + HttpQuery.query_block_latest
@@ -195,7 +197,9 @@ class HttpQuery(BaseClass):
             return response.json()['block']
 
     class Tx:
+
         @staticmethod
+        @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
         def query_tx(tx_hash):
             url = HttpQuery.api_url + HttpQuery.query_tx_hash.format(hash=tx_hash)
             logger.info(f"{inspect.stack()[0][3]}: {url}")
@@ -206,6 +210,7 @@ class HttpQuery(BaseClass):
 
     class Bank:
         @staticmethod
+        @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
         def query_balances(addr):
             url = HttpQuery.api_url + HttpQuery.query_bank_balances.format(address=addr)
             logger.info(f"{inspect.stack()[0][3]}: {url}")
@@ -215,6 +220,7 @@ class HttpQuery(BaseClass):
 
     class Staking:
         @staticmethod
+        @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
         def region(region_id=None, region_name=None):
             """
             查询区域信息
@@ -234,6 +240,7 @@ class HttpQuery(BaseClass):
             return response.json()
 
         @staticmethod
+        @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
         def delegation(addr=None):
             """
             查询委托信息
@@ -250,6 +257,7 @@ class HttpQuery(BaseClass):
             return response.json()['delegation']
 
         @staticmethod
+        @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
         def validator(addr=None):
             if addr is None:
                 url = HttpQuery.api_url + HttpQuery.query_validators
