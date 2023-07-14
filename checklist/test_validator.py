@@ -3,6 +3,7 @@ import random
 import time
 from pathlib import Path
 
+import httpx
 import pytest
 import yaml
 from loguru import logger
@@ -63,7 +64,29 @@ class TestRegionInfo:
         time.sleep(self.tx.sleep_time)
         tx_resp = self.q.tx.query_tx(tx_resp['txhash'])
         assert tx_resp['code'] == 0
+    def test_batch_new_validator(self):
+        cmd_list = []
+        # 先处理validator_data数据
+        for data in validator_data:
+            if not data["moniker"] == "node1":
+                pub_key = f'\'{{"@type": "/cosmos.crypto.ed25519.PubKey", "key": "{data["pub_key"]["value"]}"}}\''
+                data["from_addr"] = self.tx.super_addr
+                cmd = self.tx.staking.new_validator_cmd(pub_key=pub_key, moniker=data["moniker"],
+                                                        from_addr=data["from_addr"])
+                cmd_list.append(cmd)
 
+        # 获取发送账户的sequence
+        address = self.tx.super_addr
+        url = f"{self.tx.api_url}/cosmos/auth/v1beta1/accounts/{address}"
+        sequence = httpx.get(url).json()["account"]["sequence"]
+        # 为cmd_list 中的每个元素都加上 -s=sequence
+        # 下标0 -s=sequence 下标1 -s=sequence+1
+        for i in range(len(cmd_list)):
+            cmd_list[i] = cmd_list[i] + f" -s={int(sequence) + i}"
+
+        result = [self.tx.ssh_client.ssh(cmd) for cmd in cmd_list]
+        logger.info(f"batch_new_validator result: {result}")
+        pass
     # TODO
     #  1.节点异常作弊场景
     #  2.各节点手续费收费标准不一致

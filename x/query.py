@@ -238,6 +238,7 @@ class HttpQuery(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {url}")
             response = HttpQuery.client.get(url=url)
             logger.debug(f"response: {response}")
+            logger.info(f"response status_code: {response.status_code}")
             assert response.status_code == 200
             return response.json()['tx_response']
 
@@ -258,7 +259,7 @@ class HttpQuery(BaseClass):
 
     class Staking:
         @staticmethod
-        def region(region_id=None, region_name=None):
+        def region(region_id=None):
             """
             查询区域信息
             :param region_id: 查询指定region_id的区域信息
@@ -266,9 +267,7 @@ class HttpQuery(BaseClass):
             :param region_id and region_name 都不传,默认查询所有区域信息
             """
             if region_id is not None:
-                url = HttpQuery.api_url + HttpQuery.query_region_id.format(id=region_id)
-            elif region_name is not None:
-                url = HttpQuery.api_url + HttpQuery.query_region_name.format(name=region_name)
+                url = HttpQuery.api_url + HttpQuery.query_region_id.format(regionId=region_id)
             else:
                 url = HttpQuery.api_url + HttpQuery.query_regions
             logger.info(f"{inspect.stack()[0][3]}: {url}")
@@ -355,6 +354,7 @@ if __name__ == '__main__':
     # print(q_ssh.Staking.kyc_by_region(region_id="jpn"))
     # print(q_ssh.Staking.list_fixed_deposit())
     hq = HttpQuery()
+    print(hq.Staking.delegation(addr="me13a4rmm64wetlatj5z6jcfxkxtraxdcm8jl0z8u"))
     # print(hq.Tx.query_tx(tx_hash="36B83E7A30FB8D45FB24860E95EC95968F566CFAF4E5020EFA58936B475C25F6"))
     # v = hq.Staking.validator()
     # print(v)
@@ -370,8 +370,8 @@ if __name__ == '__main__':
     # print(hq.Staking.kyc(addr="me1q6v4ud6dy0dh3k0jnpva287n7m3wlv3w2qgnwc"))
     # l = hq.Staking.fixed_deposit(addr="me10xujye2ceftjakuzhx6pg7ecaj7x0qrrg0kexa")
     # print(l)
-    ll = [i.get('id') for i in hq.Staking.fixed_deposit(addr="me10xujye2ceftjakuzhx6pg7ecaj7x0qrrg0kexa")]
-    print(ll)
+    # ll = [i.get('id') for i in hq.Staking.fixed_deposit(addr="me10xujye2ceftjakuzhx6pg7ecaj7x0qrrg0kexa")]
+    # print(ll)
     # print(hq.Staking.fixed_deposit_rate())
     # print(q_ssh.Bank.query_balances("me1f5mcf4cw8av4jzh2zygnjcmvsqgygac77zsrtu"))
 

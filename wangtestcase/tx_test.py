@@ -25,15 +25,15 @@ region_name = "JPN"
 # region_name = "HKG"
 # username1 = "wangzhibiao003"
 
-username = "testnamekyc004"
+username = "testnamekyc005"
 # username = "testnamekyc001"
 # username = "testname011"
 # username = "superadmin"
 addre = Query.Key.address_of_name(username=username)
 print("用户的地址为：",addre)
-
 print(f"superadmin地址为：{Query.Key.address_of_name(username='superadmin')}")
 print(Query.super_addr)
+
 
 
 
@@ -41,16 +41,16 @@ print(Query.super_addr)
 print("======" * 5, "初始化起始线", "========" * 5)
 # print(Tx.Keys.add(username=username))                         # 添加用戶
 # Tx.Wait.wait_five_seconds()
-# print(Tx.Bank.send_to_admin(amout=100500)) # 国库转账给管理员
-# Tx.Wait.wait_five_seconds()
-# print("查询管理员余额：",HttpQuery.Bank.query_balances(addr=Query.super_addr))  # 查询管理员余额
+print(Tx.Bank.send_to_admin(amount=10000)) # 国库转账给管理员
+Tx.Wait.wait_five_seconds()
+print("查询管理员余额：",HttpQuery.Bank.query_balances(addr=Query.super_addr))  # 查询管理员余额
 
-# print(Tx.Bank.send_tx(from_addr=Tx.super_addr,to_addr=addre,amount=100100)) # 管理员给用户转钱
-# Tx.Wait.wait_five_seconds()
+print(Tx.Bank.send_tx(from_addr=Tx.super_addr,to_addr=addre,amount=10000)) # 管理员给用户转钱
+Tx.Wait.wait_five_seconds()
 #
 # Tx.Bank.send_tx() # 用户给用户地址转钱
 
-# print(f"{username}该用户余额为:",HttpQuery.Bank.query_balances(addr=addre))  # 查询该用户余额
+print(f"{username}该用户余额为:",HttpQuery.Bank.query_balances(addr=addre))  # 查询该用户余额
 
 # Tx.Staking.new_kyc(user_addr=addre,region_id="kor",from_addr=Tx.super_addr)  # new kyc 认证KYC
 # Tx.Staking.delegate(amount=5000, from_addr=addre)                               # 发起质押 不区分KYC
@@ -66,7 +66,7 @@ print("======" * 5, "初始化起始线", "========" * 5)
 
 # print("======" * 5, "委托起始线", "======" * 5)
 
-# print(Tx.Staking.create_validator(node_name=node_name, amout=50000000)) # 创建验证者节点
+# print(Tx.Staking.create_validator(node_name=node_name, amount=50000000)) # 创建验证者节点
 # Tx.Wait.wait_five_seconds()
 
 # print(Tx.Staking.create_region(region_name=region_name, node_name=node_name, from_addr=Tx.super_addr)) # 创建区
@@ -94,17 +94,17 @@ print("======" * 5, "初始化起始线", "========" * 5)
 
 
 #
-# keys_list = Query.Key.keys_list()  # 查询用户列表
+keys_list = Query.Key.keys_list()  # 查询用户列表
 # for i in keys_list:  # 查询用户列表
 #     print("用户列表：",i)  # 查询用户列表
 # print(f"用户的名称组合的列表为：{[n.get('name') for n in keys_list]}")
 #
-# piv = Tx.Keys.private_export(username=username)  # 导出用户私钥
+piv = Tx.Keys.private_export(username=username)  # 导出用户私钥
 #
 
 # for i in Query.Staking.list_kyc().get("kyc"):
 #     print("KYC用戶如下：",i)
-# print("KYC用户地址列表为：",[i.get('account') for i in HttpQuery.Staking.kyc().get('kyc')])
+print("KYC用户地址列表为：",[i.get('account') for i in HttpQuery.Staking.kyc().get('kyc')])
 
 
 #

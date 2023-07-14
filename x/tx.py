@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import inspect
+import random
 import time
 
 from loguru import logger
@@ -34,9 +35,9 @@ class Tx(BaseClass):
             return Tx._executor(cmd)
 
         @staticmethod
-        def send_to_admin(amout: int, fees=Fees):
+        def send_to_admin(amount: int, fees=Fees):
             """国库往超管转钱，不需要传参,传金额就行"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx bank sendToAdmin {amout}{Tx.coin['c']} --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx bank sendToAdmin {amount}{Tx.coin['c']} --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -114,9 +115,9 @@ class Tx(BaseClass):
         #     return Tx._executor(cmd)
 
         @staticmethod
-        def create_validator(node_name: str, amout=None, fees=Fees, ):
+        def create_validator(node_name: str, amount=None, fees=Fees, ):
             """创建验证者节点，需要传入对应的node几,可用"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking create-validator  --amount={amout}{Tx.coin['c']}  " \
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking create-validator  --amount={amount}{Tx.coin['c']}  " \
                                  f"--pubkey=$({Tx.chain_bin} tendermint show-validator --home=../nodes/{node_name})  " \
                                  f"--moniker=\"{node_name}\" " \
                                  f" --commission-rate=\"0.10\" --commission-max-rate=\"0.20\"  " \
@@ -126,14 +127,14 @@ class Tx(BaseClass):
             return Tx._executor(cmd)
 
         @staticmethod
-        def validator_stake_unstake(operator_address=None, stakeorunstake=None,amount=None, fees=Fees ):
+        def validator_stake_unstake(operator_address=None, stakeorunstake=None, amount=None, fees=Fees):
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking {stakeorunstake} {operator_address} {amount}{Tx.coin['c']}" \
-                                     f" --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
+                                 f" --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
         @staticmethod
-        def edit_validator(operator_address, owner_address,  fees=Fees, ):
+        def edit_validator(operator_address, owner_address, fees=Fees, ):
             """
             Only used to modify the Region ID of the verifier
             :param operator_address: Validator address
@@ -152,7 +153,7 @@ class Tx(BaseClass):
             :param amount: 金额
             :return 交易结果，含哈希，记得提取"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking delegate {amount}{Tx.coin['c']} --from={from_addr} " \
-                                 f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y"
+                                 f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -163,7 +164,8 @@ class Tx(BaseClass):
             1.减少质押金额 >= 实际质押额 则按实际质押额兑付 并主动发放收益
             2.减少质押金额 < 实际质押额 则按传入金额兑付, 收益重新计算但不主动发放
             """
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking unKycUnbond {amount}{Tx.coin['c']} --from={from_addr}  --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking unKycUnbond {amount}{Tx.coin['c']} --from={from_addr} " \
+                                 f" --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -174,9 +176,11 @@ class Tx(BaseClass):
             1.减少质押金额 >= 实际质押额 则按实际质押额兑付 并主动发放收益
             2.减少质押金额 < 实际质押额 则按传入金额兑付, 收益重新计算但不主动发放
             """
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking unbond {amount}{Tx.coin['c']} --from={from_addr}  --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking unbond {amount}{Tx.coin['c']} --from={from_addr} " \
+                                 f" --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
+
         # @staticmethod
         # def exit_delegate(from_addr, delegator_address, fees=Fees, gas=GasLimit):
         #     """
@@ -194,14 +198,18 @@ class Tx(BaseClass):
         #     return Tx._executor(cmd)
 
         @staticmethod
-        def deposit_fixed(from_addr, amount, month, fees=Fees ):
+        def deposit_fixed(from_addr, amount, month=None, fees=Fees):
             """创建定期质押 可用
             :param from_addr: 用户地址
             :param amount: 金额
             :param term: 月数，1、3、6、12、24、36、48
             """
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking deposit-fixed {amount}{Tx.coin['c']} Term_{month}_Months \
-            --from={from_addr}  \--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y"
+            if month is None:
+                mon = random.choice([1, 3, 6, 12, 24, 36, 48])
+            else:
+                mon = month
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking deposit-fixed {amount}{Tx.coin['c']} Term_{mon}_Months " \
+                                 f"--from={from_addr}  --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -215,7 +223,8 @@ class Tx(BaseClass):
         @staticmethod
         def withdraw_fixed(from_addr, fixed_delegation_id, fees=Fees):
             """提取定期质押 可用"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking withdraw-fixed {fixed_delegation_id} --from={from_addr}  --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y"
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking withdraw-fixed {fixed_delegation_id} --from={from_addr}  " \
+                                 f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -263,7 +272,7 @@ class Tx(BaseClass):
         def new_kyc(user_addr, region_id, from_addr, fees=Fees, gas=GasLimit):
             """
             把用户认证成KYC
-            :param addr: kyc address
+            :param user_addr: kyc address
             :param region_id: 所绑定区域ID
             :param role: 区内角色  KYC_ROLE_USER  or KYC_ROLE_ADMIN
             :param from_addr: 发起地址 区管理员 or 全局管理员
@@ -272,7 +281,7 @@ class Tx(BaseClass):
             :return: tx Hash
             """
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking new-kyc {user_addr} {region_id}  --from {from_addr} " \
-                                 f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
+                                 f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
 
             # if from_addr != Tx.super_addr:  # 区管理员 不能创建 KYC_ROlE_ADMIN
             #     assert role == config["chain"]["role"]["user"]
@@ -321,7 +330,6 @@ class Tx(BaseClass):
 
             return Result.split_esc(resp_info)
 
-
     class Wait(object):
         @staticmethod
         def wait_five_seconds():
@@ -329,11 +337,12 @@ class Tx(BaseClass):
                 print(i)
                 i += 1
                 time.sleep(1)
+
         @staticmethod
         def wati_five_height():
             for i in range(26):
                 print(i)
-                i+=1
+                i += 1
                 time.sleep(1)
 
 
@@ -356,7 +365,7 @@ if __name__ == '__main__':
     # print(Tx.Keys.add(username=username))                         # 添加用戶
     # Tx.SendToAdmin.count_down_5s()
     #
-    # print(Tx.Bank.send_to_admin(amout=100)) # 国库转钱给管理员
+    # print(Tx.Bank.send_to_admin(amount=100)) # 国库转钱给管理员
     Tx.Wait.wait_five_seconds()
     # time.sleep(2)
 

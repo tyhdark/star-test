@@ -116,6 +116,33 @@ class ValidatorInfo:
             return node
 
     @classmethod
+    def validator_node_for_noregion(cls):
+        """随机返回一个没有绑定区的节点 node 名称 用于绑定区的"""
+        # 把所有区的节点对应的地址拿过来，
+        region_addr = (cls.hq.Staking.region()).get("region")
+        region_oper_list = [i.get('operator_address') for i in region_addr ]
+
+        # 把所有节点的地址拿过来
+        operators_address = cls.hq.staking.validator()
+
+        all_oper_list = [o.get('operator_address') for o in operators_address ]
+
+        # 判断不在区节点地址的节点地址
+        no_region_oper_list = [i for i in all_oper_list if i not in region_oper_list]
+
+        # 根据判断的节点地址去它的node名称
+        # no_region_node_list = []
+        # for i in operators_address:
+        #     for n in no_region_oper_list:
+        #         if i.get('operator_address') == n:
+        #             no_region_node_list.append(i.get('description').get('moniker'))
+        # 用推导式的方式写就是下面这样的：
+        no_region_node_list = [i.get('description').get('moniker') for i in operators_address if
+                               i.get('operator_address') in no_region_oper_list]
+        return random.choice(no_region_node_list)
+
+
+    @classmethod
     def validator_node_for_create(cls,node=None):
         """创建验证者节点的时候传nodename用的，链上不存在的Node"""
         ture_node = cls._validator_node_list()
@@ -133,6 +160,7 @@ class ValidatorInfo:
 if __name__ == '__main__':
     # print(UserInfo.random_username())
     # print(RegionInfo.region_name_for_create())
-    print(RegionInfo.region_for_id_existing())
+    # print(RegionInfo.region_for_id_existing())
+    print(ValidatorInfo.validator_node_for_noregion())
     # print(ValidatorInfo._validator_node_list())
     # print(ValidatorInfo.validator_node_for_create())

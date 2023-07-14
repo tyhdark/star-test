@@ -20,42 +20,81 @@ class TestRegionDelegate(object):
     test_del = unitcases.Delegate()
     test_kyc = unitcases.Kyc()
     test_bank = unitcases.Bank()
+    test_validator = unitcases.Validator()
     base_cfg = test_bank.tx
 
-    def test_region_delegate(self, setup_create_region):
-        """测试新创建区域并质押"""
+    # def test_region_delegate(self, setup_create_region):
+    #     """测试新创建区域并质押"""
+    #     logger.info("TestRegionDelegate/test_region_delegate")
+    #     region_admin_info, region_id, region_name = setup_create_region #
+    #     region_admin_addr = region_admin_info['address']
+    #
+    #     new_kyc_data = dict(region_id=region_id, region_admin_addr=region_admin_addr)
+    #     user_info = self.test_kyc.test_new_kyc_user(**new_kyc_data)
+    #     user_addr = user_info['address']
+    #
+    #     send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr, amount=100)
+    #     self.test_bank.test_send(**send_data)
+    #
+    #     del_data = dict(from_addr=user_addr, amount=10)
+    #     self.test_del.test_delegate(**del_data)
+    #
+    #     user_balance = HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])
+    #     assert user_balance['amount'] == str(Compute.to_u(100 - 10 - self.base_cfg.fees))
+    #
+    #     # 验证区信息
+    #     region_info = HttpResponse.get_region(region_id)
+    #     assert region_info['region_commission']['currentDemandTotalUAC'] == str(Compute.to_u(10 + 1))
+    #     assert user_addr in region_info['delegators']['delegators']
+    #
+    #     return region_admin_addr, region_id, user_addr
+    def test_region_delegate(self,setup_create_region):
+        """测试新创建节点，创建区域，创建KYC并质押"""
         logger.info("TestRegionDelegate/test_region_delegate")
-        region_admin_info, region_id, region_name = setup_create_region
-        region_admin_addr = region_admin_info['address']
-
-        new_kyc_data = dict(region_id=region_id, region_admin_addr=region_admin_addr)
-        user_info = self.test_kyc.test_new_kyc_user(**new_kyc_data)
-        user_addr = user_info['address']
-
+        # 创建节点，然后创建区，然后获得区id
+        # node_name, region_id = setup_create_validator_and_region
+        #  或者先绑定一个区,没有传node_name就随机绑定一个没有区的节点
+        region_id = setup_create_region
+        # region_id = "cyp"
+        # 创建一个用户且将用户 new_kyc，返回用户的地址
+        # new_kyc_data = dict(region_id=region_id)
+        user_info = self.test_kyc.test_new_kyc_user(region_id=region_id)
+        user_addr = user_info
+        # 管理员给用户转100块
         send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr, amount=100)
         self.test_bank.test_send(**send_data)
-
+        # 用户发起10块钱质押
         del_data = dict(from_addr=user_addr, amount=10)
         self.test_del.test_delegate(**del_data)
+        # 查询用户的余额
+        user_balance = HttpResponse.get_balance_unit(user_addr)
+        assert user_balance == (100 - 10) * (10 ** 6) - self.base_cfg.fees
 
-        user_balance = HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])
-        assert user_balance['amount'] == str(Compute.to_u(100 - 10 - self.base_cfg.fees))
-
-        # 验证区信息
+        # 验证区信息1,区有没有创建成功，2、用户有没有认证在对应的区
         region_info = HttpResponse.get_region(region_id)
-        assert region_info['region_commission']['currentDemandTotalUAC'] == str(Compute.to_u(10 + 1))
-        assert user_addr in region_info['delegators']['delegators']
+        assert region_id == region_info['region']['regionId']
+        kyc_by_region_list = HttpResponse.get_kyc_by_region(region_id=region_id)
+        # assert region_info['region_commission']['currentDemandTotalUAC'] == str(Compute.to_u(10 + 1))
+        assert user_addr in kyc_by_region_list
 
-        return region_admin_addr, region_id, user_addr
+        # 验证节点信息 断言你创建时传入的节点node名，在不在现在的列表里面
+        # validator_node_name_list = HttpResponse.get_validator_list()
+        # assert node_name in validator_node_name_list
+
+        # 验证个人的委托有没有增加
+        delegation_amount = int(HttpResponse.get_delegate_for_http(user_addr=user_addr)['amount'])
+        assert delegation_amount == 10*(10**6)
+
+        return region_id, user_addr
 
     def test_region_more_delegate(self, setup_create_region):
         """多用户质押"""
         logger.info("TestRegionDelegate/test_region_more_delegate")
-        region_admin_addr, region_id, user_addr1 = self.test_region_delegate(setup_create_region)
+        region_id, user_addr1 = self.test_region_delegate(setup_create_region)
         logger.info(f'{"setup test_region_delegate finish":*^50s}')
 
-        new_kyc_data = dict(region_id=region_id, region_admin_addr=region_admin_addr)
-        user_info = self.test_kyc.test_new_kyc_user(**new_kyc_data)
+        # new_kyc_data = dict(region_id=region_id)
+        user_info = self.test_kyc.test_new_kyc_user(region_id=region_id, addr=None)
         user_addr2 = user_info['address']
 
         send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr2, amount=100)

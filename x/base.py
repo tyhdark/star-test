@@ -27,6 +27,7 @@ class ChainCfg:
     super_addr: str
     keyring_backend: str
     sleep_time: int
+    validatortoken:int
     token_unit: dict
     role: dict
     period: dict
@@ -93,7 +94,7 @@ class BaseClass:
     delegate_term = chain.delegate_term #定期的月数
     annual_rate = chain.annual_rate # 定期费率设置
     fixed_type = chain.fixed_type # 定期查询用的
-    # validatortoken = chain.validatortoken
+    validatortoken = chain.validatortoken
 
 
     # compute 计算用的数据
@@ -148,6 +149,8 @@ if __name__ == '__main__':
     # print(a.chain_bin,a.chain_id,a.work_home,a.api_url,a.channel,a.coin)
     # print(a)
     print("1")
+    print(a.validatortoken)
+    print(a.sleep_time)
     # print(a.a)
     pass
 
