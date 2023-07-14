@@ -116,6 +116,27 @@ class Region(Kyc, Bank):
         assert resp['code'] == 0, f"test_update_region failed, resp: {resp}"
         return resp
 
+    def test_new_region(self, **kwargs):
+        region_admin_info, region_id, region_name = self.test_new_kyc_admin(**kwargs)
+
+        # 使用SuperAdmin给区管理转账
+        self.test_send(from_addr=self.tx.super_addr, to_addr=region_admin_info["address"],
+                       amount=self.tx.super_to_region_admin_amt, **kwargs)
+
+        time.sleep(self.tx.sleep_time)
+
+        region_info = self.tx.staking.create_region(region_name=region_name, region_id=region_id,
+                                                    total_as=self.tx.region_as, fee_rate=self.tx.fee_rate,
+                                                    from_addr=region_admin_info["address"],
+                                                    totalStakeAllow=self.tx.region_as,
+                                                    userMaxDelegateAC=self.tx.max_delegate,
+                                                    userMinDelegateAC=self.tx.min_delegate, **kwargs)
+        time.sleep(self.tx.sleep_time)
+        tx_resp = self.hq.tx.query_tx(region_info['txhash'])
+        assert tx_resp['code'] == 0, f"test_create_region failed, resp: {tx_resp}"
+        gas_dict = dict(gas_wanted=tx_resp['gas_wanted'], gas_used=tx_resp['gas_used'])
+        return region_admin_info, region_id, region_name, gas_dict
+
 
 class Delegate(Base):
 
