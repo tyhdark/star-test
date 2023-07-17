@@ -123,7 +123,7 @@ class TestRegionDelegate(object):
         self.test_del.test_undelegate(**del_data)
 
         resp_balance_3 = int(HttpResponse.get_balance_unit(user_addr2, self.base_cfg.coin['uc'])['amount'])
-        assert resp_balance_3 == user2_balance + int(Compute.to_u(amount3 - self.base_cfg.fees))
+        assert resp_balance_3 == user2_balance + int(Compute.to_u(amount3)-Compute.to_u(self.base_cfg.fees))
 
         logger.info(f'{"- user2 赎回小数值超过6位小数,截取字符进行赎回":*^50s}')
         amount4 = 4.9999999
@@ -131,7 +131,7 @@ class TestRegionDelegate(object):
         self.test_del.test_undelegate(**del_data)
 
         resp_balance_4 = int(HttpResponse.get_balance_unit(user_addr2, self.base_cfg.coin['uc'])['amount'])
-        assert resp_balance_4 == resp_balance_3 + int(Compute.to_u(amount3 - self.base_cfg.fees))
+        assert resp_balance_4 == resp_balance_3 + int(Compute.to_u(amount3)-Compute.to_u(self.base_cfg.fees))
 
         logger.info(f'{"+ expect: user2 还剩下2uac活期质押,还存在KYC赠送质押":*^50s}')
         user2_del_info = HttpResponse.get_delegate(user_addr2)

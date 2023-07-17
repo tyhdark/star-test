@@ -24,7 +24,7 @@ def timer(func):
 
 @timer
 def run_tests():
-    pytest.main(['-s', '-m', 'P0', "checklist/test_fee.py", f'--alluredir={RESULT_DIR}', ])
+    pytest.main(['-s', '-m', 'P0', "checklist/", f'--alluredir={RESULT_DIR}', ])
 
 
 if __name__ == '__main__':
