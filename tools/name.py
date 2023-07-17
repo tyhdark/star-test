@@ -164,3 +164,4 @@ if __name__ == '__main__':
     print(ValidatorInfo.validator_node_for_noregion())
     # print(ValidatorInfo._validator_node_list())
     # print(ValidatorInfo.validator_node_for_create())
+    print('a')
