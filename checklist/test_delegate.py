@@ -110,7 +110,9 @@ class TestRegionDelegate(object):
         assert region_info['region_commission']['currentDemandTotalUAC'] == str(Compute.to_u(10 + 1 + 10 + 1))
         assert user_addr1 and user_addr2 in region_info['delegators']['delegators']
         logger.info(f"collect_addr_list:{region_admin_addr, region_id, user_addr1, user_addr2}")
+        logger.info('结束')
         return region_admin_addr, region_id, user_addr1, user_addr2
+
 
     def test_region_more_undelegate(self, setup_create_region):
         """
