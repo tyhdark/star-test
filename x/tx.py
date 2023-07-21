@@ -147,7 +147,7 @@ class Tx(BaseClass):
             return Tx._executor(cmd)
 
         @staticmethod
-        def delegate(from_addr, amount, fees=Fees, gas=GasLimit):
+        def delegate(from_addr, amount, fees=Fees):
             """创建/追加 活期质押 可用
             :param from_addr: 用户地址
             :param amount: 金额
@@ -329,6 +329,21 @@ class Tx(BaseClass):
                 resp_info = Interaction.yes_or_no(Tx.channel)
 
             return Result.split_esc(resp_info)
+        @staticmethod
+        def delete(user_name=None):
+            """根据用户名称在本地删除用户"""
+            cmd = Tx.work_home + f"{Tx.chain_bin} keys delete {user_name} {Tx.keyring_backend} -y"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            Tx.channel.send(cmd + "\n")
+            time.sleep(1)
+            resp_info = Interaction.ready(Tx.channel)
+
+            if "Error" in resp_info:
+                return "key not found"
+            else:
+                return resp_info
+
+            # assert "**Important**" in resp_info
 
     class Wait(object):
         @staticmethod
@@ -366,8 +381,9 @@ if __name__ == '__main__':
     # Tx.SendToAdmin.count_down_5s()
     #
     # print(Tx.Bank.send_to_admin(amount=100)) # 国库转钱给管理员
-    Tx.Wait.wait_five_seconds()
+    # Tx.Wait.wait_five_seconds()
     # time.sleep(2)
+    print(Tx.Keys.delete(user_name="usersdHwy"))
 
     # Tx.SendToAdmin.send_admin_to_user(to_account=username, amounts=10001, fees=100) # 管理员给用户转账
     # Tx.SendToAdmin.count_down_5s()

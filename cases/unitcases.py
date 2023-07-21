@@ -53,6 +53,10 @@ class Keys(Base):
         assert pk is not None
         return pk
 
+    def test_delete_key(self, addr):
+        name = self.q.Key.name_of_addre(addr=addr)
+        de = self.tx.Keys.delete(user_name=name)
+        return de
 
 class Kyc(Keys):
 
@@ -180,9 +184,9 @@ class Region(Kyc, Bank):
 class Delegate(Base):
 
     def test_delegate(self, **kwargs):
-        """发起活期委托，KYC和非KYC都是这个命令，可变传参传用户地址和金额"""
+        """发起活期委托，KYC和非KYC都是这个命令，字典传参传用户地址和金额"""
         del_info = self.tx.staking.delegate(**kwargs)
-        logger.info(f"delegate_info: {del_info}")
+        # logger.info(f"delegate_info: {del_info}")
         time.sleep(self.tx.sleep_time)
         # time.sleep(10)
         resp = self.hq.tx.query_tx(del_info['txhash'])
@@ -278,21 +282,28 @@ if __name__ == '__main__':
     # u_name =
     # a.test_add(user_name="testnamekyc005")
     # time.sleep(Tx.sleep_time)
-    u_add = Query.Key.address_of_name(username="testnamekyc004")
-    s_add = Query.Key.address_of_name(username="superadmin")
-    kyc_add = Query.Key.address_of_name(username="testnamekyc005")
-    nokyc_add = Query.Key.address_of_name(username="testname011")
-    amount = 1000
+    # u_add = Query.Key.address_of_name(username="testnamekyc004")
+    # s_add = Query.Key.address_of_name(username="superadmin")
+    # kyc_add = Query.Key.address_of_name(username="testnamekyc005")
+    # kyc_add2 = "me1krajder0hxkars23amjrrx0xev3fj6gw69g64l"
+    # print(kyc_add)
+    # nokyc_add = Query.Key.address_of_name(username="testname011")
+    amount = 1000000
     fixed_delegation_id = 16
     # print(u_add)
     # print(s_add)
-    data_send = dict(from_addr=s_add, to_addr=kyc_add, amount=amount)
+    # data_send = dict(from_addr=s_add, to_addr=kyc_add, amount=amount)
     # data_new_kyc= dict(addr=u_add,region_id="kor")
-    data_del = dict(from_addr=kyc_add, amount=amount)
-    data_u = dict(from_addr=kyc_add)
-    data_del_fixed = dict(from_addr=kyc_add, amount=amount)
-    data_del_fixed_withdraw = dict(from_addr=kyc_add, fixed_delegation_id=fixed_delegation_id)
+    # data_del = dict(from_addr=kyc_add, amount=amount)
+    # data_u = dict(from_addr=kyc_add)
+    # data_del_fixed = dict(from_addr=kyc_add, amount=amount)
+    # data_del_fixed_withdraw = dict(from_addr=kyc_add, fixed_delegation_id=fixed_delegation_id)
+    # undelegate_data = dict(from_addr=kyc_add2, amount=amount)
+    # undelegate_resp = d.test_undelegate_kyc(**undelegate_data)
 
+    # print(undelegate_resp)
+    d_name = "userSara"
+    print(Tx.Keys.delete(user_name=d_name))
     # print(b.test_send(**data_send))
     # print(keys.test_add())
 
@@ -303,7 +314,7 @@ if __name__ == '__main__':
     # print(b.test_send(**data_send))
     # print(d.test_delegate(**data_del))
     # print(keys.test_add())
-    print(k.test_new_kyc_user())
+    # print(k.test_new_kyc_user())
     # k.test_new_kyc_user(addr=kyc_add)
     # print(d.test_withdraw(**data_u))
     # d.test_undelegate_kyc(**data_del)

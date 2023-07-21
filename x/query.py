@@ -7,6 +7,7 @@ from loguru import logger
 
 from tools.console import Result
 from x.base import BaseClass
+
 """查询用的,查询各种信息,  (第四)
 查询区块
 转账交易
@@ -14,6 +15,7 @@ from x.base import BaseClass
 质押权益
 铸造厂
 """
+
 
 class Query(BaseClass):
     """
@@ -58,7 +60,6 @@ class Query(BaseClass):
             cmd = Query.work_home + f"{Query.chain_bin} q bank balances {addr} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
-
 
     class Staking(object):  # 查询Staking
 
@@ -178,6 +179,7 @@ class Query(BaseClass):
         #     cmd = Query.work_home + f"{Query.chain_bin} q srstaking params {Query.chain_id} {Query.connect_node}"
         #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         #     return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
+
     class Key(object):
         @staticmethod
         def keys_list():
@@ -186,7 +188,8 @@ class Query(BaseClass):
             """
             cmd = Query.work_home + f"{Query.chain_bin} keys list {Query.chain_bin} {Query.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return  Result.yaml_to_dict(Query.ssh_client.ssh((cmd)))
+            return Result.yaml_to_dict(Query.ssh_client.ssh((cmd)))
+
         @staticmethod
         def address_of_name(username=None):
             """
@@ -200,6 +203,21 @@ class Query(BaseClass):
             # resp_info = Tx.ssh_client.ssh(cmd)
 
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
+
+        @staticmethod
+        def name_of_addre(addr=None):
+            """根据用户地址，导出用户名称"""
+            cmd = Query.work_home + f"{Query.chain_bin} keys show {addr} {Query.keyring_backend}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            # resp_info = Tx.ssh_client.ssh(cmd)
+            resp_info = Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
+            logger.info(f"resp_info:{resp_info}")
+
+            if resp_info is not None:
+                return resp_info[0]['name']
+            else:
+                return "Incoming parameter error，parameter is not a valid name or address"
+
     class Mint(object):
 
         @staticmethod
@@ -294,18 +312,24 @@ class HttpQuery(BaseClass):
         def validator(addr=None):
             if addr is None:
                 url = HttpQuery.api_url + HttpQuery.query_validators
+                logger.info(f"{inspect.stack()[0][3]}: {url}")
+                response = HttpQuery.client.get(url=url)
+                logger.info(f"response: {response}")
+                assert response.status_code == 200
+                return response.json().get("validators")
+
             else:
-                url = HttpQuery.api_url + HttpQuery.query_validator.format(address=addr)
-            logger.info(f"{inspect.stack()[0][3]}: {url}")
-            response = HttpQuery.client.get(url=url)
-            logger.info(f"response: {response}")
-            assert response.status_code == 200
-            return response.json().get("validators")
+                url = HttpQuery.api_url + HttpQuery.query_validator.format(validator_addr=addr)
+                logger.info(f"{inspect.stack()[0][3]}: {url}")
+                response = HttpQuery.client.get(url=url)
+                logger.info(f"response: {response}")
+                assert response.status_code == 200
+                return response.json().get('validator')
 
         @staticmethod
         def kyc(addr=None):
             if addr is None:
-                url =  HttpQuery.api_url + HttpQuery.query_kycs
+                url = HttpQuery.api_url + HttpQuery.query_kycs
             else:
                 url = HttpQuery.api_url + HttpQuery.query_kyc.format(account=addr)
 
@@ -344,7 +368,7 @@ if __name__ == '__main__':
     # r3 = q.staking.region()
     # print(r3)
     # print(q.Bank.query_balances(addr=Query.super_addr))
-    q_ssh =Query()
+    q_ssh = Query()
 
     # print(q_ssh.Staking.validators_list()) # 验证者列表
     # print(q_ssh.Staking.list_region()) # 区列表
@@ -354,7 +378,9 @@ if __name__ == '__main__':
     # print(q_ssh.Staking.kyc_by_region(region_id="jpn"))
     # print(q_ssh.Staking.list_fixed_deposit())
     hq = HttpQuery()
-    print(hq.Staking.delegation(addr="me13a4rmm64wetlatj5z6jcfxkxtraxdcm8jl0z8u"))
+    # print(hq.Staking.delegation(addr="me13a4rmm64wetlatj5z6jcfxkxtraxdcm8jl0z8u"))
+    print(hq.Staking.region(region_id="pry"))
+    print(hq.Staking.validator(addr="mevaloper183rayk6wts2mgcrvqp8ydssphvxdkdw53e6llf"))
     # print(hq.Tx.query_tx(tx_hash="36B83E7A30FB8D45FB24860E95EC95968F566CFAF4E5020EFA58936B475C25F6"))
     # v = hq.Staking.validator()
     # print(v)

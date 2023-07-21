@@ -151,6 +151,8 @@ if __name__ == '__main__':
     print("1")
     print(a.validatortoken)
     print(a.sleep_time)
+    print(a.coin['uc'])
+    print(a.coin["uc"])
     # print(a.a)
     pass
 

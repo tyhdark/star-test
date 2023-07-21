@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import random
 import string
-
+from faker import Faker
 from x.query import HttpQuery
 
 
@@ -46,6 +46,7 @@ class RegionInfo:
                   '"\nZWE":"津巴布韦","\nABW":"阿鲁巴"'
     hq = HttpQuery()
 
+
     @classmethod
     def parse_region_name(cls):
         region_name_list = cls.region_name.replace('\n', '').replace('"', '').split(',')
@@ -89,11 +90,18 @@ class RegionInfo:
             return region_id
 
 class UserInfo:
+    faker = Faker()
+
+    # @classmethod
+    # def random_username(cls):
+    #     random_str = string.ascii_letters + string.digits
+    #     username = "user" + ''.join(random.sample(random_str, 8))
+    #     return username
 
     @classmethod
     def random_username(cls):
         random_str = string.ascii_letters + string.digits
-        username = "user" + ''.join(random.sample(random_str, 8))
+        username = "user" + ''.join(cls.faker.first_name())
         return username
 
 
@@ -161,7 +169,8 @@ if __name__ == '__main__':
     # print(UserInfo.random_username())
     # print(RegionInfo.region_name_for_create())
     # print(RegionInfo.region_for_id_existing())
-    print(ValidatorInfo.validator_node_for_noregion())
+    # print(ValidatorInfo.validator_node_for_noregion())
     # print(ValidatorInfo._validator_node_list())
     # print(ValidatorInfo.validator_node_for_create())
-    print('a')
+    # print('a')
+    print(UserInfo.random_username())

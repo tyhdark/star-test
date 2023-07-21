@@ -25,11 +25,15 @@ region_name = "JPN"
 # region_name = "HKG"
 # username1 = "wangzhibiao003"
 
-username = "testnamekyc005"
+username = "userDaniel"
 # username = "testnamekyc001"
 # username = "testname011"
 # username = "superadmin"
+# addre = "me14ywd6peegppyk9jmjmzgytf9rx6p2lf77egqzr"
+name = Query.Key.name_of_addre(addr="me17fkfasmd7rj94r06rcqae4gxp9zpw0qz68pp0u")
+# print("用户的名字为：",name)
 addre = Query.Key.address_of_name(username=username)
+
 print("用户的地址为：",addre)
 print(f"superadmin地址为：{Query.Key.address_of_name(username='superadmin')}")
 print(Query.super_addr)
@@ -41,19 +45,19 @@ print(Query.super_addr)
 print("======" * 5, "初始化起始线", "========" * 5)
 # print(Tx.Keys.add(username=username))                         # 添加用戶
 # Tx.Wait.wait_five_seconds()
-print(Tx.Bank.send_to_admin(amount=10000)) # 国库转账给管理员
-Tx.Wait.wait_five_seconds()
+# print(Tx.Bank.send_to_admin(amount=1000000)) # 国库转账给管理员
+# Tx.Wait.wait_five_seconds()
 print("查询管理员余额：",HttpQuery.Bank.query_balances(addr=Query.super_addr))  # 查询管理员余额
 
-print(Tx.Bank.send_tx(from_addr=Tx.super_addr,to_addr=addre,amount=10000)) # 管理员给用户转钱
-Tx.Wait.wait_five_seconds()
+# print(Tx.Bank.send_tx(from_addr=Tx.super_addr,to_addr=addre,amount=10000)) # 管理员给用户转钱
+# Tx.Wait.wait_five_seconds()
 #
 # Tx.Bank.send_tx() # 用户给用户地址转钱
 
 print(f"{username}该用户余额为:",HttpQuery.Bank.query_balances(addr=addre))  # 查询该用户余额
 
 # Tx.Staking.new_kyc(user_addr=addre,region_id="kor",from_addr=Tx.super_addr)  # new kyc 认证KYC
-# Tx.Staking.delegate(amount=5000, from_addr=addre)                               # 发起质押 不区分KYC
+# Tx.Staking.delegate(amount=1000, from_addr=addre)                               # 发起质押 不区分KYC
 # Tx.Wait.wait_five_seconds()
 # print(type(Tx.Staking.undelegate_nokyc(from_addr=addre,amount=10000)))         # 非KYC用户赎回质押
 # Tx.Staking.undelegate_kyc()                                                 #  KYC用户赎回质押
@@ -82,7 +86,7 @@ print(f"{username}该用户余额为:",HttpQuery.Bank.query_balances(addr=addre)
 # print(region_list)
 # print("查询区名称列表推导式结果为",[i.get('name') for i in (region_list.get('region'))])
 
-# print(Tx.Staking.deposit_fixed(from_addr=addre,amount=100,month=6))     #发起定期委托
+print(Tx.Staking.deposit_fixed(from_addr=addre,amount=100,month=6))     #发起定期委托
 # Tx.Staking.withdraw_fixed(from_addr=addre,fixed_delegation_id=0)      # 根据ID赎回定期委托
 # user_fixed = HttpQuery.Staking.fixed_deposit()               # 查询个人或者全网所有的定期列表
 # print (f"定期委托的id列表为：{[f.get('id') for f in user_fixed]}")
@@ -99,7 +103,7 @@ keys_list = Query.Key.keys_list()  # 查询用户列表
 #     print("用户列表：",i)  # 查询用户列表
 # print(f"用户的名称组合的列表为：{[n.get('name') for n in keys_list]}")
 #
-piv = Tx.Keys.private_export(username=username)  # 导出用户私钥
+# piv = Tx.Keys.private_export(username=username)  # 导出用户私钥
 #
 
 # for i in Query.Staking.list_kyc().get("kyc"):

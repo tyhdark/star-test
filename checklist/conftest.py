@@ -4,6 +4,7 @@ import sys
 
 import pytest
 from loguru import logger
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from cases import unitcases
 from tools.name import RegionInfo
@@ -66,3 +67,14 @@ def setup_update_region_data():
         dict(region_id=region_id, from_addr=region_admin_addr, isUndelegate=True),  # 控制永久质押开关 True为可提取
     ]
     yield update_region_data
+
+
+@pytest.fixture(scope="function")
+def get_region_id_existing():
+    """获取链上存在的区id"""
+    region_id = RegionInfo.region_for_id_existing()
+    return region_id
+
+
+if __name__ == '__main__':
+    print(get_region_id_existing())
