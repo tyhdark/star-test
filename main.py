@@ -13,3 +13,4 @@ if __name__ == '__main__':
     pytest.main(['-s', "checklist/", f'--alluredir={BASE_DIR}/allure-results', ])
     elapsed_time = (time.time() - start_time) / 60  # 计算时间差
     logger.info(f"Elapsed time: {elapsed_time} min")
+    print("hello ")

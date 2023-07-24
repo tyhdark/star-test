@@ -21,6 +21,7 @@ validator = unitcases.Validator()
 #     yield region_admin_info, region_id, region_name
 @pytest.fixture(scope="session")
 def setup_create_region():
+    """创建去，拿出区id出来"""
     logger.info("fixture: setup_create_region")
     region_id = region.test_create_region_wang()
     yield region_id

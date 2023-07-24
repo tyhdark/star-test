@@ -37,7 +37,6 @@ class Keys(Base):
             user_name = UserInfo.random_username()
         self.tx.keys.add(user_name)
         user_info = self.tx.keys.show(user_name)
-        print("添加用户信息user_info", user_info)
         assert user_info is not None
         return user_info[0]
 
@@ -157,7 +156,7 @@ class Region(Kyc, Bank):
 
     # TODO 下次写取没有绑定区的节点名称出来，
     def test_create_region_wang(self, node_name=None):
-        """创建区(绑定区),用链上不存在的区的名字，如果指定了节点，就用户节点，如果没有指定节点，就区链上没绑定区的节点？ 返回区id"""
+        """创建区(绑定区),用链上不存在的区的名字，如果指定了节点，就用户节点，如果没有指定节点，就区链上没绑定区的节点 返回区id"""
 
         region_name = RegionInfo.region_name_for_create()
         region_id = region_name.lower()

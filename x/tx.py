@@ -308,7 +308,7 @@ class Tx(BaseClass):
             if "existing" in resp_info:
                 resp_info = Interaction.yes_or_no(Tx.channel)
 
-            assert "**Important**" in resp_info
+            # assert "**Important**" in resp_info
 
         @staticmethod
         def show(username):

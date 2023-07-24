@@ -267,8 +267,8 @@ class TestRegionDelegate(object):
     #     assert int(user2_del_info["unmovableAmount"]) == Compute.to_u(1)
 
     def test_region_more_undelegate_wang(self, get_region_id_existing):
-        # 先把用户信息拿出来，这里有两种情况，第一种是上面用例下来只有一个用户，第二是上面用例下来有两个用户
-        # 第一種情況，上面下來1個用戶
+        """测试两个用户减少委托，计算收益，前置是前面用户委托成功，"""
+        # 先把用户信息拿出来，上一个测试接口造了数据，两个KYC用户委托，
         user_addr1, user_addr2, validator_addr, vali_delegator, user1_balances_start, user2_balances_start, \
             delegate_amount1, delegate_amount2 = self.test_two_kyc_user_delegate(
             get_region_id_existing=get_region_id_existing)
@@ -276,14 +276,8 @@ class TestRegionDelegate(object):
             f"打印上一个接口传下来后的值，user1_balances={user1_balances_start},type{type(user1_balances_start)}")
         logger.info(
             f"打印上一个接口传下来后的值，user2_balances={user2_balances_start},type{type(user2_balances_start)}")
-        # user1_balances_start = HttpResponse.get_balance_unit(user_addr=user_addr1)
-        # 第二种情况，上面下來2個用戶
-        # user_addr1,user_addr2, validator_addr, validator_delegator1 = self.test_two_kyc_user_delegate(
-        #     get_region_id_existing=get_region_id_existing)
-        # user_addr2 = "me1krajder0hxkars23amjrrx0xev3fj6gw69g64l"
-        # 由于上面没有下来两个用户，就创建第二个用户
 
-        # 用戶1用例1:減少用户1的委托，減少金額小於已有金額
+        # 用戶1用例1:減少用户1的委托，减少金额小于已有委托金额
         user1_undel_amount = 1  # 單位是mec
         start_height = HttpResponse.get_delegate_for_http(user_addr=user_addr1)['startHeight']
         time.sleep(30)
@@ -303,9 +297,6 @@ class TestRegionDelegate(object):
             f"开始是的节点委托金额为：{vali_delegator},结束后的节点委托金额为:{vali_delegator2},减少了委托{Compute.to_u(number=user1_undel_amount)}")
         assert vali_delegator2 == vali_delegator - Compute.to_u(number=user1_undel_amount)
 
-
-
-        # 用戶1用例二 测试赎回金额大于剩余委托质押金额 无法测试，因为前面断言会报错，他的code不是0
         # 用户2测试用例1 减少金额小于已有金额
         user2_undel_amount = 2
         start_height_user2 = HttpResponse.get_delegate_for_http(user_addr=user_addr2)['startHeight']
@@ -549,7 +540,6 @@ class TestRegionDelegate(object):
     #     # 剩余8本金 - 1手续费 + 活期收益(手动永久质押+kyc收益)
     #     assert end_user_addr_balance2 == start_user_addr_balance2 + Compute.to_u(10 - self.base_cfg.fees) + x
 
-    # @pytest.skip
     # def test_withdraw(self, setup_create_region):
     #     """活期收益提取"""
     #     region_admin_info, region_id, region_name = setup_create_region
@@ -587,6 +577,17 @@ class TestRegionDelegate(object):
     #     end_user_addr_balance = int(HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])["amount"])
     #     assert end_user_addr_balance == start_user_addr_balance - Compute.to_u(self.base_cfg.fees) + x
 
+    def test_withdrw_rewards_wang(self):
+        """只提取活期收益，计算收益是否符合当前产生的收益"""
+        pass
+
+    def test_deposit_fixed(self):
+        """测试发起定期委托，返回用户地址，委托id"""
+        pass
+
+    def test_withdraw_fixed(self):
+        """测试赎回定期委托，且计算收益。这里可以两种情况都写，一个到期一个未到期，用上面的发起委托的接口返回出来的用户地址，委托id作为入参"""
+        pass
     # @pytest.skip
     # def test_exceed_delegate_limit(self, setup_create_region):
     #     region_admin_info, region_id, region_name = setup_create_region
@@ -615,5 +616,7 @@ class TestRegionDelegate(object):
     #     with pytest.raises(AssertionError) as ex:
     #         self.test_del.test_delegate_infinite(**del_data)
     #     assert "'code': 2063" in str(ex.value)  # Amount exceeds limit,max delegate amount:1000000ac
-# if __name__ == '__main__':
-#     print("2")
+
+
+if __name__ == '__main__':
+    pytest.main(["-k","./test_delegate.py::TestRegionDelegate::test_two_kyc_user_delegate", "--capture=no"])

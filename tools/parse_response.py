@@ -84,11 +84,17 @@ class HttpResponse:
     def get_fixed_deposit_by_addr(cls, addr, fixed_type):
         fixed_info = cls.q.staking.show_fixed_deposit_by_addr(addr, fixed_type)
         return fixed_info
+    @classmethod
+    def get_fixed_deposit_by_addr_hq(cls, addr):
+        "根据用户地址查询个人定期委托信息列表，http"
+        fixed_info = cls.hq.Staking.fixed_deposit(addr=addr)
+        return fixed_info
 
     @classmethod
-    def get_fixed_deposit_by_region(cls, region_id, fixed_type):
+    def get_fixed_deposit_by_region(cls, region_id, fixed_type='ALL_STATE'):
+        """根据区id查询区定期委托信息,默认查全部委托"""
         fixed_info = cls.q.staking.show_fixed_deposit_by_region(region_id, fixed_type)
-        return fixed_info
+        return fixed_info['FixedDeposit']
 
     @classmethod
     def get_fixed_deposit_by_id(cls, addr, deposit_id):
@@ -97,11 +103,16 @@ class HttpResponse:
 
 
 if __name__ == '__main__':
-    v_list = HttpResponse.get_validator_list()
-    v = HttpResponse.get_validator_node_name_list()
-    b = HttpResponse.get_balance_unit(user_addr="me13a4rmm64wetlatj5z6jcfxkxtraxdcm8jl0z8u")
+    # v_list = HttpResponse.get_validator_list()
+    # v = HttpResponse.get_validator_node_name_list()
+    # b = HttpResponse.get_balance_unit(user_addr="me13a4rmm64wetlatj5z6jcfxkxtraxdcm8jl0z8u")
     # print(v_list)
-    print(b,type(b))
+    d = HttpResponse.get_fixed_deposit_by_addr_hq(addr="me13a4rmm64wetlatj5z6jcfxkxtraxdcm8jl0z8u")
+    print(d)
+    print(len(d))
+    r = HttpResponse.get_fixed_deposit_by_region(region_id='fsm')
+    print(r)
+    # print(b,type(b))
     # v_a = HttpResponse.get_region(region_id='pry')
     # validator_addr = HttpResponse.get_region(region_id='pry')['region']['operator_address']
     # print(validator_addr)

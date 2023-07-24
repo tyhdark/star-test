@@ -1,10 +1,13 @@
 # -*- coding:utf-8 -*-
 import threading
 from x.tx import Tx
-from x.query import Query,HttpQuery
+from x.query import Query, HttpQuery
 import time
+from multiprocessing import Process
+
 tx = Tx()
-queru = Query()
+query = Query()
+# p = Process()
 # username = "nokycwangzhibiao003"
 # username = "test001"  # cosmos1cjsvfrth4ygc0hqdw9y7hnpwgzdt5mh6vv2lqj
 # username = "test002" # cosmos1lkaqrt9s6glk6lcgk9tt0dnc9a9gmxqlq56pyv
@@ -25,31 +28,45 @@ region_name = "JPN"
 # region_name = "HKG"
 # username1 = "wangzhibiao003"
 
-username = "userDaniel"
+# username = "userDaniel"
 # username = "testnamekyc001"
-# username = "testname011"
+username = "userRandy"
 # username = "superadmin"
 # addre = "me14ywd6peegppyk9jmjmzgytf9rx6p2lf77egqzr"
-name = Query.Key.name_of_addre(addr="me17fkfasmd7rj94r06rcqae4gxp9zpw0qz68pp0u")
+# name = Query.Key.name_of_addre(addr="me17fkfasmd7rj94r06rcqae4gxp9zpw0qz68pp0u")
 # print("用户的名字为：",name)
 addre = Query.Key.address_of_name(username=username)
 
 print("用户的地址为：",addre)
-print(f"superadmin地址为：{Query.Key.address_of_name(username='superadmin')}")
-print(Query.super_addr)
-
-
-
+print(f"superadmin地址为：{query.Key.address_of_name(username='superadmin')}")
+# print(Query.super_addr)
 
 # adderss = "cosmos1fap8hp3t3xt20qw4sczlyrk6n92uffj4r4kw77"
+# def one1(name):
+#     addr = query.Key.address_of_name(username=name)
+#     return addr
+# def two2(name):
+#     addr = query.Key.address_of_name(username=name)
+#     return addr
 print("======" * 5, "初始化起始线", "========" * 5)
+#
+# o = Process(target=one1,args=("supreadmin",))
+# t = Process(target=two2,args=('userDaniel',))
+# o.start()
+# o.join()
+# t.start()
+#
+# t.join()
+# print("=====end====")
+
+
 # print(Tx.Keys.add(username=username))                         # 添加用戶
 # Tx.Wait.wait_five_seconds()
 # print(Tx.Bank.send_to_admin(amount=1000000)) # 国库转账给管理员
 # Tx.Wait.wait_five_seconds()
-print("查询管理员余额：",HttpQuery.Bank.query_balances(addr=Query.super_addr))  # 查询管理员余额
+# print("查询管理员余额：",HttpQuery.Bank.query_balances(addr=Query.super_addr))  # 查询管理员余额
 
-# print(Tx.Bank.send_tx(from_addr=Tx.super_addr,to_addr=addre,amount=10000)) # 管理员给用户转钱
+# print(Tx.Bank.send_tx(from_addr=Tx.super_addr,to_addr=addre,amount=100)) # 管理员给用户转钱
 # Tx.Wait.wait_five_seconds()
 #
 # Tx.Bank.send_tx() # 用户给用户地址转钱
@@ -86,7 +103,7 @@ print(f"{username}该用户余额为:",HttpQuery.Bank.query_balances(addr=addre)
 # print(region_list)
 # print("查询区名称列表推导式结果为",[i.get('name') for i in (region_list.get('region'))])
 
-print(Tx.Staking.deposit_fixed(from_addr=addre,amount=100,month=6))     #发起定期委托
+# print(Tx.Staking.deposit_fixed(from_addr=addre,amount=1,month=6))     #发起定期委托
 # Tx.Staking.withdraw_fixed(from_addr=addre,fixed_delegation_id=0)      # 根据ID赎回定期委托
 # user_fixed = HttpQuery.Staking.fixed_deposit()               # 查询个人或者全网所有的定期列表
 # print (f"定期委托的id列表为：{[f.get('id') for f in user_fixed]}")
@@ -98,7 +115,7 @@ print(Tx.Staking.deposit_fixed(from_addr=addre,amount=100,month=6))     #发起�
 
 
 #
-keys_list = Query.Key.keys_list()  # 查询用户列表
+# keys_list = Query.Key.keys_list()  # 查询用户列表
 # for i in keys_list:  # 查询用户列表
 #     print("用户列表：",i)  # 查询用户列表
 # print(f"用户的名称组合的列表为：{[n.get('name') for n in keys_list]}")
@@ -106,8 +123,8 @@ keys_list = Query.Key.keys_list()  # 查询用户列表
 # piv = Tx.Keys.private_export(username=username)  # 导出用户私钥
 #
 
-# for i in Query.Staking.list_kyc().get("kyc"):
-#     print("KYC用戶如下：",i)
+for i in Query.Staking.list_kyc().get("kyc"):
+    print("KYC用戶如下：",i)
 print("KYC用户地址列表为：",[i.get('account') for i in HttpQuery.Staking.kyc().get('kyc')])
 
 

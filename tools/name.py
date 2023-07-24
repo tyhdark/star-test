@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import random
 import string
-from faker import Faker
+# from faker import Faker
 from x.query import HttpQuery
 
 
@@ -90,19 +90,20 @@ class RegionInfo:
             return region_id
 
 class UserInfo:
-    faker = Faker()
-
-    # @classmethod
-    # def random_username(cls):
-    #     random_str = string.ascii_letters + string.digits
-    #     username = "user" + ''.join(random.sample(random_str, 8))
-    #     return username
+    # faker = Faker()
 
     @classmethod
     def random_username(cls):
         random_str = string.ascii_letters + string.digits
-        username = "user" + ''.join(cls.faker.first_name())
+        username = "user" + ''.join(random.sample(random_str, 8))
         return username
+
+    # @classmethod
+    # def random_username(cls):
+    #     """用faker模块写的随机名"""
+    #     random_str = string.ascii_letters + string.digits
+    #     username = "user" + ''.join(cls.faker.first_name())
+    #     return username
 
 
 class ValidatorInfo:
