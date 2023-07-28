@@ -24,7 +24,6 @@ class ChainCfg:
     chain_id: str
     chain_bin: str
     connect_node: str
-    super_addr: str
     keyring_backend: str
     sleep_time: int
     validatortoken:int
@@ -34,7 +33,7 @@ class ChainCfg:
     delegate_term: dict
     annual_rate: dict
     fixed_type: dict
-    # validatortoken: dict
+    validatortoken: dict
 
 
 @dataclass
@@ -62,6 +61,7 @@ class HttpCfg:
     bank: dict
     staking: dict
     account: dict
+    group: dict
 
 
 class BaseClass:
@@ -140,6 +140,11 @@ class BaseClass:
 
     # 查询用户
     query_address = http.account["account"]
+    # 查询群组
+    query_group_info = http.group['info']
+    query_group_members = http.group['members']
+    query_group_by_admin = http.group['by_admin']
+    query_group_by_member = http.group['by_member']
 
 
 if __name__ == '__main__':

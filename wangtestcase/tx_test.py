@@ -7,6 +7,11 @@ from multiprocessing import Process
 
 tx = Tx()
 query = Query()
+# namea = {'names': ['userGSMUI241', 'userONdlhXf9', 'userZobRav1e', 'userb4DUfrX2', 'useroCu43Vyq', 'useruU5PRT30']}
+# for i in namea['names']:
+#     tx.Keys.delete(user_name=i)
+#     time.sleep(1)
+
 # p = Process()
 # username = "nokycwangzhibiao003"
 # username = "test001"  # cosmos1cjsvfrth4ygc0hqdw9y7hnpwgzdt5mh6vv2lqj
@@ -30,8 +35,8 @@ region_name = "JPN"
 
 # username = "userDaniel"
 # username = "testnamekyc001"
-username = "userRandy"
-# username = "superadmin"
+# username = "userRandy"
+username = "superadmin"
 # addre = "me14ywd6peegppyk9jmjmzgytf9rx6p2lf77egqzr"
 # name = Query.Key.name_of_addre(addr="me17fkfasmd7rj94r06rcqae4gxp9zpw0qz68pp0u")
 # print("用户的名字为：",name)
@@ -62,16 +67,16 @@ print("======" * 5, "初始化起始线", "========" * 5)
 
 # print(Tx.Keys.add(username=username))                         # 添加用戶
 # Tx.Wait.wait_five_seconds()
-# print(Tx.Bank.send_to_admin(amount=1000000)) # 国库转账给管理员
+# print(Tx.Bank.send_to_admin(amount=10000)) # 国库转账给管理员
 # Tx.Wait.wait_five_seconds()
-# print("查询管理员余额：",HttpQuery.Bank.query_balances(addr=Query.super_addr))  # 查询管理员余额
+print("查询管理员余额：",HttpQuery.Bank.query_balances(addr=Query.super_addr))  # 查询管理员余额
 
 # print(Tx.Bank.send_tx(from_addr=Tx.super_addr,to_addr=addre,amount=100)) # 管理员给用户转钱
 # Tx.Wait.wait_five_seconds()
 #
 # Tx.Bank.send_tx() # 用户给用户地址转钱
 
-print(f"{username}该用户余额为:",HttpQuery.Bank.query_balances(addr=addre))  # 查询该用户余额
+# print(f"{username}该用户余额为:",HttpQuery.Bank.query_balances(addr=addre))  # 查询该用户余额
 
 # Tx.Staking.new_kyc(user_addr=addre,region_id="kor",from_addr=Tx.super_addr)  # new kyc 认证KYC
 # Tx.Staking.delegate(amount=1000, from_addr=addre)                               # 发起质押 不区分KYC
@@ -123,12 +128,22 @@ print(f"{username}该用户余额为:",HttpQuery.Bank.query_balances(addr=addre)
 # piv = Tx.Keys.private_export(username=username)  # 导出用户私钥
 #
 
-for i in Query.Staking.list_kyc().get("kyc"):
-    print("KYC用戶如下：",i)
-print("KYC用户地址列表为：",[i.get('account') for i in HttpQuery.Staking.kyc().get('kyc')])
+# for i in Query.Staking.list_kyc().get("kyc"):
+#     print("KYC用戶如下：",i)
+# print("KYC用户地址列表为：",[i.get('account') for i in HttpQuery.Staking.kyc().get('kyc')])
 
+# print(Tx.Group.create_group(admin_addr="me103hc23hts9z0zs6865zs4wly83vfzgqf7vnamp"))
+# print(Tx.Group.update_group_member(user_addr='me10gkdcdhjeaquxe637rluy2pa5mhkufe7mlkc6v', group_id=3))
+# print(Tx.Group.leove_group(group_id=2))
+# print(Query.Group.group_info(group_id=3))
+# print(HttpQuery.Group.group_info(group_id="3"))
+# print(Query.Group.group_members(group_id=3))
+# print(HttpQuery.Group.group_members(group_id=3))
+# print(Query.Group.group_by_admin(admin_addr="me103hc23hts9z0zs6865zs4wly83vfzgqf7vnamp"))
+# print(HttpQuery.Group.group_by_admin(admin_addr="me103hc23hts9z0zs6865zs4wly83vfzgqf7vnamp"))
+# print(Query.Group.group_by_menber_addr(member_addr="me10gkdcdhjeaquxe637rluy2pa5mhkufe7mlkc6v"))
+# print(HttpQuery.Group.group_by_member(member_addr="me10gkdcdhjeaquxe637rluy2pa5mhkufe7mlkc6v"))
 
-#
 
 
 print("======" * 5, "最后结束线", "======" * 5)

@@ -40,11 +40,30 @@ class Reward(object):
         logger.info(f"到期后获得的利息是{rewards}")
 
         return rewards
-
+a = {
+      "id": "18",
+      "account": "me13dc74742zjaptuv4snrrzac68ch0n6yz92r3p8",
+      "principal": {
+        "denom": "umec",
+        "amount": "1000000000"
+      },
+      "interest": {
+        "denom": "umec",
+        "amount": "75000000"
+      },
+      "start_time": "2023-07-25T02:01:42.877027038Z",
+      "end_time": "2023-07-25T02:07:42.877027038Z",
+      "term": "TERM_6_MONTHS",
+      "rate": "0.150000000000000000"
+    }
 
 if __name__ == '__main__':
+    b = a.get('rate')
+    print(b,type(b))
+    c = float(b)
+    print(c,type(c))
     r = Reward()
     # r.nokyc_reward(10000,1000,996)
     # r.kyc_reward(10000,10000,0)
-    print(Reward.fixed_reward(rate=0.05, month=1, amount=100000000))
+    print(Reward.fixed_reward(rate=c, month=6, amount=1000000000))
     # print(r.fixed_reward(rate=0.05, month=1, amount=100000000))

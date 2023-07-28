@@ -88,7 +88,7 @@ class Kyc(Keys):
         logger.info(f"user_info:{user_info}")
         tx_info = self.tx.staking.new_kyc(user_addr=user_info,
                                           region_id=region_id_variable, from_addr=self.tx.super_addr)
-        time.sleep(self.tx.sleep_time)
+        # time.sleep(self.tx.sleep_time)
         resp = self.hq.tx.query_tx(tx_hash=tx_info["txhash"])
         assert resp['code'] == 0, f"test_new_kyc_user failed,resp: {resp}"
         logger.info(f"region_id: {region_id},new_kyc_addr:{user_info}")

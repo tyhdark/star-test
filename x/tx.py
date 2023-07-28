@@ -37,7 +37,7 @@ class Tx(BaseClass):
         @staticmethod
         def send_to_admin(amount: int, fees=Fees):
             """国库往超管转钱，不需要传参,传金额就行"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx bank sendToAdmin {amount}{Tx.coin['c']} --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx bank sendToAdmin {amount}{Tx.coin['c']} --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -294,21 +294,47 @@ class Tx(BaseClass):
         #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         #     return Tx._executor(cmd)
 
+    class Group(object):
+        @staticmethod
+        def create_group(admin_addr,fees=Fees):
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx group create-group {admin_addr} --from {Tx.super_addr}  --fees={fees}{Tx.coin['uc']} {Tx.keyring_backend} {Tx.chain_id} -y "
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return Tx._executor(cmd)
+        @staticmethod
+        def update_group_member(user_addr,group_id,fees=Fees):
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx group update-group-member {user_addr} {group_id} --from {Tx.super_addr}  --fees={fees}{Tx.coin['uc']} {Tx.keyring_backend} {Tx.chain_id} -y "
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return Tx._executor(cmd)
+        @staticmethod
+        def leove_group(group_id,fees=Fees):
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx group delete-group {group_id} --from {Tx.super_addr}  --fees={fees}{Tx.coin['uc']} {Tx.keyring_backend} {Tx.chain_id} -y "
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return Tx._executor(cmd)
+
     class Keys(object):
 
         @staticmethod
         def add(username):
             """添加用户 重名也会新增,地址不一样"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} keys add {username} {Tx.keyring_backend}"
+            cmd = Tx.work_home + f"{Tx.chain_bin} keys add {username} {Tx.keyring_backend} && echo 'pass'"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+
+            print(Tx.channel.send_ready())
+            Tx.channel.send('echo "pass111" \n')
+
+            print(Tx.channel.recv_ready())
+            print(Tx.channel.recv(1024 * 5))
+
+            print("----------------")
+
             Tx.channel.send(cmd + "\n")
-            time.sleep(1)
+            time.sleep(3)
             resp_info = Interaction.ready(Tx.channel)
 
             if "existing" in resp_info:
                 resp_info = Interaction.yes_or_no(Tx.channel)
 
-            # assert "**Important**" in resp_info
+            assert "**Important**" in resp_info
 
         @staticmethod
         def show(username):
@@ -329,6 +355,7 @@ class Tx(BaseClass):
                 resp_info = Interaction.yes_or_no(Tx.channel)
 
             return Result.split_esc(resp_info)
+
         @staticmethod
         def delete(user_name=None):
             """根据用户名称在本地删除用户"""

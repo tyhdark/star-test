@@ -35,7 +35,6 @@ class TestRegionDelegate(object):
     #     new_kyc_data = dict(region_id=region_id, region_admin_addr=region_admin_addr)
     #     user_info = self.test_kyc.test_new_kyc_user(**new_kyc_data)
     #     user_addr = user_info['address']
-    #
     #     send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr, amount=100)
     #     self.test_bank.test_send(**send_data)
     #
@@ -51,46 +50,48 @@ class TestRegionDelegate(object):
     #     assert user_addr in region_info['delegators']['delegators']
     #
     #     return region_admin_addr, region_id, user_addr
-    # @pytest.skip
-    # def test_region_delegate(self, setup_create_validator_and_region):
-    #     """测试新创建节点，创建区域，创建KYC并质押 wang 过了"""
-    #     logger.info("TestRegionDelegate/test_region_delegate")
-    #     # 创建节点，然后创建区，然后获得区id
-    #     node_name, region_id = setup_create_validator_and_region
-    #     #  或者先绑定一个区,如果不需要创建节点只没有传node_name就随机绑定一个没有区的节点
-    #     # region_id = setup_create_region 或者先绑定一个区,如果不需要创建节点只创建去，就打开这个
-    #     # region_id = "cyp"
-    #     # 创建一个用户且将用户 new_kyc，返回用户的地址
-    #     # new_kyc_data = dict(region_id=region_id)
-    #     user_info = self.test_kyc.test_new_kyc_user(region_id=region_id)
-    #     user_addr = user_info
-    #     # 管理员给用户转100块
-    #     send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr, amount=100)
-    #     self.test_bank.test_send(**send_data)
-    #     # 用户发起10块钱质押
-    #     del_data = dict(from_addr=user_addr, amount=10)
-    #     self.test_del.test_delegate(**del_data)
-    #     # 查询用户的余额
-    #     user_balance = HttpResponse.get_balance_unit(user_addr)
-    #     assert user_balance == (100 - 10) * (10 ** 6) - self.base_cfg.fees
-    #
-    #     # 验证区信息1,区有没有创建成功，2、用户有没有认证在对应的区
-    #     region_info = HttpResponse.get_region(region_id)
-    #     assert region_id == region_info['region']['regionId']
-    #     kyc_by_region_list = HttpResponse.get_kyc_by_region(region_id=region_id)
-    #     # assert region_info['region_commission']['currentDemandTotalUAC'] == str(Compute.to_u(10 + 1))
-    #     assert user_addr in kyc_by_region_list
-    #
-    #     # 验证节点信息 断言你创建时传入的节点node名，在不在现在的列表里面
-    #     validator_node_name_list = HttpResponse.get_validator_node_name_list()
-    #     assert node_name in validator_node_name_list
-    #
-    #     # 验证个人的委托有没有增加
-    #     delegation_amount = int(HttpResponse.get_delegate_for_http(user_addr=user_addr)['amount'])
-    #     assert delegation_amount == 10 * (10 ** 6)
-    #     logger.info('test_region_delegate 结束')
-    #
-    #     return region_id, user_addr
+    @pytest.mark.skip
+    def test_region_delegate(self, setup_create_validator_and_region):
+        """测试新创建节点，创建区域，创建KYC并质押 wang 过了"""
+        logger.info("TestRegionDelegate/test_region_delegate")
+        # 创建节点，然后创建区，然后获得区id
+        node_name, region_id = setup_create_validator_and_region
+        #  或者先绑定一个区,如果不需要创建节点只没有传node_name就随机绑定一个没有区的节点
+        # region_id = setup_create_region 或者先绑定一个区,如果不需要创建节点只创建去，就打开这个
+        # region_id = "cyp"
+        # 创建一个用户且将用户 new_kyc，返回用户的地址
+        # new_kyc_data = dict(region_id=region_id)
+        user_info = self.test_kyc.test_new_kyc_user(region_id=region_id)
+        user_addr = user_info
+        # 管理员给用户转100块
+        send_amount = 100
+        self.base_cfg.Bank.send_to_admin(amount=(send_amount + 1))  # 怕管理员没钱，国库先转钱给管理员
+        send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr, amount=(send_amount + 1))
+        self.test_bank.test_send(**send_data)
+        # 用户发起10块钱质押
+        del_data = dict(from_addr=user_addr, amount=send_amount)
+        self.test_del.test_delegate(**del_data)
+        # 查询用户的余额
+        user_balance = HttpResponse.get_balance_unit(user_addr)
+        assert user_balance == 1 * (10 ** 6) - self.base_cfg.fees
+
+        # 验证区信息1,区有没有创建成功，2、用户有没有认证在对应的区
+        region_info = HttpResponse.get_region(region_id)
+        assert region_id == region_info['region']['regionId']
+        kyc_by_region_list = HttpResponse.get_kyc_by_region(region_id=region_id)
+        # assert region_info['region_commission']['currentDemandTotalUAC'] == str(Compute.to_u(10 + 1))
+        assert user_addr in kyc_by_region_list
+
+        # 验证节点信息 断言你创建时传入的节点node名，在不在现在的列表里面
+        validator_node_name_list = HttpResponse.get_validator_node_name_list()
+        assert node_name in validator_node_name_list
+
+        # 验证个人的委托有没有增加
+        delegation_amount = int(HttpResponse.get_delegate_for_http(user_addr=user_addr)['amount'])
+        assert delegation_amount == send_amount * (10 ** 6)
+        logger.info('test_region_delegate 结束')
+
+        return region_id, user_addr
 
     # @pytest.skip
     # def test_region_more_delegate(self, setup_create_region):
@@ -121,7 +122,7 @@ class TestRegionDelegate(object):
 
     def test_two_kyc_user_delegate(self, get_region_id_existing):
         """
-        多用户质押的情况 汪 过了，
+        两个用户质押的情况 汪 过了,拿已存在的区ID，
         """
         # 拿上一个接口结束时的区id和kyc用户地址
         logger.info("TestRegionDelegate/test_more_kyc_user_delegate")
@@ -132,12 +133,13 @@ class TestRegionDelegate(object):
         validator_delegate_start = int(
             HttpResponse.get_validator_delegate(validator_addr=validator_addr)['delegation_amount'])
         logger.info(f"测试开始前，节点委托的金额：{validator_delegate_start}")
-        send_amount = 10001
-        delegate_amount1 = 10000
+        send_amount = 101
+        delegate_amount1 = 100
         # 本来第一个用户是上面接口传下来的，现在没有传下来，就手动创建第1个用户，区id不变
         user_info1 = self.test_kyc.test_new_kyc_user(region_id=region_id, addr=None)
         user_addr1 = user_info1
         # 管理员给这个用户转账。
+        self.base_cfg.Bank.send_to_admin(amount=send_amount)
         send_data1 = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr1, amount=send_amount)  # 准备转账数据
         self.test_bank.test_send(**send_data1)  # 发起转账，**字典传参
         # 用户发起委托
@@ -150,7 +152,7 @@ class TestRegionDelegate(object):
         assert user1_balances == Compute.to_u(number=(send_amount - delegate_amount1)) - self.base_cfg.fees
 
         logger.info(f'{"setup test_region_delegate finish":*^50s}')
-        delegate_amount2 = 8000
+        delegate_amount2 = 80
         # 如果用上面接口传下来的region_id 就直接用
         user_info2 = self.test_kyc.test_new_kyc_user(region_id=region_id, addr=None)  # 创建随机用户且KYC，会返回user_add
         user_addr2 = user_info2
@@ -577,14 +579,17 @@ class TestRegionDelegate(object):
     #     end_user_addr_balance = int(HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])["amount"])
     #     assert end_user_addr_balance == start_user_addr_balance - Compute.to_u(self.base_cfg.fees) + x
 
+    @pytest.mark.skip
     def test_withdrw_rewards_wang(self):
         """只提取活期收益，计算收益是否符合当前产生的收益"""
         pass
 
+    @pytest.mark.skip
     def test_deposit_fixed(self):
         """测试发起定期委托，返回用户地址，委托id"""
         pass
 
+    @pytest.mark.skip
     def test_withdraw_fixed(self):
         """测试赎回定期委托，且计算收益。这里可以两种情况都写，一个到期一个未到期，用上面的发起委托的接口返回出来的用户地址，委托id作为入参"""
         pass
@@ -619,4 +624,4 @@ class TestRegionDelegate(object):
 
 
 if __name__ == '__main__':
-    pytest.main(["-k","./test_delegate.py::TestRegionDelegate::test_two_kyc_user_delegate", "--capture=no"])
+    pytest.main(["-k", "./test_delegate.py::TestRegionDelegate::test_two_kyc_user_delegate", "--capture=no"])

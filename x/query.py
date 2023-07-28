@@ -218,6 +218,31 @@ class Query(BaseClass):
             else:
                 return "Incoming parameter error，parameter is not a valid name or address"
 
+    class Group(object):
+        @staticmethod
+        def group_info(group_id=None):
+            cmd = Query.work_home + f"{Query.chain_bin} query group group-info {group_id} {Query.chain_id}"
+            resp_info = Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
+            logger.info(f"resp_info:{resp_info}")
+            return resp_info
+        @staticmethod
+        def group_members(group_id=None):
+            cmd = Query.work_home + f"{Query.chain_bin} query group group-members {group_id} {Query.chain_id}"
+            resp_info = Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
+            logger.info(f"resp_info:{resp_info}")
+            return resp_info['members'][0]
+        @staticmethod
+        def group_by_admin(admin_addr=None):
+            cmd = Query.work_home + f"{Query.chain_bin} query group groups-by-admin {admin_addr} {Query.chain_id}"
+            resp_info = Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
+            logger.info(f"resp_info:{resp_info}")
+            return resp_info['groups'][0]
+        @staticmethod
+        def group_by_menber_addr(member_addr=None):
+            cmd = Query.work_home + f"{Query.chain_bin} query group groups-by-member {member_addr} {Query.chain_id}"
+            resp_info = Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
+            logger.info(f"resp_info:{resp_info}")
+            return resp_info['groups'][0]
     class Mint(object):
 
         @staticmethod
@@ -362,6 +387,35 @@ class HttpQuery(BaseClass):
             else:
                 return respose.json().get('FixedDepositAnnualRate').get(f'annualRate_{month}_months')
 
+    class Group:
+        @staticmethod
+        def group_info(group_id=None):
+            url = HttpQuery.api_url + HttpQuery.query_group_info.format(group_id=group_id)
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            response = HttpQuery.client.get(url=url)
+            assert response.status_code == 200
+            return response.json()['info']
+        @staticmethod
+        def group_members(group_id=None):
+            url = HttpQuery.api_url + HttpQuery.query_group_members.format(group_id=group_id)
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            response = HttpQuery.client.get(url=url)
+            assert response.status_code == 200
+            return response.json()['members'][0]
+        @staticmethod
+        def group_by_admin(admin_addr=None):
+            url = HttpQuery.api_url + HttpQuery.query_group_by_admin.format(admin=admin_addr)
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            response = HttpQuery.client.get(url=url)
+            assert response.status_code == 200
+            return response.json()['groups'][0]
+        @staticmethod
+        def group_by_member(member_addr=None):
+            url = HttpQuery.api_url + HttpQuery.query_group_by_member.format(address=member_addr)
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            response = HttpQuery.client.get(url=url)
+            assert response.status_code == 200
+            return response.json()['groups'][0]
 
 if __name__ == '__main__':
     # q = HttpQuery()
