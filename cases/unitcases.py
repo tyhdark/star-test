@@ -82,6 +82,21 @@ class Kyc(Keys):
         logger.info(f"region_id: {region_id} , region_admin_info: {region_admin_info}")
         return region_admin_info, region_id, region_name
 
+    def test_new_kyc(self, region_id, region_admin_addr, addr=None, **kwargs):
+        if addr is None:
+            user_info = self.test_add()
+        else:
+            user_info = dict(address=addr)
+
+        logger.info(f"user_info: {user_info}")
+        tx_info = self.tx.staking.new_kyc(addr=user_info["address"], region_id=region_id,
+                                          role=self.tx.role["user"], from_addr=region_admin_addr, **kwargs)
+        time.sleep(self.tx.sleep_time)
+        resp = self.hq.tx.query_tx(tx_info['txhash'])
+        assert resp['code'] == 0, f"test_new_kyc_user failed, resp: {resp}"
+        gas_dict = dict(gas_wanted=resp['gas_wanted'], gas_used=resp['gas_used'])
+        return user_info, gas_dict
+
 
 class Region(Kyc, Bank):
 

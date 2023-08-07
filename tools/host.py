@@ -4,6 +4,7 @@ import random
 import time
 
 from fabric import Connection, Config
+from paramiko.channel import Channel
 
 
 class Host:
@@ -97,18 +98,15 @@ class Host:
         content = str(content).replace('"', r'\"')
         self.ssh(rf'echo "{content}" > {file}')
 
-    def create_session(self):
+    def create_session(self) -> Channel:
         """创建一个会话"""
         channel = self.connection.create_session()
         return channel
 
-    def create_invoke_shell(self):
+    def create_invoke_shell(self) -> Channel:
         """开启一个虚拟窗口"""
         channel = self.create_session()
         channel.get_pty()
         channel.invoke_shell()
 
         return channel
-
-
-
