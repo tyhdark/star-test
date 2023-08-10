@@ -53,30 +53,16 @@ class Keys(Base):
         return pk
 
     def test_delete_key(self, addr):
+        """删除用户，本地删除"""
         name = self.q.Key.name_of_addre(addr=addr)
         de = self.tx.Keys.delete(user_name=name)
         return de
 
+
 class Kyc(Keys):
 
-    # def test_new_kyc_user(self, region_id, region_admin_addr, addr=None, **kwargs):
-    #     # 新创建区 需要等待一个块高才能认证KYC，即区金库要有余额
-    #     if addr is None:
-    #         user_info = self.test_add()
-    #     else:
-    #         user_info = dict(address=addr)
-    #
-    #     logger.info(f"user_info: {user_info}")
-    #     tx_info = self.tx.staking.new_kyc(addr=user_info["address"], region_id=region_id,
-    #                                       role=self.tx.role["user"], from_addr=region_admin_addr, **kwargs)
-    #     time.sleep(self.tx.sleep_time)
-    #     resp = self.hq.tx.query_tx(tx_info['txhash'])
-    #     assert resp['code'] == 0, f"test_new_kyc_user failed, resp: {resp}"
-    #     logger.info(f"region_id: {region_id} , new_kyc: {user_info}")
-    #     return user_info
-
     def test_new_kyc_user(self, region_id=None, addr=None):
-        """认证kyc,用户就可以，区id会自动拿线上存在的，管理员addre配置文件写了 好了"""
+        """认证kyc,用户就可以，区id会自动拿线上存在的，管理员addr配置文件写了 好了"""
         if addr is None:
             user_info = self.test_add().get('address')
         else:
@@ -87,29 +73,12 @@ class Kyc(Keys):
             region_id_variable = region_id
         logger.info(f"user_info:{user_info}")
         tx_info = self.tx.staking.new_kyc(user_addr=user_info,
-                                          region_id=region_id_variable, from_addr=self.tx.super_addr)
+                                          region_id=region_id_variable)
         # time.sleep(self.tx.sleep_time)
         resp = self.hq.tx.query_tx(tx_hash=tx_info["txhash"])
         assert resp['code'] == 0, f"test_new_kyc_user failed,resp: {resp}"
         logger.info(f"region_id: {region_id},new_kyc_addr:{user_info}")
         return user_info
-
-    # def test_new_kyc_admin(self, **kwargs):
-    #     region_id, region_name = RegionInfo.create_region_id_and_name()
-    #     logger.info(f"new region_id: {region_id}, region_name:{region_name}")
-    #     # 添加用户
-    #     region_admin_info = self.test_add()
-    #     logger.info(f"region_admin_info: {region_admin_info}")
-    #
-    #     # 超管认证区域管理员为KYC-admin
-    #     tx_info = self.tx.staking.new_kyc(addr=region_admin_info["address"], region_id=region_id,
-    #                                       role=self.tx.role["admin"],
-    #                                       from_addr=self.tx.super_addr, **kwargs)
-    #     time.sleep(self.tx.sleep_time)
-    #     resp = self.hq.tx.query_tx(tx_info['txhash'])
-    #     assert resp['code'] == 0, f"test_new_kyc_admin failed, resp: {resp}"
-    #     logger.info(f"region_id: {region_id} , region_admin_info: {region_admin_info}")
-    #     return region_admin_info, region_id, region_name
 
 
 class Validator(Base):
@@ -124,38 +93,13 @@ class Validator(Base):
         time.sleep(self.tx.sleep_time)
         tx_resp = self.hq.tx.query_tx(validator_info['txhash'])
         assert tx_resp['code'] == 0, f"test_create_validator failed,resp:{tx_resp}"
-        a = [1, 2, 3, 4, 5, 6]
-        print(a[1])
         return node_name_var
 
 
 class Region(Kyc, Bank):
 
-    def test_create_region(self, **kwargs):
-        region_admin_info, region_id, region_name = self.test_new_kyc_admin(**kwargs)
-
-        # 使用SuperAdmin给区管理转账
-        self.test_send(from_addr=self.tx.super_addr, to_addr=region_admin_info["address"],
-                       amount=self.tx.super_to_region_admin_amt, **kwargs)
-
-        time.sleep(self.tx.sleep_time)
-
-        region_info = self.tx.staking.create_region(region_name=region_name, region_id=region_id,
-                                                    total_as=self.tx.region_as, fee_rate=self.tx.fee_rate,
-                                                    from_addr=region_admin_info["address"],
-                                                    totalStakeAllow=self.tx.region_as,
-                                                    userMaxDelegateAC=self.tx.max_delegate,
-                                                    userMinDelegateAC=self.tx.min_delegate, **kwargs)
-        time.sleep(self.tx.sleep_time)
-        tx_resp = self.hq.tx.query_tx(region_info['txhash'])
-        assert tx_resp['code'] == 0, f"test_create_region failed, resp: {tx_resp}"
-        # 等待块高 确保区域内有足够钱用于new-kyc 64ac * 1 / 200 = 0.32ac = 320000uac、 new-kyc至少需要1000000uac、4个块才能有1ac
-        logger.info(f"Make sure there is enough money in the area to spend new-kyc")
-        time.sleep((self.tx.sleep_time * 4) * 2)
-        return region_admin_info, region_id, region_name
-
     # TODO 下次写取没有绑定区的节点名称出来，
-    def test_create_region_wang(self, node_name=None):
+    def test_create_region(self, node_name=None):
         """创建区(绑定区),用链上不存在的区的名字，如果指定了节点，就用户节点，如果没有指定节点，就区链上没绑定区的节点 返回区id"""
 
         region_name = RegionInfo.region_name_for_create()
@@ -164,7 +108,7 @@ class Region(Kyc, Bank):
             node_name_var = ValidatorInfo.validator_node_for_noregion()
         else:
             node_name_var = node_name
-        region_info = self.tx.staking.create_region(from_addr=self.tx.super_addr, region_name=region_name,
+        region_info = self.tx.staking.create_region(region_name=region_name,
                                                     node_name=node_name_var)
         # time.sleep(self.tx.sleep_time)
         tx_resp = self.hq.tx.query_tx(region_info['txhash'])
@@ -172,6 +116,7 @@ class Region(Kyc, Bank):
         return region_id
 
     def test_update_region(self, **kwargs):
+        """更新区域信息,这个可能不需要"""
         region_info = self.tx.staking.update_region(**kwargs)
         logger.info(f"update_region_info: {region_info}")
         time.sleep(self.tx.sleep_time)
@@ -219,33 +164,6 @@ class Delegate(Base):
         assert resp['code'] == 0, f"test_undelegate failed, resp: {resp}"
         return resp
 
-    def test_exit_delegate(self, **kwargs):
-        """步骤：退出活期质押，没用"""
-        del_info = self.tx.staking.exit_delegate(**kwargs)
-        logger.info(f"exit_delegate_info: {del_info}")
-        time.sleep(self.tx.sleep_time)
-        resp = self.hq.tx.query_tx(del_info['txhash'])
-        assert resp['code'] == 0, f"test_exit_delegate failed, resp: {resp}"
-        return resp
-
-    # def test_delegate_infinite(self, **kwargs):
-    #     """步骤，创建永久活期质押，没用"""
-    #     del_info = self.tx.staking.delegate_infinite(**kwargs)
-    #     logger.info(f"delegate_infinite_info: {del_info}")
-    #     time.sleep(self.tx.sleep_time)
-    #     resp = self.hq.tx.query_tx(del_info['txhash'])
-    #     assert resp['code'] == 0, f"test_delegate_infinite failed, resp: {resp}"
-    #     return resp
-
-    # def test_undelegate_infinite(self, **kwargs):
-    #     """提取永久活期质押，没用"""
-    #     del_info = self.tx.staking.undelegate_infinite(**kwargs)
-    #     logger.info(f"undelegate_infinite_info: {del_info}")
-    #     time.sleep(self.tx.sleep_time)
-    #     resp = self.hq.tx.query_tx(del_info['txhash'])
-    #     assert resp['code'] == 0, f"test_undelegate_infinite failed, resp: {resp}"
-    #     return resp
-
 
 class Fixed(Base):
 
@@ -281,7 +199,7 @@ if __name__ == '__main__':
     # print(k.test_new_kyc_user())
     addr = 'me13umwrcg4c9avlfch5e534fsjavm4z0tkp30w7e'
     # print(b.test_send(from_addr=Tx.super_addr, to_addr=addr, amount=10000))
-    print(r.test_create_region_wang())
+    # print(r.test_create_region_wang())
     # u_name =
     # a.test_add(user_name="testnamekyc005")
     # time.sleep(Tx.sleep_time)
@@ -326,4 +244,6 @@ if __name__ == '__main__':
     # f.test_withdraw_fixed(**data_del_fixed_withdraw)
     # r.test_create_region_wang()
     # print(v.test_create_validator())
+    # print(k.test_new_kyc_user(region_id='hti', addr=None))
+    print(r.test_create_region(node_name='node1'))
     pass

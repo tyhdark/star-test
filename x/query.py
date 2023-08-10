@@ -8,13 +8,6 @@ from loguru import logger
 from tools.console import Result
 from x.base import BaseClass
 
-"""查询用的,查询各种信息,  (第四)
-查询区块
-转账交易
-库
-质押权益
-铸造厂
-"""
 
 
 class Query(BaseClass):
@@ -70,13 +63,6 @@ class Query(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
-        # @staticmethod
-        # def list_delegation():
-        #     """所有活期质押信息"""
-        #     cmd = Query.work_home + f"{Query.chain_bin} q srstaking list-delegation {Query.chain_id} {Query.connect_node}"
-        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-        #     return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
-
         @staticmethod
         def list_fixed_delegation():  # 固定委托列表,展示所有定期委托
             """查询所有定期委托，可用"""
@@ -84,12 +70,6 @@ class Query(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
-        # @staticmethod
-        # def show_fixed_delegation(addr):  # 展示 固定质押 在活期内 传地址
-        #     """活期内周期质押信息"""
-        #     cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-fixed-delegation {addr} {Query.chain_id} {Query.connect_node}"
-        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-        #     return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def kyc_by_region(region_id):  # KYC 用户表示, 用户归属区
@@ -148,17 +128,12 @@ class Query(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
-        # @staticmethod
-        # def show_region(region_id):
-        #     cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-region {region_id} {Query.chain_id} {Query.connect_node}"
-        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-        #     return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
+        @staticmethod
+        def show_region(region_id):
+            cmd = Query.work_home + f"{Query.chain_bin} q staking show-region {region_id} {Query.chain_id} {Query.connect_node}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
-        # @staticmethod
-        # def show_region_by_name(region_name):
-        #     cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-region-by-name {region_name} {Query.chain_id} {Query.connect_node}"
-        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-        #     return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def validators_list():
@@ -166,19 +141,18 @@ class Query(BaseClass):
             cmd = Query.work_home + f"{Query.chain_bin} q staking validators {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
+        @staticmethod
+        def validator(validator_addr=None):
+            """查询验证者节点地址"""
+            cmd = Query.work_home + f"{Query.chain_bin} q staking validator {validator_addr} {Query.chain_id} {Query.connect_node}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
-        # validate 参数是 operator_address
-        # @staticmethod
-        # def show_validator(validator):
-        #     cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-validator {validator} {Query.chain_id} {Query.connect_node}"
-        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-        #     return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
-
-        # @staticmethod
-        # def params():
-        #     cmd = Query.work_home + f"{Query.chain_bin} q srstaking params {Query.chain_id} {Query.connect_node}"
-        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-        #     return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
+        @staticmethod
+        def params():
+            cmd = Query.work_home + f"{Query.chain_bin} q staking params {Query.chain_id} {Query.connect_node}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
     class Key(object):
         @staticmethod
@@ -247,7 +221,7 @@ class Query(BaseClass):
 
         @staticmethod
         def params():
-            """Query the current minting parameters"""
+            """Query the current minting parameters ??? """
             cmd = Query.work_home + f"{Query.chain_bin} q mint params {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))

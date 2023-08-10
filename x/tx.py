@@ -36,87 +36,35 @@ class Tx(BaseClass):
 
         @staticmethod
         def send_to_admin(amount: int, fees=Fees):
-            """国库往超管转钱，不需要传参,传金额就行"""
+            """国库往超管转钱，不需要传参,传金额就行，保留"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx bank sendToAdmin {amount}{Tx.coin['c']} --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
     class Staking(object):
 
-        # @staticmethod
-        # def ag_to_ac(ag_amount, from_addr, fees=Fees, gas=GasLimit):
-        #     cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking ag-to-ac {ag_amount}{Tx.coin['g']} --from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
-        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-        #     return Tx._executor(cmd)
-
         @staticmethod
-        def create_region(from_addr, region_name, node_name, fees=Fees):
+        def create_region(region_name, node_name, fees=Fees):
             """
             创建一个区
             :param from_addr: 发起方地址 需要区域管理员
             :param region_name: 区名称
             :param node_name: 节点名称，方便找节点地址
-            :param region_id: 区ID
-            :param total_as: 区所占AS权重
-            :param fee_rate: 区内KYC用户手续费比例
-            :param totalStakeAllow: 质押水位上限
-            :param userMaxDelegateAC: 区内用户最大质押额
-            :param userMinDelegateAC: 区内用户最小质押额
-            :param delegators_limit: 区内委托上限人数（-1表示没有限制，0表示不允许质押，其他数值表示人数限制）
             :param fees: Gas费用
             :param gas: 默认为 200000
             :return:
             """
             params_a = "region_id, total_as, fee_rate, totalStakeAllow, userMaxDelegateAC,userMinDelegateAC, delegators_limit=-1,  gas=GasLimit,"
             # c = "./me-chaind tx staking new-region  CHN  #验证者节点地址  --from=#超管地址  --keyring-backend=test --chain-id=me-chain --fees=0.00mec "
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking new-region {region_name}  " \
-                                 f"$(./me-chaind q staking validators | grep \"{node_name}\" -A 6 | awk '/address/{{print$2}}')" \
-                                 f" --from={from_addr} --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking new-region {region_name} " \
+                                 f"$(./me-chaind q staking validators | grep -w \"{node_name}\" -A 6 | awk '/address/{{print$2}}')" \
+                                 f" --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
-        # @staticmethod
-        # def update_region(region_id, from_addr, region_name=None, delegators_limit=None, fee_rate=None,
-        #                   totalStakeAllow=None, userMaxDelegateAC=None, userMinDelegateAC=None, isUndelegate=None,
-        #                   fees=Fees, gas=GasLimit):
-        #     """
-        #     修改区信息
-        #     :param region_id: 区ID
-        #     :param from_addr: 发起方地址
-        #     :param region_name: 区名称
-        #     :param delegators_limit: 区内委托上限人数（-1表示没有限制，0表示不允许质押，其他数值表示人数限制）
-        #     :param fee_rate: 区内KYC用户手续费比例
-        #     :param totalStakeAllow: 质押水位上限
-        #     :param userMaxDelegateAC: 区内用户最大质押额
-        #     :param userMinDelegateAC: 区内用户最小质押额
-        #     :param isUndelegate: 控制区内永久质押开关,默认 false 不可提取
-        #     :param fees: 费用
-        #     :param gas: GasLimit
-        #     :return:
-        #     """
-        #     cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking update-region --from={from_addr} --region-id={region_id} " \
-        #                          f"--fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y "
-        #     if region_name:
-        #         cmd += f"--region-name={region_name} "
-        #     if delegators_limit:
-        #         cmd += f"--delegators-limit={delegators_limit} "
-        #     if fee_rate:
-        #         cmd += f"--fee-rate={fee_rate} "
-        #     if totalStakeAllow:
-        #         cmd += f"--totalStakeAllow={totalStakeAllow} "
-        #     if userMaxDelegateAC:
-        #         cmd += f"--userMaxDelegateAC={userMaxDelegateAC} "
-        #     if userMinDelegateAC:
-        #         cmd += f"--userMinDelegateAC={userMinDelegateAC} "
-        #     if isUndelegate:
-        #         cmd += f"--isUndelegate={isUndelegate} "
-        #
-        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-        #     return Tx._executor(cmd)
-
         @staticmethod
         def create_validator(node_name: str, amount=None, fees=Fees, ):
-            """创建验证者节点，需要传入对应的node几,可用"""
+            """创建验证者节点，需要传入对应的node几,可用，"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking create-validator  --amount={amount}{Tx.coin['c']}  " \
                                  f"--pubkey=$({Tx.chain_bin} tendermint show-validator --home=../nodes/{node_name})  " \
                                  f"--moniker=\"{node_name}\" " \
@@ -127,8 +75,15 @@ class Tx(BaseClass):
             return Tx._executor(cmd)
 
         @staticmethod
-        def validator_stake_unstake(operator_address=None, stakeorunstake=None, amount=None, fees=Fees):
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking {stakeorunstake} {operator_address} {amount}{Tx.coin['c']}" \
+        def validator_stake_unstake(operator_address=None, stake_or_unstake=None, amount=None, fees=Fees):
+            """
+            修改区信息
+            :param operator_address: 节点地址
+            :param stake_or_unstake: 传入stake就是增加，untake减少
+            :param amount: 金额
+            :return:
+            """
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking {stake_or_unstake} {operator_address} {amount}{Tx.coin['c']}" \
                                  f" --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
@@ -136,7 +91,7 @@ class Tx(BaseClass):
         @staticmethod
         def edit_validator(operator_address, owner_address, fees=Fees, ):
             """
-            Only used to modify the Region ID of the verifier
+            Only used to modify the Region ID of the verifier 把节点售卖给别人
             :param operator_address: Validator address
             :param owner_address: 卖给谁
             :param fees: fees
@@ -148,7 +103,7 @@ class Tx(BaseClass):
 
         @staticmethod
         def delegate(from_addr, amount, fees=Fees):
-            """创建/追加 活期质押 可用
+            """创建/追加 活期质押
             :param from_addr: 用户地址
             :param amount: 金额
             :return 交易结果，含哈希，记得提取"""
@@ -158,7 +113,7 @@ class Tx(BaseClass):
             return Tx._executor(cmd)
 
         @staticmethod
-        def undelegate_nokyc(from_addr, amount, fees=Fees, gas=GasLimit):
+        def undelegate_nokyc(from_addr, amount, fees=Fees):
             """
             非KYC减少活期质押可用:
             1.减少质押金额 >= 实际质押额 则按实际质押额兑付 并主动发放收益
@@ -170,7 +125,7 @@ class Tx(BaseClass):
             return Tx._executor(cmd)
 
         @staticmethod
-        def undelegate_kyc(from_addr, amount, fees=Fees, gas=GasLimit):
+        def undelegate_kyc(from_addr, amount, fees=Fees):
             """
             KYC减少活期质押有用:
             1.减少质押金额 >= 实际质押额 则按实际质押额兑付 并主动发放收益
@@ -181,28 +136,12 @@ class Tx(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
-        # @staticmethod
-        # def exit_delegate(from_addr, delegator_address, fees=Fees, gas=GasLimit):
-        #     """
-        #     退出活期质押 没用
-        #     :param from_addr: 发起方地址  【超管、区管理员、用户自己】
-        #     :param delegator_address: 被清退质押者地址
-        #     :param fees:
-        #     :param gas:
-        #     :return:
-        #     """
-        #     cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking exit-delegate --from={from_addr} " \
-        #                          f"--delegator-address={delegator_address} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
-        #
-        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-        #     return Tx._executor(cmd)
-
         @staticmethod
         def deposit_fixed(from_addr, amount, month=None, fees=Fees):
-            """创建定期质押 可用
+            """创建定期质押
             :param from_addr: 用户地址
             :param amount: 金额
-            :param term: 月数，1、3、6、12、24、36、48
+            :param month: 月数，1、3、6、12、24、36、48 如果不填就会随机选一个
             """
             if month is None:
                 mon = random.choice([1, 3, 6, 12, 24, 36, 48])
@@ -213,13 +152,6 @@ class Tx(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
-        # @staticmethod
-        # def delegate_infinite(from_addr, amount, fees=Fees, gas=GasLimit):
-        #     """创建活期永久质押 暂无用"""
-        #     cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking delegate-infinite --from={from_addr} --amount={amount}{Tx.coin['c']} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
-        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-        #     return Tx._executor(cmd)
-
         @staticmethod
         def withdraw_fixed(from_addr, fixed_delegation_id, fees=Fees):
             """提取定期质押 可用"""
@@ -228,59 +160,36 @@ class Tx(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
-        # @staticmethod
-        # def undelegate_infinite(from_addr, amount, fees=Fees, gas=GasLimit):
-        #     """减少活期永久质押 无用"""
-        #     cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking undelegate-infinite --from={from_addr} --amount={amount}{Tx.coin['c']} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
-        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-        #     return Tx._executor(cmd)
-
         @staticmethod
-        def withdraw_rewards(from_addr, fees=Fees, gas=GasLimit):
-            """不分KYC用户提取活期收益"""
+        def withdraw_rewards(from_addr, fees=Fees):
+            """用户提取活期收益，不区分KYC用户"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx distribution withdraw-rewards --from={from_addr} --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
-        # @staticmethod
-        # def create_fixed_deposit(amount, period, from_addr, fees=Fees, gas=GasLimit):
-        #     cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking deposit-fixed {amount}{Tx.coin['c']} {period} --from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
-        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-        #     return Tx._executor(cmd)
-        #
-        # @staticmethod
-        # def withdraw_fixed_deposit(deposit_id, from_addr, fees=Fees, gas=GasLimit):
-        #     cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking withdraw-fixed {deposit_id} --from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
-        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-        #     return Tx._executor(cmd)
-
         @staticmethod
-        def set_fixed_delegation_interest_rate(region_id, rate, term, from_addr, fees=Fees, gas=GasLimit):
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking set-fixed-deposit-interest-rate {region_id} {rate} {term} " \
-                                 f"--from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
+        def set_fixed_deposit_interest_rate(term, rate, fees=Fees):
+            """更改定期委托的费率
+            :param term: 定期枚举值
+            :param rate: 定期费率
+            :param fees:
+            """
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking set-fixed-deposit-interest-rate {term} {rate}  " \
+                                 f"--from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
         @staticmethod
-        def set_fixed_deposit_interest_rate(region_id, rate, period, from_addr, fees=Fees, gas=GasLimit):
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking set-fixed-deposit-interest-rate {region_id} {rate} {period} " \
-                                 f"--from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Tx._executor(cmd)
-
-        @staticmethod
-        def new_kyc(user_addr, region_id, from_addr, fees=Fees, gas=GasLimit):
+        def new_kyc( region_id,user_addr, fees=Fees):
             """
             把用户认证成KYC
             :param user_addr: kyc address
             :param region_id: 所绑定区域ID
-            :param role: 区内角色  KYC_ROLE_USER  or KYC_ROLE_ADMIN
             :param from_addr: 发起地址 区管理员 or 全局管理员
             :param fees: Gas费用 {Tx.coin['c']}
-            :param gas: 默认100
             :return: tx Hash
             """
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking new-kyc {user_addr} {region_id}  --from {from_addr} " \
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking new-kyc {user_addr} {region_id} --from={Tx.super_addr} " \
                                  f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
 
             # if from_addr != Tx.super_addr:  # 区管理员 不能创建 KYC_ROlE_ADMIN
@@ -288,11 +197,6 @@ class Tx(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
-        # @staticmethod
-        # def remove_kyc(addr, from_addr, fees=Fees, gas=GasLimit):
-        #     cmd = Tx.work_home + f"{Tx.chain_bin} tx srstaking remove-kyc {addr} --from={from_addr} --fees={fees}{Tx.coin['c']} --gas={gas} {Tx.chain_id} {Tx.keyring_backend} -y"
-        #     logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-        #     return Tx._executor(cmd)
 
     class Group(object):
         @staticmethod
@@ -372,7 +276,7 @@ class Tx(BaseClass):
 
         @staticmethod
         def delete(user_name=None):
-            """根据用户名称在本地删除用户"""
+            """根据用户名称在本地删除用户，保留"""
             cmd = Tx.work_home + f"{Tx.chain_bin} keys delete {user_name} {Tx.keyring_backend} -y"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             Tx.channel.send(cmd + "\n")
@@ -389,6 +293,7 @@ class Tx(BaseClass):
     class Wait(object):
         @staticmethod
         def wait_five_seconds():
+            """等待5秒"""
             for i in range(6):
                 print(i)
                 i += 1
@@ -396,6 +301,7 @@ class Tx(BaseClass):
 
         @staticmethod
         def wati_five_height():
+            """等待5个块高"""
             for i in range(26):
                 print(i)
                 i += 1

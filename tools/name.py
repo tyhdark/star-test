@@ -174,4 +174,5 @@ if __name__ == '__main__':
     # print(ValidatorInfo._validator_node_list())
     # print(ValidatorInfo.validator_node_for_create())
     # print('a')
+    print(RegionInfo.region_name_for_create())
     print(UserInfo.random_username())

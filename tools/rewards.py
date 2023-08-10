@@ -9,6 +9,13 @@ class Reward(object):
 
     @classmethod
     def reward_nokyc(cls, stake, end_height=None, start_height=None):
+        """
+        计算非KYC的收益
+        :param stake: 委托金额
+        :param end_height: 结束块高
+        :param start_height: 开始块高
+        :return 返回经历这些块高后的收益
+        """
         stakes = stake * (10 ** 6)
 
         logger.info(f"单块出块奖励：{cls.one_block} mec")
@@ -22,6 +29,13 @@ class Reward(object):
 
     @classmethod
     def reward_kyc(cls, stake=None, end_height=None, start_height=None):
+        """
+        计算KYC的收益
+        :param stake: 委托金额
+        :param end_height: 结束块高
+        :param start_height: 开始块高
+        :return 返回经历这些块高后的收益
+        """
         stakes = (stake + 1) * (10 ** 6)
         logger.info(f"单块出块奖励：{cls.one_block} mec")
         one_reward = (cls.one_block * (stakes / (20000000000 * 10 ** 6))) * 10 ** 6
@@ -33,6 +47,13 @@ class Reward(object):
 
     @classmethod
     def fixed_reward(cls, rate=None, month=None, amount=None):
+        """
+        计算定期委托的收益
+        :param rate: 费率
+        :param month: 月数的枚举值
+        :param amount: 金额
+        :return 预估收益
+        """
         uamount = amount * (10 ** 6)
         logger.info(
             f"设置的年化利率是:{rate}百分比,选择的定期月是{month}个月,存入的本金是{uamount}umec")
@@ -40,29 +61,10 @@ class Reward(object):
         logger.info(f"到期后获得的利息是{rewards}")
 
         return rewards
-a = {
-      "id": "18",
-      "account": "me13dc74742zjaptuv4snrrzac68ch0n6yz92r3p8",
-      "principal": {
-        "denom": "umec",
-        "amount": "1000000000"
-      },
-      "interest": {
-        "denom": "umec",
-        "amount": "75000000"
-      },
-      "start_time": "2023-07-25T02:01:42.877027038Z",
-      "end_time": "2023-07-25T02:07:42.877027038Z",
-      "term": "TERM_6_MONTHS",
-      "rate": "0.150000000000000000"
-    }
+
 
 if __name__ == '__main__':
-    b = a.get('rate')
-    print(b,type(b))
-    c = float(b)
-    print(c,type(c))
-    r = Reward()
+
     # r.nokyc_reward(10000,1000,996)
     # r.kyc_reward(10000,10000,0)
     print(Reward.fixed_reward(rate=c, month=6, amount=1000000000))

@@ -107,11 +107,11 @@ if __name__ == '__main__':
     # v = HttpResponse.get_validator_node_name_list()
     # b = HttpResponse.get_balance_unit(user_addr="me13a4rmm64wetlatj5z6jcfxkxtraxdcm8jl0z8u")
     # print(v_list)
-    d = HttpResponse.get_fixed_deposit_by_addr_hq(addr="me13a4rmm64wetlatj5z6jcfxkxtraxdcm8jl0z8u")
-    print(d)
-    print(len(d))
-    r = HttpResponse.get_fixed_deposit_by_region(region_id='fsm')
-    print(r)
+    # d = HttpResponse.get_fixed_deposit_by_addr_hq(addr="me13a4rmm64wetlatj5z6jcfxkxtraxdcm8jl0z8u")
+    # print(d)
+    # print(len(d))
+    # r = HttpResponse.get_fixed_deposit_by_region(region_id='fsm')
+    # print(r)
     # print(b,type(b))
     # v_a = HttpResponse.get_region(region_id='pry')
     # validator_addr = HttpResponse.get_region(region_id='pry')['region']['operator_address']
@@ -129,6 +129,7 @@ if __name__ == '__main__':
     #     print(i['description']['moniker'])
     # node_list = [i['description']['moniker'] for i in v_list]
     # print(node_list)
-
+    print(HttpResponse.get_region(region_id='hti'))
+    # print(HttpResponse.get_balance_unit(user_addr='me1w5xhsf98c9z0uaghcxuhh3auz07yclvam5wq09'))
     pass
 
