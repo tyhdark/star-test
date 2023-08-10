@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import random
 import string
-
+# from faker import Faker
 from x.query import HttpQuery
 
 
@@ -46,6 +46,7 @@ class RegionInfo:
                   '"\nZWE":"津巴布韦","\nABW":"阿鲁巴"'
     hq = HttpQuery()
 
+
     @classmethod
     def parse_region_name(cls):
         region_name_list = cls.region_name.replace('\n', '').replace('"', '').split(',')
@@ -58,11 +59,11 @@ class RegionInfo:
     def _chain_region_name_list(cls):
         """获取链上已存在的region-name"""
         regin_list = cls.hq.staking.region()
-        regin_name_list = [i['regionName'] for i in regin_list["region"]]
+        regin_name_list = [i['name'] for i in regin_list["region"]]
         return regin_name_list
 
     @classmethod
-    def create_region_id_and_name(cls):
+    def region_name_for_create(cls):
         """创建region-id和region-name(链上不存在的region—name)"""
         region_name_key, _ = cls.parse_region_name()
         while True:
@@ -70,13 +71,108 @@ class RegionInfo:
             chain_region_name_list = cls._chain_region_name_list()
             if region_key not in chain_region_name_list:
                 region_id = region_key.lower()
-                return region_id, region_key
-
+                return region_key
+                # if id_or_name == "id":
+                #     return region_id
+                # elif id_or_name == "name":
+                #     return region_key
+                # else:
+                #     return region_id,region_key
+                # return region_id, region_key
+    @classmethod
+    def region_for_id_existing(cls):
+        "返回链上已经存在的区id"
+        region_name_key, _ = cls.parse_region_name()
+        while True:
+            region_key = random.choice(region_name_key)
+            chain_region_name_list = cls._chain_region_name_list()
+            region_id = (random.choice(chain_region_name_list)).lower()
+            return region_id
 
 class UserInfo:
+    # faker = Faker()
 
     @classmethod
     def random_username(cls):
         random_str = string.ascii_letters + string.digits
         username = "user" + ''.join(random.sample(random_str, 8))
         return username
+
+    # @classmethod
+    # def random_username(cls):
+    #     """用faker模块写的随机名"""
+    #     random_str = string.ascii_letters + string.digits
+    #     username = "user" + ''.join(cls.faker.first_name())
+    #     return username
+
+
+class ValidatorInfo:
+    node_name = ['node1','node2','node3','node4','node5','node6','node7','node8','node9','node10']
+    hq = HttpQuery()
+
+    @classmethod
+    def _validator_node_list(cls):
+        """返回一个链上存在的node"""
+        validator = cls.hq.Staking.validator()
+        radom_node = [i['description']['moniker'] for i in validator]
+        return radom_node
+
+    @classmethod
+    def validator_node_for_kyc(cls,node=None):
+        if node is None:
+            return random.choice(cls._validator_node_list())
+        else:
+            return node
+
+    @classmethod
+    def validator_node_for_noregion(cls):
+        """随机返回一个没有绑定区的节点 node 名称 用于绑定区的"""
+        # 把所有区的节点对应的地址拿过来，
+        region_addr = (cls.hq.Staking.region()).get("region")
+        region_oper_list = [i.get('operator_address') for i in region_addr ]
+
+        # 把所有节点的地址拿过来
+        operators_address = cls.hq.staking.validator()
+
+        all_oper_list = [o.get('operator_address') for o in operators_address ]
+
+        # 判断不在区节点地址的节点地址
+        no_region_oper_list = [i for i in all_oper_list if i not in region_oper_list]
+
+        # 根据判断的节点地址去它的node名称
+        # no_region_node_list = []
+        # for i in operators_address:
+        #     for n in no_region_oper_list:
+        #         if i.get('operator_address') == n:
+        #             no_region_node_list.append(i.get('description').get('moniker'))
+        # 用推导式的方式写就是下面这样的：
+        no_region_node_list = [i.get('description').get('moniker') for i in operators_address if
+                               i.get('operator_address') in no_region_oper_list]
+        return random.choice(no_region_node_list)
+
+
+    @classmethod
+    def validator_node_for_create(cls,node=None):
+        """创建验证者节点的时候传nodename用的，链上不存在的Node"""
+        ture_node = cls._validator_node_list()
+        # f_node = []
+        # for i in cls.node_name:
+        #     if i not in ture_node:
+        #         f_node.append(i)
+        false_node = [i for i in cls.node_name if i not in ture_node]
+        if node is None:
+
+            return random.choice(false_node)
+        else:
+            return node
+
+if __name__ == '__main__':
+    # print(UserInfo.random_username())
+    # print(RegionInfo.region_name_for_create())
+    # print(RegionInfo.region_for_id_existing())
+    # print(ValidatorInfo.validator_node_for_noregion())
+    # print(ValidatorInfo._validator_node_list())
+    # print(ValidatorInfo.validator_node_for_create())
+    # print('a')
+    print(RegionInfo.region_name_for_create())
+    print(UserInfo.random_username())

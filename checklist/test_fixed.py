@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
+import time
+
 import pytest
 from loguru import logger
 
 from cases import unitcases
 from tools.compute import Compute, WaitBlock
 from tools.parse_response import HttpResponse
+from tools.rewards import Reward
 
 
 @pytest.mark.P0
@@ -12,10 +15,12 @@ class TestRegionFixed(object):
     test_region = unitcases.Region()
     test_del = unitcases.Delegate()
     test_kyc = unitcases.Kyc()
+    test_key = unitcases.Keys()
     test_bank = unitcases.Bank()
     test_fixed = unitcases.Fixed()
     base_cfg = test_bank.tx
 
+    @pytest.mark.skip
     def test_region_fixed(self, setup_create_region):
         """测试新创建区域并定期质押"""
         logger.info("TestRegionFixed/test_region_fixed")
@@ -54,6 +59,45 @@ class TestRegionFixed(object):
         assert int(user1_fixed_info['amount']) == Compute.to_u(10)
         return region_admin_addr, region_id, user_addr
 
+    def test_region_fixed_wang(self, get_region_id_existing):
+        """拿链上有的区Id出来，单用户发起定期质押，改get_region_id_existing入参就可以实现创建新区测试"""
+        # 拿到区id
+        region_id = get_region_id_existing
+        test_amount = 1001
+        test_month = 6
+        logger.info(f"region_id={region_id}")
+        # new_kyc
+        user_info = self.test_kyc.test_new_kyc_user(region_id=region_id, addr=None)
+        user1_addr = user_info
+        # 管理员给kyc用户转钱
+        send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user1_addr, amount=test_amount)  # 定义转账数据
+        self.test_bank.test_send(**send_data)
+        # 查询余额
+        user1_balances_start = HttpResponse.get_balance_unit(user_addr=user1_addr)
+        logger.info(f"开始余额为：{user1_balances_start}")
+        # 查询个人定期列表
+        user1_fixed_info_start = HttpResponse.get_fixed_deposit_by_addr_hq(addr=user1_addr)
+
+        # 发起定期
+        fixed_data = dict(from_addr=user1_addr, amount=(test_amount - 1), month=test_month)
+        logger.info(fixed_data)
+        self.test_fixed.test_delegate_fixed(**fixed_data)
+        # 验证用户余额有没有减少
+        user1_balances_end = HttpResponse.get_balance_unit(user_addr=user1_addr)
+        assert user1_balances_end == user1_balances_start - Compute.to_u(test_amount - 1) - self.base_cfg.fees
+        # 验证区域定期有没有增加 # 接口有问题只能命令行查了  查询区域定期委托列表
+        region_fixed_info = HttpResponse.get_fixed_deposit_by_region(region_id=region_id)
+        region_fixed_info_all_addr = [i['account'] for i in region_fixed_info]
+        assert user1_addr in region_fixed_info_all_addr  # 断言用户地址在不在区定期委托里面
+        # 验证用户定期信息
+        user1_fixed_info_end = HttpResponse.get_fixed_deposit_by_addr_hq(addr=user1_addr)
+        assert len(user1_fixed_info_end) == len(user1_fixed_info_start) + 1
+        return region_id, user1_addr
+        # 打扫数据，根据addr删除用户
+        # self.test_key.test_delete_key(addr=user1_addr)
+        # logger.info(f"{user1_addr}已被删除")
+
+    @pytest.mark.skip
     def test_region_more_fixed(self):
         """测试新创建区域多用户定期质押"""
         logger.info("TestRegionFixed/test_region_more_fixed")
@@ -108,6 +152,65 @@ class TestRegionFixed(object):
                     f"{user_addr2}, {user1_fixed_id}, {user2_fixed_id}, {user2_fixed_end_height}")
         return region_admin_addr, region_id, user_addr1, user_addr2, user1_fixed_id, user2_fixed_id, user2_fixed_end_height
 
+    def test_region_tow_fixed(self, get_region_id_existing):
+        """拿链上有的区Id出来，双用户发起定期质押，改get_region_id_existing入参就可以实现创建新区测试"""
+        # 拿到区id
+        region_id = get_region_id_existing
+        test_amount = 100
+        test_month = 1
+        logger.info(f"region_id={region_id}")
+        self.base_cfg.Bank.send_to_admin(amount=(test_amount+1))
+        # new_kyc 两个用户
+        user1_info = self.test_kyc.test_new_kyc_user(region_id=region_id, addr=None)
+        user1_addr = user1_info
+        user2_info = self.test_kyc.test_new_kyc_user(region_id=region_id, addr=None)
+        user2_addr = user2_info
+        # 管理员给kyc用户转钱
+        send1_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user1_addr, amount=(test_amount + 1))  # 定义转账数据
+        self.test_bank.test_send(**send1_data)
+        send2_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user2_addr, amount=(test_amount + 1))  # 定义转账数据
+        self.test_bank.test_send(**send2_data)
+
+        # 查询余额
+        user1_balances_start = HttpResponse.get_balance_unit(user_addr=user1_addr)
+        logger.info(f"开始余额为：{user1_balances_start}")
+        user2_balances_start = HttpResponse.get_balance_unit(user_addr=user1_addr)
+        logger.info(f"开始余额为：{user2_balances_start}")
+        # 查询个人定期列表
+        user1_fixed_info_start = HttpResponse.get_fixed_deposit_by_addr_hq(addr=user1_addr)
+
+        # 发起定期
+        fixed_data1 = dict(from_addr=user1_addr, amount=test_amount, month=test_month)
+        logger.info(fixed_data1)
+        self.test_fixed.test_delegate_fixed(**fixed_data1)
+        fixed_data2 = dict(from_addr=user2_addr, amount=test_amount, month=test_month)
+        logger.info(fixed_data1)
+        self.test_fixed.test_delegate_fixed(**fixed_data2)
+
+        # 验证用户余额有没有减少
+        user1_balances_end = HttpResponse.get_balance_unit(user_addr=user1_addr)
+        assert user1_balances_end == user1_balances_start - Compute.to_u(test_amount) - self.base_cfg.fees
+        user2_balances_end = HttpResponse.get_balance_unit(user_addr=user2_addr)
+        assert user2_balances_end == user2_balances_start - Compute.to_u(test_amount) - self.base_cfg.fees
+
+        # 验证区域定期有没有增加 # 接口有问题只能命令行查了  查询区域定期委托列表
+        region_fixed_info = HttpResponse.get_fixed_deposit_by_region(region_id=region_id)
+        region_fixed_info_all_addr = [i['account'] for i in region_fixed_info]
+        assert user1_addr in region_fixed_info_all_addr  # 断言用户地址在不在区定期委托里面
+        assert user2_addr in region_fixed_info_all_addr  # 断言用户地址在不在区定期委托里面
+
+        # 验证用户定期信息
+        user1_fixed_info_end = HttpResponse.get_fixed_deposit_by_addr_hq(addr=user1_addr)
+        # user1_fixed_id = user1_fixed_info_end[0]['id']
+        assert len(user1_fixed_info_end) == len(user1_fixed_info_start) + 1
+        user2_fixed_info_end = HttpResponse.get_fixed_deposit_by_addr_hq(addr=user2_addr)
+        # user2_fixed_id = user2_fixed_info_end[0]['id']
+        assert len(user2_fixed_info_end) == len(user1_fixed_info_start) + 1
+
+        return region_id, user1_addr, user2_addr, user1_balances_end, user2_balances_end, user1_fixed_info_end, \
+            user2_fixed_info_end, test_amount, test_month, region_fixed_info_all_addr
+
+    @pytest.mark.skip
     def test_region_more_fixed_withdraw(self):
         """
         测试新创建区域多用户定期质押
@@ -158,3 +261,48 @@ class TestRegionFixed(object):
         interest_ac = Compute.interest(amount=10, period=1, rate=self.base_cfg.annual_rate[1])
         interest_ag = Compute.ag_to_ac(interest_ac, reverse=True)
         assert int(resp_user2_uag['amount']) == Compute.to_u(interest_ag)
+
+    def test_region_two_fixed_withdraw(self, get_region_id_existing):
+        """
+        双用户区域定期委托，提取定期委托
+        @Desc:
+            - user1 未到期赎回
+            + expect: user1 返回质押本金
+
+            - user2 到期赎回
+            + expect: user2 返回质押本金+定期收益
+        """
+        region_id, user1_addr, user2_addr, user1_balances_start, user2_balances_start, user1_fixed_info_end, \
+            user2_fixed_info_end, test_amount, test_month, region_fixed_info_all_addr = self.test_region_tow_fixed(
+            get_region_id_existing)
+        logger.info(region_id, user1_addr, user2_addr, user1_balances_start, user2_balances_start, user1_fixed_info_end,
+                    user2_fixed_info_end, test_amount, test_month, region_fixed_info_all_addr)
+        user1_fixed_info_id = user1_fixed_info_end[0]['id']
+        user1_fixed_info_rate = float(user1_fixed_info_end[0]['rate'])
+        user2_fixed_info_id = user2_fixed_info_end[0]['id']
+        user2_fixed_info_rate = float(user2_fixed_info_end[0]['rate'])
+        # 用户1提取收益，此时未到期
+        withdraw_data1 = dict(from_addr=user1_addr, fixed_delegation_id=user1_fixed_info_id)
+        self.test_fixed.test_withdraw_fixed(**withdraw_data1)
+        # 查询用户1 余额
+        user1_balances_end = HttpResponse.get_balance_unit(user_addr=user1_addr)
+        assert user1_balances_end == user1_balances_start + Compute.to_u(test_amount) - self.base_cfg.fees
+        # 用户2提取定期，且到期了
+        time.sleep(60)
+        withdraw_data2 = dict(from_addr=user2_addr, fixed_delegation_id=user2_fixed_info_id)
+        self.test_fixed.test_withdraw_fixed(**withdraw_data2)
+        # 手动计算收益，
+        fixed_rewards_user2 = Reward.fixed_reward(rate=user2_fixed_info_rate, month=test_month, amount=test_amount)
+        # 查询用户2 余额
+        user2_balances_end = HttpResponse.get_balance_unit(user_addr=user2_addr)
+        assert user2_balances_end == user2_balances_start + Compute.to_u(
+            number=test_amount) + fixed_rewards_user2 - self.base_cfg.fees
+        # 判断用户委托不在区域委托里面
+        assert user1_addr, user2_addr not in region_fixed_info_all_addr
+        # 清理脏数据
+        self.test_key.test_delete_key(addr=user1_addr)
+        self.test_key.test_delete_key(addr=user2_addr)
+
+
+if __name__ == '__main__':
+    pytest.main(["-k", "./test_fixed.py::TestRegionFixed::test_region_fixed_wang", "--capture=no"])

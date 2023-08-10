@@ -41,6 +41,7 @@ class Compute:
         for i in args:
             yield cls.to_u(i)
 
+
     @classmethod
     def interest(cls, amount: int, period: int, rate: float):
         """计算利息"""
@@ -85,5 +86,7 @@ if __name__ == '__main__':
     # a = decimal.Decimal(10) / decimal.Decimal(400) / decimal.Decimal(100000)
     # a_str = '{:.20f}'.format(a)
     # print(a_str)
-    b = Compute.interest(10, 1, 0.06)
-    print(b, type(b))
+    # b = Compute.interest(10, 1, 0.06)
+    # print(b, type(b))
+    c = Compute.to_u(number=100)
+    print(c,type(c))
