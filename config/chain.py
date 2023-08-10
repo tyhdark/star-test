@@ -19,4 +19,5 @@ config = read_config()
 GasLimit = config["compute"]["DefaultGasLimit"]
 Fees = config["compute"]["DefaultFees"]
 if __name__ == '__main__':
+    print('111')
     pass
