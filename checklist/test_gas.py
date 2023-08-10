@@ -5,7 +5,7 @@ from loguru import logger
 
 from cases import unitcases
 
-logger.add("logs/case_{time}.log", rotation="500MB")
+# logger.add("logs/case_{time}.log", rotation="500MB")
 
 
 @pytest.mark.P1
