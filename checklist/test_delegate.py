@@ -61,6 +61,7 @@ class TestRegionDelegate(object):
         # region_id = "cyp"
         # 创建一个用户且将用户 new_kyc，返回用户的地址
         # new_kyc_data = dict(region_id=region_id)
+        self.base_cfg.Bank.send_to_admin(amount=10000)
         user_info = self.test_kyc.test_new_kyc_user(region_id=region_id)
         user_addr = user_info
         # 管理员给用户转100块
@@ -187,6 +188,73 @@ class TestRegionDelegate(object):
             f"user2_balances{user2_balances},delegate_amount={delegate_amount2}")
         return user_addr1, user_addr2, validator_addr, validator_delegate_end, user1_balances, user2_balances, delegate_amount1, delegate_amount2
 
+    # def test_two_kyc_user_delegate(self, setup_create_validator_and_region):
+    #     """
+    #     两个用户质押的情况 汪 过了,拿已存在的区ID，
+    #     """
+    #     # 拿上一个接口结束时的区id和kyc用户地址
+    #     logger.info("TestRegionDelegate/test_more_kyc_user_delegate")
+    #     region_id, user_addr1 = self.test_region_delegate(setup_create_validator_and_region) # 这个是上面传下的来
+    #     # region_id = get_region_id_existing  # 这个是获取已存在的区id,且等下自己新建KYC用户
+    #     # 委托之前先查询一下节点的委托金额，等下后面拿来做断言
+    #     validator_addr = HttpResponse.get_region(region_id=region_id)['region']['operator_address']
+    #     validator_delegate_start = int(
+    #         HttpResponse.get_validator_delegate(validator_addr=validator_addr)['delegation_amount'])
+    #     logger.info(f"测试开始前，节点委托的金额：{validator_delegate_start}")
+    #     send_amount = 101
+    #     delegate_amount1 = 100
+    #     # 本来第一个用户是上面接口传下来的，现在没有传下来，就手动创建第1个用户，区id不变
+    #     # user_info1 = self.test_kyc.test_new_kyc_user(region_id=region_id, addr=None)
+    #     # user_addr1 = user_info1
+    #     # 管理员给这个用户转账。
+    #     self.base_cfg.Bank.send_to_admin(amount=send_amount)
+    #     send_data1 = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr1, amount=send_amount)  # 准备转账数据
+    #     self.test_bank.test_send(**send_data1)  # 发起转账，**字典传参
+    #     # 用户发起委托
+    #     del_data = dict(from_addr=user_addr1, amount=delegate_amount1)
+    #     self.test_del.test_delegate(**del_data)  # 字典传参
+    #     # 查询余额
+    #     user1_balances = HttpResponse.get_balance_unit(user_addr=user_addr1)
+    #     logger.info(f"委托结束后用户user1的余额：{user1_balances}")
+    #     # 断言
+    #     assert user1_balances == Compute.to_u(number=(send_amount - delegate_amount1)) - self.base_cfg.fees
+    #
+    #     logger.info(f'{"setup test_region_delegate finish":*^50s}')
+    #     delegate_amount2 = 80
+    #     # 如果用上面接口传下来的region_id 就直接用
+    #     user_info2 = self.test_kyc.test_new_kyc_user(region_id=region_id, addr=None)  # 创建随机用户且KYC，会返回user_add
+    #     user_addr2 = user_info2
+    #     # 管理员给这个用户转账。
+    #     send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr2, amount=send_amount)  # 准备转账数据
+    #     self.test_bank.test_send(**send_data)  # 发起转账，**字典传参
+    #     # 用户发起委托
+    #     del_data = dict(from_addr=user_addr2, amount=delegate_amount2)
+    #     self.test_del.test_delegate(**del_data)  # 字典传参
+    #     # 查询用户余额 回来的是int的
+    #     user2_balances = HttpResponse.get_balance_unit(user_addr=user_addr2)
+    #     logger.info(f"委托结束后用户user2的余额：{user2_balances}")
+    #     # 断言个人的余额有没有减少
+    #     assert user2_balances == Compute.to_u(number=(send_amount - delegate_amount2)) - self.base_cfg.fees
+    #     # 断言区委托有没有增加->就是验证者节点的委托
+    #
+    #     validator_delegate_end = int(
+    #         HttpResponse.get_validator_delegate(validator_addr=validator_addr)['delegation_amount'])
+    #     logger.info(f"测试结束后，节点委托的金额：{validator_delegate_end}")
+    #     # 断言节点委托是否等于用户的委托
+    #     assert validator_delegate_end == validator_delegate_start + Compute.to_u(
+    #         number=delegate_amount1) + Compute.to_u(
+    #         number=delegate_amount2)
+    #     # logger.info(f"collect_addr_list:{region_id, user_addr1, user_addr2}")
+    #     logger.info(f"collect_addr_list:{region_id, user_addr2}")
+    #     logger.info('test_two_kyc_user_delegate 本条用例结束')
+    #     logger.info(f"region_id={region_id}，user_addr2={user_addr2}")
+    #     # return region_id, user_addr1, user_addr2
+    #     logger.info(
+    #         f"user_addr1={user_addr1},user_addr2={user_addr2},validator_addr={validator_addr},"
+    #         f"validator_delegate_end={validator_delegate_end},user1_balances{user1_balances},"
+    #         f"user2_balances{user2_balances},delegate_amount={delegate_amount2}")
+    #     return user_addr1, user_addr2, validator_addr, validator_delegate_end, user1_balances, user2_balances, delegate_amount1, delegate_amount2
+
     # @pytest.skip
     # def test_region_more_undelegate(self, setup_create_region):
     #     """
@@ -267,6 +335,57 @@ class TestRegionDelegate(object):
     #     user2_del_info = HttpResponse.get_delegate(user_addr2)
     #     assert int(user2_del_info["amountAC"]) == 0
     #     assert int(user2_del_info["unmovableAmount"]) == Compute.to_u(1)
+
+
+    # def test_region_more_undelegate_wang(self, setup_create_validator_and_region):
+    #     """测试两个用户减少委托，计算收益，前置是前面用户委托成功，"""
+    #     # 先把用户信息拿出来，上一个测试接口造了数据，两个KYC用户委托，
+    #     user_addr1, user_addr2, validator_addr, vali_delegator, user1_balances_start, user2_balances_start, \
+    #         delegate_amount1, delegate_amount2 = self.test_two_kyc_user_delegate(
+    #         setup_create_validator_and_region=setup_create_validator_and_region)
+    #     logger.info(
+    #         f"打印上一个接口传下来后的值，user1_balances={user1_balances_start},type{type(user1_balances_start)}")
+    #     logger.info(
+    #         f"打印上一个接口传下来后的值，user2_balances={user2_balances_start},type{type(user2_balances_start)}")
+    #
+    #     # 用戶1用例1:減少用户1的委托，减少金额小于已有委托金额
+    #     user1_undel_amount = 1  # 單位是mec
+    #     start_height = HttpResponse.get_delegate_for_http(user_addr=user_addr1)['startHeight']
+    #     time.sleep(30)
+    #     un_delegate_data = dict(from_addr=user_addr1, amount=user1_undel_amount)  # 解决传参，字典传参
+    #     end_height = int((self.test_del.test_undelegate_kyc(**un_delegate_data))['height'])  # 减少委托
+    #     # 查询user1的金额
+    #     user1_balances_end = HttpResponse.get_balance_unit(user_addr=user_addr1)
+    #     # 手动计算收益，然后断言用户余额
+    #     rewards = Reward.reward_kyc(stake=delegate_amount1, end_height=end_height, start_height=start_height)
+    #     logger.info(f"开始快高为：{start_height},结束快高为：{end_height}，手动计算的收益为：{rewards}")
+    #     assert user1_balances_end == user1_balances_start + Compute.to_u(
+    #         number=user1_undel_amount) + rewards - self.base_cfg.fees
+    #     # 查询区域委托
+    #     vali_delegator2 = int(HttpResponse.get_validator_delegate(validator_addr=validator_addr)['delegation_amount'])
+    #     # 断言现在的区域委托是否等于之前的-這一次减少的
+    #     logger.info(
+    #         f"开始是的节点委托金额为：{vali_delegator},结束后的节点委托金额为:{vali_delegator2},减少了委托{Compute.to_u(number=user1_undel_amount)}")
+    #     assert vali_delegator2 == vali_delegator - Compute.to_u(number=user1_undel_amount)
+    #
+    #     # 用户2测试用例1 减少金额小于已有金额
+    #     user2_undel_amount = 2
+    #     start_height_user2 = HttpResponse.get_delegate_for_http(user_addr=user_addr2)['startHeight']
+    #     un_delegate_data2 = dict(from_addr=user_addr2, amount=user2_undel_amount)
+    #     end_height_user2 = int((self.test_del.test_undelegate_kyc(**un_delegate_data2))['height'])  # 减少用户2委托
+    #     # # 查询user1的金额
+    #     user2_balances_end = HttpResponse.get_balance_unit(user_addr=user_addr2)
+    #     # # 手动计算收益，然后断言用户余额
+    #     rewards_user2 = Reward.reward_kyc(stake=delegate_amount2, end_height=end_height_user2,
+    #                                       start_height=start_height_user2)
+    #     assert user2_balances_end == user2_balances_start + Compute.to_u(
+    #         number=user2_undel_amount) + rewards_user2 - self.base_cfg.fees
+    #     # # 查询区域委托
+    #     vali_delegator3 = int(HttpResponse.get_validator_delegate(validator_addr=validator_addr)['delegation_amount'])
+    #     assert vali_delegator3 == vali_delegator2 - Compute.to_u(number=user2_undel_amount)
+    #     # 打扫数据，根据addr删除用户
+    #     self.test_key.test_delete_key(addr=user_addr1)
+    #     self.test_key.test_delete_key(addr=user_addr2)
 
     def test_region_more_undelegate_wang(self, get_region_id_existing):
         """测试两个用户减少委托，计算收益，前置是前面用户委托成功，"""

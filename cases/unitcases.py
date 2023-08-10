@@ -166,7 +166,7 @@ class Region(Kyc, Bank):
             node_name_var = node_name
         region_info = self.tx.staking.create_region(from_addr=self.tx.super_addr, region_name=region_name,
                                                     node_name=node_name_var)
-        time.sleep(self.tx.sleep_time)
+        # time.sleep(self.tx.sleep_time)
         tx_resp = self.hq.tx.query_tx(region_info['txhash'])
         assert tx_resp['code'] == 0, f"test_create_region failed, resp: {tx_resp}"
         return region_id
@@ -278,6 +278,10 @@ if __name__ == '__main__':
     v = Validator()
     k = Kyc()
     keys = Keys()
+    # print(k.test_new_kyc_user())
+    addr = 'me13umwrcg4c9avlfch5e534fsjavm4z0tkp30w7e'
+    # print(b.test_send(from_addr=Tx.super_addr, to_addr=addr, amount=10000))
+    print(r.test_create_region_wang())
     # u_name =
     # a.test_add(user_name="testnamekyc005")
     # time.sleep(Tx.sleep_time)
@@ -287,8 +291,8 @@ if __name__ == '__main__':
     # kyc_add2 = "me1krajder0hxkars23amjrrx0xev3fj6gw69g64l"
     # print(kyc_add)
     # nokyc_add = Query.Key.address_of_name(username="testname011")
-    amount = 1000000
-    fixed_delegation_id = 16
+    # amount = 1000000
+    # fixed_delegation_id = 16
     # print(u_add)
     # print(s_add)
     # data_send = dict(from_addr=s_add, to_addr=kyc_add, amount=amount)
@@ -301,8 +305,8 @@ if __name__ == '__main__':
     # undelegate_resp = d.test_undelegate_kyc(**undelegate_data)
 
     # print(undelegate_resp)
-    d_name = "userSara"
-    print(Tx.Keys.delete(user_name=d_name))
+    # d_name = "userSara"
+    # print(Tx.Keys.delete(user_name=d_name))
     # print(b.test_send(**data_send))
     # print(keys.test_add())
 

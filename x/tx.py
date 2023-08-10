@@ -30,7 +30,7 @@ class Tx(BaseClass):
         @staticmethod
         def send_tx(from_addr, to_addr, amount, fees=Fees):
             """发送转账交易"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx bank send {from_addr} {to_addr} {amount}{Tx.coin['c']} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx bank send {from_addr} {to_addr} {amount}{Tx.coin['c']} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -71,7 +71,7 @@ class Tx(BaseClass):
             # c = "./me-chaind tx staking new-region  CHN  #验证者节点地址  --from=#超管地址  --keyring-backend=test --chain-id=me-chain --fees=0.00mec "
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking new-region {region_name}  " \
                                  f"$(./me-chaind q staking validators | grep \"{node_name}\" -A 6 | awk '/address/{{print$2}}')" \
-                                 f" --from={from_addr} --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y"
+                                 f" --from={from_addr} --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -296,17 +296,31 @@ class Tx(BaseClass):
 
     class Group(object):
         @staticmethod
-        def create_group(admin_addr,fees=Fees):
+        def create_group(admin_addr, fees=Fees):
+            """
+            创建群，
+            """
             cmd = Tx.work_home + f"{Tx.chain_bin} tx group create-group {admin_addr} --from {Tx.super_addr}  --fees={fees}{Tx.coin['uc']} {Tx.keyring_backend} {Tx.chain_id} -y "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
+
         @staticmethod
-        def update_group_member(user_addr,group_id,fees=Fees):
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx group update-group-member {user_addr} {group_id} --from {Tx.super_addr}  --fees={fees}{Tx.coin['uc']} {Tx.keyring_backend} {Tx.chain_id} -y "
+        def update_group_member(user_addr, group_id, fees=Fees):
+            """新增群成员"""
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx group update-group-member {user_addr} {group_id} --from {Tx.super_addr}  --fees={fees}{Tx.coin['uc']} {Tx.keyring_backend} {Tx.chain_id} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
+
         @staticmethod
-        def leove_group(group_id,fees=Fees):
+        def leove_group(user_addr, group_id, fees=Fees):
+            """退出群"""
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx group leave-group {user_addr} {group_id} --from {Tx.super_addr}  --fees={fees}{Tx.coin['uc']} {Tx.keyring_backend} {Tx.chain_id} -y "
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return Tx._executor(cmd)
+
+        @staticmethod
+        def detele_group(group_id, fees=Fees):
+            """解散该群"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx group delete-group {group_id} --from {Tx.super_addr}  --fees={fees}{Tx.coin['uc']} {Tx.keyring_backend} {Tx.chain_id} -y "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
