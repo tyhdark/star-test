@@ -3,7 +3,7 @@ import yaml
 from nacos import NacosClient
 
 ip = '192.168.0.206'
-namespace = '83827568-a530-44f6-ace5-b05b5cc1ed71'
+namespace = '280ca1b7-f010-4f11-9240-9c4e58223f42'
 data_id = "chain-test.yml"
 group = "dev"  # ["alpha", "beta", "dev"]
 
