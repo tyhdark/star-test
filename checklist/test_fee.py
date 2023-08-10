@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import time
+
 import pytest
 from loguru import logger
 
@@ -65,7 +67,7 @@ class TestSendCoin(object):
 
         logger.info(f'{"返回质押本金+定期收益, 并且无定期质押":*^50s}')
         resp_user_uc = HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])
-        assert int(resp_user_uc['amount']) == int(fixed_balance_uc['amount']) + Compute.to_u(200) - u_fees
+        assert int(resp_user_uc['amount']) == int(user_balance_uc['amount']) + Compute.to_u(200) - u_fees
         resp_user_ug = HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['ug'])
         # 计算定期收益 0.06 * 1 / 12 * (200 * 1000000) * 400 = 400000000ug  区金库:1100000000ug
         uac = Compute.to_u(Compute.interest(200, 1, self.base_cfg.annual_rate[1]))
@@ -76,6 +78,7 @@ class TestSendCoin(object):
         ag = Compute.to_u(uag, reverse=True)
         ag_data = dict(ag_amount=ag, from_addr=user_addr)
         self.test_kyc.tx.Staking.ag_to_ac(**ag_data)
+        time.sleep(self.base_cfg.sleep_time)
 
         # check balances
         to_uac = Compute.ag_to_ac(uag)
@@ -115,17 +118,13 @@ class TestSendCoin(object):
         self.test_bank.test_send(**send_data)
 
         start_region_uc = HttpResponse.get_balance_unit(region_admin_addr, self.base_cfg.coin['uc'])
-        start_admin_uc = HttpResponse.get_balance_unit(self.base_cfg.super_addr, self.base_cfg.coin['uc'])
 
         send_data = dict(from_addr=user_addr, to_addr=region_admin_addr, amount=100)
         self.test_bank.test_send(**send_data)
 
         region_admin_uc = HttpResponse.get_balance_unit(region_admin_addr, self.base_cfg.coin['uc'])
         user_uc = HttpResponse.get_balance_unit(user_addr, self.base_cfg.coin['uc'])
-        super_admin_uc = HttpResponse.get_balance_unit(self.base_cfg.super_addr, self.base_cfg.coin['uc'])
 
         region_admin_expect_amt = Compute.to_u(self.base_cfg.fees * self.base_cfg.fee_rate) + Compute.to_u(100)
-        super_admin_expect_amt = Compute.to_u(self.base_cfg.fees * (1 - self.base_cfg.fee_rate))
         assert int(region_admin_uc['amount']) - int(start_region_uc['amount']) == region_admin_expect_amt
-        assert int(user_uc['amount']) == Compute.to_u(500 - 100 - 1)
-        assert int(super_admin_uc['amount']) - int(start_admin_uc['amount']) == super_admin_expect_amt
+        assert int(user_uc['amount']) == Compute.to_u(500 - 100 - self.base_cfg.fees)

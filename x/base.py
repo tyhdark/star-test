@@ -1,7 +1,3 @@
-"""
-读取配置文件的连接参数用户名密码和ssh命令 (第二)
-"""
-from config import chain
 # -*- coding: utf-8 -*-
 from dataclasses import dataclass
 
@@ -15,7 +11,6 @@ class HostCfg:
     port: int
     username: str
     password: str
-
 
 
 @dataclass
@@ -65,15 +60,13 @@ class HttpCfg:
 
 
 class BaseClass:
-    # **,下滑线表示私有，一个下划线和两个下划线
     _host = HostCfg(**config["host"])
-    # 实例化对象，Host类
     ssh_client = Host(ip=_host.ip, port=_host.port, username=_host.username, password=_host.password)
-    channel = ssh_client.create_invoke_shell() # 开启虚拟窗口连接
+    channel = ssh_client.create_invoke_shell()
 
-    chain = ChainCfg(**config["chain"]) # 定义chain
-    compute = ComputeCfg(**config["compute"]) # 定义计算
-    http = HttpCfg(**config["http"]) # 定义http
+    chain = ChainCfg(**config["chain"])
+    compute = ComputeCfg(**config["compute"])
+    http = HttpCfg(**config["http"])
 
     # chain base config
     work_home = chain.work_dir # work_home就是me-chian所在目录
@@ -96,8 +89,7 @@ class BaseClass:
     fixed_type = chain.fixed_type # 定期查询用的
     validatortoken = chain.validatortoken
 
-
-    # compute 计算用的数据
+    # compute
     precision = compute.Precision
     region_as = compute.DefaultRegionAS
     total_as = compute.TotalAS
@@ -107,12 +99,12 @@ class BaseClass:
     init_mint_ac = compute.InitialMintACAmount
     fee_rate = compute.DefaultFeeRate
     gas = compute.DefaultGasLimit
-    fees = compute.DefaultFees # fees
+    fees = compute.DefaultFees
     super_to_region_admin_amt = compute.DefaultSuperToRegionAdminAC
     max_delegate = compute.DefaultMaxDelegateAC
     min_delegate = compute.DefaultMinDelegateAC
 
-    # http config 接口文档连接
+    # http config
     api_url = http.api_url
     # base module
     query_block = http.base["block"]
@@ -149,30 +141,4 @@ class BaseClass:
 
 if __name__ == '__main__':
     a = BaseClass()
-    print(a.super_addr)
-    # print(a.query_address)
-    # print(a.chain_bin,a.chain_id,a.work_home,a.api_url,a.channel,a.coin)
-    # print(a)
-    print("1")
-    print(a.validatortoken)
-    print(a.sleep_time)
-    print(a.coin['uc'])
-    print(a.coin["uc"])
-    # print(a.a)
     pass
-
-    """
-    # ssh_info = chain.ssh_info["config"]
-    ssh_info = chain.ssh_info_meuser["config"]
-
-    ssh_client = Host(**ssh_info)  # 实例化类，把ip地址等传参给类的属性
-
-    ssh_home = chain.ssh_info["home"]  # home根目录
-    chain_id = chain.chain_id  # 定义链id required必要
-    chain_bin = chain.chain_bin  # 定义链目录,required必要
-    custom_node = chain.custom_node  # 定义常用节点,required必要
-    super_addr = chain.super_addr  # 定义超管
-    keyring_backend = chain.keyring_backend  # 后端Key
-    coin = chain.coin  # 币的键值对
-    channel = ssh_client.create_invoke_shell()  # 定义虚拟链接频道
-    """

@@ -23,3 +23,15 @@ def retry_decorator(func):
         return result.get('delegation')
 
     return wrapper
+
+
+def read_large_file(file_path):
+    with open(file_path) as f:
+        for line in f:
+            yield line.strip()
+
+
+if __name__ == '__main__':
+    for l in read_large_file("../checklist/logs/case_2023-07-14_10-28-51_642887.log"):
+        if ", gas_used:" in l:
+            print(l)

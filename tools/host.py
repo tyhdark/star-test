@@ -98,7 +98,7 @@ class Host:
         content = str(content).replace('"', r'\"')
         self.ssh(rf'echo "{content}" > {file}')
 
-    def create_session(self):
+    def create_session(self) -> Channel:
         """创建一个会话"""
         channel = self.connection.create_session()
         return channel
@@ -112,12 +112,4 @@ class Host:
         return channel
 
 
-# if __name__ == '__main__':
-#     print("!")
-    # ip = "192.168.0.207"
-    # username = "meuser"
-    # password = "12345678"
-    # host = Host(ip=ip, username=username, password=password)
-    # pid = "meuser"
-    # print(host.pid(name=pid))
 

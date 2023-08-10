@@ -4,16 +4,13 @@ import time
 
 import httpx
 from loguru import logger
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 from tools.console import Result
 from x.base import BaseClass
 
 
-
 class Query(BaseClass):
-    """
-    查询类
-    """
 
     def __init__(self):
         self.block = self.Block()
@@ -49,12 +46,18 @@ class Query(BaseClass):
 
         @staticmethod
         def query_balances(addr):
-            """查询用户余额，可用"""
             cmd = Query.work_home + f"{Query.chain_bin} q bank balances {addr} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
-    class Staking(object):  # 查询Staking
+    class Staking(object):
+
+        @staticmethod
+        def show_delegation(addr):
+            """查询活期质押"""
+            cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-delegation {addr} {Query.chain_id} {Query.connect_node}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def delegation(addr):
@@ -69,7 +72,6 @@ class Query(BaseClass):
             cmd = Query.work_home + f"{Query.chain_bin} q staking list-fixed-delegation {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
-
 
         @staticmethod
         def kyc_by_region(region_id):  # KYC 用户表示, 用户归属区
@@ -134,13 +136,13 @@ class Query(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
-
         @staticmethod
         def validators_list():
             """查询验证者节点列表"""
             cmd = Query.work_home + f"{Query.chain_bin} q staking validators {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
+
         @staticmethod
         def validator(validator_addr=None):
             """查询验证者节点地址"""
@@ -174,8 +176,6 @@ class Query(BaseClass):
 
             cmd = Query.work_home + f"{Query.chain_bin} keys show {username} -a {Query.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            # resp_info = Tx.ssh_client.ssh(cmd)
-
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
@@ -221,14 +221,14 @@ class Query(BaseClass):
 
         @staticmethod
         def params():
-            """Query the current minting parameters ??? """
+            """Query the current minting parameters"""
             cmd = Query.work_home + f"{Query.chain_bin} q mint params {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
 
 class HttpQuery(BaseClass):
-    client = httpx.Client()
+    client = httpx.Client(timeout=10)
 
     def __init__(self):
         self.block = self.Block()
@@ -238,6 +238,7 @@ class HttpQuery(BaseClass):
 
     class Block:
         @staticmethod
+        @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
         def query_block(height=None):
             if height is None:
                 url = HttpQuery.api_url + HttpQuery.query_block_latest
@@ -249,7 +250,9 @@ class HttpQuery(BaseClass):
             return response.json()['block']
 
     class Tx:
+
         @staticmethod
+        @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
         def query_tx(tx_hash):
             url = HttpQuery.api_url + HttpQuery.query_tx_hash.format(hash=tx_hash)
             logger.info(f"{inspect.stack()[0][3]}: {url}")

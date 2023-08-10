@@ -32,7 +32,7 @@ validator_data = read_file(DATA_FILE)
 #  1.节点异常作弊场景
 #  2.各节点手续费收费标准不一致
 
-@pytest.mark.P0
+@pytest.mark.P1
 class TestValidator:
     tx = Tx()
     q = Query()

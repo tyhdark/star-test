@@ -129,6 +129,5 @@ dmypy.json
 
 # logs and config files
 logs/
-config
-allure**/
 deploy/
+nacos-data/
