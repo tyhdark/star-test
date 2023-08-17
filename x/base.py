@@ -21,7 +21,6 @@ class ChainCfg:
     connect_node: str
     keyring_backend: str
     sleep_time: int
-    validatortoken:int
     token_unit: dict
     role: dict
     period: dict
@@ -69,24 +68,22 @@ class BaseClass:
     http = HttpCfg(**config["http"])
 
     # chain base config
-    work_home = chain.work_dir # work_home就是me-chian所在目录
-    chain_id = chain.chain_id # chian-id
-    chain_bin = chain.chain_bin # "./me-chiand"
-    connect_node = chain.connect_node # 节点
-    keyring_backend = chain.keyring_backend  #
+    work_home = chain.work_dir
+    chain_id = chain.chain_id
+    chain_bin = chain.chain_bin
+    connect_node = chain.connect_node
+    keyring_backend = chain.keyring_backend
     cmd = work_home + f"{chain_bin} keys show superadmin -a {keyring_backend}"
-    # a = ssh_client.ssh(cmd)
-    super_addr = ssh_client.ssh(cmd)  # 超管地址
+    super_addr = ssh_client.ssh(cmd)
 
-    # super_addr = chain.super_addr # 超管地址
-    keyring_backend = chain.keyring_backend #
-    sleep_time = chain.sleep_time # 等待时间
-    coin = chain.token_unit # 币单位
+    keyring_backend = chain.keyring_backend
+    sleep_time = chain.sleep_time  # 等待时间
+    coin = chain.token_unit  # 币单位
     # role = chain.role # 这个用不上
     # period = chain.period # 这个用不上
-    delegate_term = chain.delegate_term #定期的月数
-    annual_rate = chain.annual_rate # 定期费率设置
-    fixed_type = chain.fixed_type # 定期查询用的
+    delegate_term = chain.delegate_term  # 定期的月数
+    annual_rate = chain.annual_rate  # 定期费率设置
+    fixed_type = chain.fixed_type  # 定期查询用的
     validatortoken = chain.validatortoken
 
     # compute

@@ -81,7 +81,7 @@ class Kyc(Keys):
         return user_info
 
 
-class Validator(Base):
+class Validator( Kyc):
     def test_create_validator(self, node_name=None):
         """创建验证者节点，如果没有指定node_name，node名称会自动去拿线上没有的，token金额要写到配置文件里面去"""
         if node_name is None:
@@ -140,7 +140,7 @@ class Region(Kyc, Bank):
         return resp
 
     def test_new_region(self, **kwargs):
-        region_admin_info, region_id, region_name = self.test_new_kyc_admin(**kwargs)
+        region_admin_info, region_id, region_name = self.test_new_kyc_user(**kwargs)
 
         # 使用SuperAdmin给区管理转账
         self.test_send(from_addr=self.tx.super_addr, to_addr=region_admin_info["address"],
@@ -233,18 +233,13 @@ if __name__ == '__main__':
     k = Kyc()
     keys = Keys()
     # print(k.test_new_kyc_user())
-    addr = 'me13umwrcg4c9avlfch5e534fsjavm4z0tkp30w7e'
+
     # print(b.test_send(from_addr=Tx.super_addr, to_addr=addr, amount=10000))
     # print(r.test_create_region_wang())
     # u_name =
     # a.test_add(user_name="testnamekyc005")
     # time.sleep(Tx.sleep_time)
-    # u_add = Query.Key.address_of_name(username="testnamekyc004")
-    # s_add = Query.Key.address_of_name(username="superadmin")
-    # kyc_add = Query.Key.address_of_name(username="testnamekyc005")
-    # kyc_add2 = "me1krajder0hxkars23amjrrx0xev3fj6gw69g64l"
-    # print(kyc_add)
-    # nokyc_add = Query.Key.address_of_name(username="testname011")
+
     # amount = 1000000
     # fixed_delegation_id = 16
     # print(u_add)
@@ -264,10 +259,7 @@ if __name__ == '__main__':
     # print(b.test_send(**data_send))
     # print(keys.test_add())
 
-    # data1 = dict(from_addr="gea12g50h9fa7jp4tu47f4mn906s3274urjamcvyrd",
-    #              to_addr="gea1pv54mu2fa72vhz9wkx3dmw94f8nf6ncppae9pk",
-    #              amount=10,
-    #              fees=2)
+
     # print(b.test_send(**data_send))
     # print(d.test_delegate(**data_del))
     # print(keys.test_add())
@@ -282,4 +274,5 @@ if __name__ == '__main__':
     # print(v.test_create_validator())
     # print(k.test_new_kyc_user(region_id='hti', addr=None))
     print(r.test_create_region(node_name='node1'))
+    print("1221")
     pass

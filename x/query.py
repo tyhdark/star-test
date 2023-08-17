@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import inspect
-import time
 
 import httpx
 from loguru import logger
@@ -53,30 +52,26 @@ class Query(BaseClass):
     class Staking(object):
 
         @staticmethod
-        def show_delegation(addr):
-            """查询活期质押"""
-            cmd = Query.work_home + f"{Query.chain_bin} q srstaking show-delegation {addr} {Query.chain_id} {Query.connect_node}"
-            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
-
-        @staticmethod
         def delegation(addr):
             """查询活期质押,可用"""
-            cmd = Query.work_home + f"{Query.chain_bin} q staking delegation {addr} {Query.chain_id} {Query.connect_node}"
+            cmd = Query.work_home + f"{Query.chain_bin} q staking delegation {addr} {Query.chain_id} " \
+                                    f"{Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def list_fixed_delegation():  # 固定委托列表,展示所有定期委托
             """查询所有定期委托，可用"""
-            cmd = Query.work_home + f"{Query.chain_bin} q staking list-fixed-delegation {Query.chain_id} {Query.connect_node}"
+            cmd = Query.work_home + f"{Query.chain_bin} q staking list-fixed-delegation {Query.chain_id} " \
+                                    f"{Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def kyc_by_region(region_id):  # KYC 用户表示, 用户归属区
             """查询某个区域内的KYC列表，可用"""
-            cmd = Query.work_home + f"{Query.chain_bin} query staking kyc-by-region {region_id} {Query.chain_id} {Query.connect_node}"
+            cmd = Query.work_home + f"{Query.chain_bin} query staking kyc-by-region {region_id} {Query.chain_id} " \
+                                    f"{Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
@@ -101,25 +96,29 @@ class Query(BaseClass):
         @staticmethod
         def list_fixed_deposit():
             """查询定期储存"""
-            cmd = Query.work_home + f"{Query.chain_bin} q staking list-fixed-deposit {Query.chain_id} {Query.connect_node}"
+            cmd = Query.work_home + f"{Query.chain_bin} q staking list-fixed-deposit {Query.chain_id} " \
+                                    f"{Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def show_fixed_deposit_by_id(addr, deposit_id):
-            cmd = Query.work_home + f"{Query.chain_bin} q staking show-fixed-deposit {addr} {deposit_id} {Query.chain_id} {Query.connect_node}"
+            cmd = Query.work_home + f"{Query.chain_bin} q staking show-fixed-deposit {addr} {deposit_id} " \
+                                    f"{Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def show_fixed_deposit_by_addr(addr, query_type):
-            cmd = Query.work_home + f"{Query.chain_bin} q staking show-fixed-deposit-by-acct {addr} {query_type} {Query.chain_id} {Query.connect_node}"
+            cmd = Query.work_home + f"{Query.chain_bin} q staking show-fixed-deposit-by-acct {addr} {query_type} " \
+                                    f"{Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
-        def show_fixed_deposit_by_region(region_id, query_type):
-            cmd = Query.work_home + f"{Query.chain_bin} q staking show-fixed-deposit-by-region {region_id} {query_type} {Query.chain_id} {Query.connect_node}"
+        def show_fixed_deposit_by_region(region_id, query_type="ALL_STATE"):
+            cmd = Query.work_home + f"{Query.chain_bin} q staking show-fixed-deposit-by-region {region_id} " \
+                                    f"{query_type} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
@@ -132,7 +131,8 @@ class Query(BaseClass):
 
         @staticmethod
         def show_region(region_id):
-            cmd = Query.work_home + f"{Query.chain_bin} q staking show-region {region_id} {Query.chain_id} {Query.connect_node}"
+            cmd = Query.work_home + f"{Query.chain_bin} q staking show-region {region_id} {Query.chain_id} " \
+                                    f"{Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
@@ -146,13 +146,20 @@ class Query(BaseClass):
         @staticmethod
         def validator(validator_addr=None):
             """查询验证者节点地址"""
-            cmd = Query.work_home + f"{Query.chain_bin} q staking validator {validator_addr} {Query.chain_id} {Query.connect_node}"
+            cmd = Query.work_home + f"{Query.chain_bin} q staking validator {validator_addr} {Query.chain_id} " \
+                                    f"{Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def params():
             cmd = Query.work_home + f"{Query.chain_bin} q staking params {Query.chain_id} {Query.connect_node}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
+
+        @staticmethod
+        def distribution(user_addr):
+            cmd = Query.work_home + f"{Query.chain_bin} q distribution rewards {user_addr} {Query.chain_id} "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
@@ -164,7 +171,7 @@ class Query(BaseClass):
             """
             cmd = Query.work_home + f"{Query.chain_bin} keys list {Query.chain_bin} {Query.keyring_backend}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
-            return Result.yaml_to_dict(Query.ssh_client.ssh((cmd)))
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
         def address_of_name(username=None):
@@ -199,24 +206,28 @@ class Query(BaseClass):
             resp_info = Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
             logger.info(f"resp_info_query_group_info:{resp_info}")
             return resp_info
+
         @staticmethod
         def group_members(group_id=None):
             cmd = Query.work_home + f"{Query.chain_bin} query group group-members {group_id} {Query.chain_id}"
             resp_info = Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
             logger.info(f"resp_info query_group_member:{resp_info}")
             return resp_info
+
         @staticmethod
         def group_by_admin(admin_addr=None):
             cmd = Query.work_home + f"{Query.chain_bin} query group groups-by-admin {admin_addr} {Query.chain_id}"
             resp_info = Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
             logger.info(f"resp_info:{resp_info}")
             return resp_info['groups'][0]
+
         @staticmethod
-        def group_by_menber_addr(member_addr=None):
+        def group_by_member_addr(member_addr=None):
             cmd = Query.work_home + f"{Query.chain_bin} query group groups-by-member {member_addr} {Query.chain_id}"
             resp_info = Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
             logger.info(f"resp_info:{resp_info}")
             return resp_info['groups'][0]
+
     class Mint(object):
 
         @staticmethod
@@ -225,6 +236,17 @@ class Query(BaseClass):
             cmd = Query.work_home + f"{Query.chain_bin} q mint params {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
+
+    class Account(object):
+        @staticmethod
+        def auth_account(pool_name="treasury_pool"):
+            """
+            查询所有指定模块，，且返回模块地址，
+            :param pool_name: 模块账户地址，默认是国库地址
+            """
+            cmd = Query.work_home + f"./me-chaind query auth accounts | grep -w '{pool_name}' -B 6 | grep 'address'"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))['address']
 
 
 class HttpQuery(BaseClass):
@@ -283,7 +305,6 @@ class HttpQuery(BaseClass):
             """
             查询区域信息
             :param region_id: 查询指定region_id的区域信息
-            :param region_name: 查询指定region_name的区域信息
             :param region_id and region_name 都不传,默认查询所有区域信息
             """
             if region_id is not None:
@@ -350,19 +371,22 @@ class HttpQuery(BaseClass):
                 url = HttpQuery.api_url + HttpQuery.query_deposit.format(account=addr)
 
             logger.info(f"{inspect.stack()[0][3]}: {url}")
-            respose = HttpQuery.client.get(url=url)
-            return respose.json().get('FixedDeposit')
+            response = HttpQuery.client.get(url=url)
+            return response.json().get('FixedDeposit')
 
         @staticmethod
         def fixed_deposit_rate(month=None):
 
             url = HttpQuery.api_url + "/cosmos/staking/v1beta1/fixed_deposit_interest_rate"
-            logger.info((f"{inspect.stack()[0][3]}: {url}"))
-            respose = HttpQuery.client.get(url=url)
+            logger.info(f"{inspect.stack()[0][3]}: {url}")
+            response = HttpQuery.client.get(url=url)
             if month is None:
-                return respose.json().get('FixedDepositAnnualRate')
+                return response.json().get('FixedDepositAnnualRate')
             else:
-                return respose.json().get('FixedDepositAnnualRate').get(f'annualRate_{month}_months')
+                rate_info = response.json().get('FixedDepositAnnualRate').get(f'annualRate_{month}_months')
+                rate = round(float(rate_info), 3)
+                # return response.json().get('FixedDepositAnnualRate').get(f'annualRate_{month}_months')
+                return rate
 
     class Group:
         @staticmethod
@@ -373,6 +397,7 @@ class HttpQuery(BaseClass):
             assert response.status_code == 200
             logger.info(f"{inspect.stack()[0][3]}: {response.json()['info']}")
             return response.json()['info']
+
         @staticmethod
         def group_members(group_id=None):
             url = HttpQuery.api_url + HttpQuery.query_group_members.format(group_id=group_id)
@@ -380,6 +405,7 @@ class HttpQuery(BaseClass):
             response = HttpQuery.client.get(url=url)
             assert response.status_code == 200
             return response.json()
+
         @staticmethod
         def group_by_admin(admin_addr=None):
             url = HttpQuery.api_url + HttpQuery.query_group_by_admin.format(admin=admin_addr)
@@ -387,6 +413,7 @@ class HttpQuery(BaseClass):
             response = HttpQuery.client.get(url=url)
             assert response.status_code == 200
             return response.json()['groups'][0]
+
         @staticmethod
         def group_by_member(member_addr):
             url = HttpQuery.api_url + HttpQuery.query_group_by_member.format(address=member_addr)
@@ -394,6 +421,7 @@ class HttpQuery(BaseClass):
             response = HttpQuery.client.get(url=url)
             assert response.status_code == 200
             return response.json()['groups'][0]
+
 
 if __name__ == '__main__':
     # q = HttpQuery()
@@ -410,9 +438,15 @@ if __name__ == '__main__':
     # print(q_ssh.Staking.kyc_by_region(region_id="jpn"))
     # print(q_ssh.Staking.list_fixed_deposit())
     hq = HttpQuery()
+    # s=hq.Staking.fixed_deposit()
+    # s = hq.Staking.fixed_deposit_rate(month=1)
+    # print(s, type(s))
+    a=hq.Staking.kyc(addr="me13rt4yckef6yuy3a097ahqpqfll0ez0kcum4u69")['kyc']['regionId']
+    print(a)
     # print(hq.Staking.delegation(addr="me13a4rmm64wetlatj5z6jcfxkxtraxdcm8jl0z8u"))
-    print(hq.Staking.region(region_id="pry"))
-    print(hq.Staking.validator(addr="mevaloper183rayk6wts2mgcrvqp8ydssphvxdkdw53e6llf"))
+    # print(hq.Staking.region(region_id="pry"))
+    # print(hq.Staking.validator(addr="mevaloper183rayk6wts2mgcrvqp8ydssphvxdkdw53e6llf"))
+    # print(q_ssh.Account.auth_account())
     # print(hq.Tx.query_tx(tx_hash="36B83E7A30FB8D45FB24860E95EC95968F566CFAF4E5020EFA58936B475C25F6"))
     # v = hq.Staking.validator()
     # print(v)

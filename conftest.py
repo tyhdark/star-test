@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
-import os
-import sys
+import time
 
 import pytest
 from loguru import logger
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from cases import unitcases
 from tools.name import RegionInfo
+import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 region = unitcases.Region()
 kyc = unitcases.Kyc()
 validator = unitcases.Validator()
+base = unitcases.Base()
 
 
 # @pytest.fixture(scope="session")
@@ -58,5 +61,18 @@ def get_region_id_existing():
     return region_id
 
 
-if __name__ == '__main__':
-    print(get_region_id_existing())
+@pytest.fixture()
+def get_treasury_balances():
+    """获取国库余额"""
+    # 拿到国库地址，
+    treasury_addr = base.q.Account.auth_account(pool_name="treasury_pool")
+    treasury_balance = base.hq.Bank.query_balances(addr=treasury_addr)
+    treasury_balance2 = base.q.Bank.query_balances(addr=treasury_addr)
+    # 查询国库余额
+    yield treasury_balance
+    treasury_balance2 = base.hq.Bank.query_balances(addr=treasury_addr)
+    pass
+
+
+# if __name__ == '__main__':
+# print(get_region_id_existing())

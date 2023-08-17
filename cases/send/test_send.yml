@@ -1,0 +1,21 @@
+- success_amount: 1
+  code: 0
+  min_amount: 0.0000001
+  test_name: "bonded_stake_tokens_pool"
+
+- success_amount: 0.0001
+  code: 0
+  min_amount: 0.0000009
+  test_name: "stake_tokens_pool"
+
+- success_amount: 0.00001
+  code: 0
+  min_amount: 0.00000001
+  test_name: "not_bonded_tokens_pool"
+
+- success_amount: 0.000001
+  code: 0
+  min_amount: 0.00000099999
+  test_name: "not_bonded_stake_tokens_pool"
+
+

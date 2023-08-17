@@ -5,9 +5,20 @@ import time
 
 from loguru import logger
 
-from config.chain import config, GasLimit, Fees
+from config.chain import Fees
 from tools.console import Interaction, Result
 from x.base import BaseClass
+
+
+def outer(func):
+    def inner(*args, **kwargs):
+        print(1)
+        res = func(*args, **kwargs)  # 被装饰的方法
+
+        print(2)
+        return res
+
+    return inner
 
 
 class Tx(BaseClass):
@@ -30,14 +41,25 @@ class Tx(BaseClass):
         @staticmethod
         def send_tx(from_addr, to_addr, amount, fees=Fees):
             """发送转账交易"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx bank send {from_addr} {to_addr} {amount}{Tx.coin['c']} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx bank send {from_addr} {to_addr} {amount}{Tx.coin['c']} " \
+                                 f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
         @staticmethod
-        def send_to_admin(amount: int, fees=Fees):
+        def send_to_admin(amount, superadmin=BaseClass.super_addr, fees=Fees):
             """国库往超管转钱，不需要传参,传金额就行，保留"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx bank sendToAdmin {amount}{Tx.coin['c']} --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx bank sendToAdmin {amount}{Tx.coin['c']} --from={superadmin} " \
+                                 f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return Tx._executor(cmd)
+
+        # @outer
+        @staticmethod
+        def send_to_treasury(amount, super_addr=BaseClass.super_addr, fees=Fees):
+            """超管往国库赚钱，不需要传参,传金额就行，保留"""
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx bank sendToTreasury {amount}{Tx.coin['c']} --from={super_addr} " \
+                                 f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -47,18 +69,15 @@ class Tx(BaseClass):
         def create_region(region_name, node_name, fees=Fees):
             """
             创建一个区
-            :param from_addr: 发起方地址 需要区域管理员
             :param region_name: 区名称
             :param node_name: 节点名称，方便找节点地址
             :param fees: Gas费用
-            :param gas: 默认为 200000
             :return:
             """
-            params_a = "region_id, total_as, fee_rate, totalStakeAllow, userMaxDelegateAC,userMinDelegateAC, delegators_limit=-1,  gas=GasLimit,"
-            # c = "./me-chaind tx staking new-region  CHN  #验证者节点地址  --from=#超管地址  --keyring-backend=test --chain-id=me-chain --fees=0.00mec "
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking new-region {region_name} " \
-                                 f"$(./me-chaind q staking validators | grep -w \"{node_name}\" -A 6 | awk '/address/{{print$2}}')" \
-                                 f" --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
+                                 f"$(./me-chaind q staking validators | grep -w \"{node_name}\" -A 6 " \
+                                 f"| awk '/address/{{print$2}}') --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']}" \
+                                 f"  {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -70,7 +89,7 @@ class Tx(BaseClass):
                                  f"--moniker=\"{node_name}\" " \
                                  f" --commission-rate=\"0.10\" --commission-max-rate=\"0.20\"  " \
                                  f" --commission-max-change-rate=\"0.01\" --from={Tx.super_addr}  " \
-                                 f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y"
+                                 f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -79,12 +98,14 @@ class Tx(BaseClass):
             """
             修改区信息
             :param operator_address: 节点地址
-            :param stake_or_unstake: 传入stake就是增加，untake减少
+            :param stake_or_unstake: 传入stake就是增加，unstake减少
             :param amount: 金额
+            :param fees: 手续费
             :return:
             """
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking {stake_or_unstake} {operator_address} {amount}{Tx.coin['c']}" \
-                                 f" --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking {stake_or_unstake} {operator_address} " \
+                                 f"{amount}{Tx.coin['c']} --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} " \
+                                 f"{Tx.chain_id} {Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -97,7 +118,8 @@ class Tx(BaseClass):
             :param fees: fees
             """
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking edit-validator {operator_address} " \
-                                 f"--owner-address={owner_address} --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y"
+                                 f"--owner-address={owner_address} --from={Tx.super_addr} " \
+                                 f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -106,6 +128,7 @@ class Tx(BaseClass):
             """创建/追加 活期质押
             :param from_addr: 用户地址
             :param amount: 金额
+            :param fees: fees
             :return 交易结果，含哈希，记得提取"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking delegate {amount}{Tx.coin['c']} --from={from_addr} " \
                                  f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
@@ -120,7 +143,7 @@ class Tx(BaseClass):
             2.减少质押金额 < 实际质押额 则按传入金额兑付, 收益重新计算但不主动发放
             """
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking unKycUnbond {amount}{Tx.coin['c']} --from={from_addr} " \
-                                 f" --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
+                                 f" --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -132,7 +155,7 @@ class Tx(BaseClass):
             2.减少质押金额 < 实际质押额 则按传入金额兑付, 收益重新计算但不主动发放
             """
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking unbond {amount}{Tx.coin['c']} --from={from_addr} " \
-                                 f" --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
+                                 f" --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -142,28 +165,31 @@ class Tx(BaseClass):
             :param from_addr: 用户地址
             :param amount: 金额
             :param month: 月数，1、3、6、12、24、36、48 如果不填就会随机选一个
+            :param fees: fees
             """
             if month is None:
                 mon = random.choice([1, 3, 6, 12, 24, 36, 48])
             else:
                 mon = month
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking deposit-fixed {amount}{Tx.coin['c']} Term_{mon}_Months " \
-                                 f"--from={from_addr}  --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y"
+                                 f"--from={from_addr}  --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} " \
+                                 f"{Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
         @staticmethod
         def withdraw_fixed(from_addr, fixed_delegation_id, fees=Fees):
             """提取定期质押 可用"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking withdraw-fixed {fixed_delegation_id} --from={from_addr}  " \
-                                 f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y"
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking withdraw-fixed {fixed_delegation_id} --from={from_addr}" \
+                                 f"  --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
         @staticmethod
         def withdraw_rewards(from_addr, fees=Fees):
             """用户提取活期收益，不区分KYC用户"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx distribution withdraw-rewards --from={from_addr} --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y"
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx distribution withdraw-rewards --from={from_addr} " \
+                                 f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -175,21 +201,22 @@ class Tx(BaseClass):
             :param fees:
             """
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking set-fixed-deposit-interest-rate {term} {rate}  " \
-                                 f"--from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y"
+                                 f"--from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} {Tx.chain_id} " \
+                                 f"{Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
         @staticmethod
-        def new_kyc( region_id,user_addr, fees=Fees):
+        def new_kyc(region_id, user_addr, super_addr=BaseClass.super_addr, fees=Fees):
             """
             把用户认证成KYC
             :param user_addr: kyc address
             :param region_id: 所绑定区域ID
-            :param from_addr: 发起地址 区管理员 or 全局管理员
-            :param fees: Gas费用 {Tx.coin['c']}
+            :param fees: Gas费用 {Tx.coin['uc']}
+            :param super_addr: 超管，可以自定义了，默认是超管
             :return: tx Hash
             """
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking new-kyc {user_addr} {region_id} --from={Tx.super_addr} " \
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking new-kyc {user_addr} {region_id} --from={super_addr} " \
                                  f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
 
             # if from_addr != Tx.super_addr:  # 区管理员 不能创建 KYC_ROlE_ADMIN
@@ -197,35 +224,39 @@ class Tx(BaseClass):
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
-
     class Group(object):
         @staticmethod
         def create_group(admin_addr, fees=Fees):
             """
             创建群，
             """
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx group create-group {admin_addr} --from {Tx.super_addr}  --fees={fees}{Tx.coin['uc']} {Tx.keyring_backend} {Tx.chain_id} -y "
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx group create-group {admin_addr} --from {Tx.super_addr}  " \
+                                 f"--fees={fees}{Tx.coin['uc']} {Tx.keyring_backend} {Tx.chain_id} -y "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
         @staticmethod
         def update_group_member(user_addr, group_id, fees=Fees):
             """新增群成员"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx group update-group-member {user_addr} {group_id} --from {Tx.super_addr}  --fees={fees}{Tx.coin['uc']} {Tx.keyring_backend} {Tx.chain_id} -y -b=block"
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx group update-group-member {user_addr} {group_id} " \
+                                 f"--from {Tx.super_addr}  --fees={fees}{Tx.coin['uc']} {Tx.keyring_backend} " \
+                                 f"{Tx.chain_id} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
         @staticmethod
         def leove_group(user_addr, group_id, fees=Fees):
             """退出群"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx group leave-group {user_addr} {group_id} --from {Tx.super_addr}  --fees={fees}{Tx.coin['uc']} {Tx.keyring_backend} {Tx.chain_id} -y "
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx group leave-group {user_addr} {group_id} --from {Tx.super_addr}" \
+                                 f"  --fees={fees}{Tx.coin['uc']} {Tx.keyring_backend} {Tx.chain_id} -y "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
         @staticmethod
         def detele_group(group_id, fees=Fees):
             """解散该群"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx group delete-group {group_id} --from {Tx.super_addr}  --fees={fees}{Tx.coin['uc']} {Tx.keyring_backend} {Tx.chain_id} -y "
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx group delete-group {group_id} --from {Tx.super_addr}  " \
+                                 f"--fees={fees}{Tx.coin['uc']} {Tx.keyring_backend} {Tx.chain_id} -y "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -253,6 +284,7 @@ class Tx(BaseClass):
                 resp_info = Interaction.yes_or_no(Tx.channel)
 
             assert "**Important**" in resp_info
+            return
 
         @staticmethod
         def show(username):
@@ -348,7 +380,7 @@ if __name__ == '__main__':
     # print(type(Tx.Staking.delegate_unkycunbond_height(amount=20, username=username, fees=100))) # 赎回质押
     # Tx.SendToAdmin.count_down_5s()
     # print(f"{username}该用户活期委托本金为:",Tx.Query.query_staking_delegate(username=username))  # 查询质押
-    # print(f"{username}该用户活期委托实时收益为:",Tx.Query.query_distribution_rewards_form_name(username=username))  # 查询用户活期委托所产生的利息
+    # print(f"{username}实时收益为:",Tx.Query.query_distribution_rewards_form_name(username=username))  # 查询用户活期委托所产生的利息
     # print(Tx.Query.query_staking_delegate_start_height(username=username))
 
     # print(f"{username}该用户余额为:",Tx.Query.query_bank_balance_username(username=username)) # 查询该用户余额
