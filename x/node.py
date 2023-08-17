@@ -13,20 +13,39 @@ class Meta(type):
         cls.module = name.lower()
         super().__init__(name, bases, attrs)
 
+        sub_module = attrs.get('sub_module', [])
+        for module in sub_module:
+            method = cls.generate_method(module)
+            setattr(cls, module, classmethod(method))
+
+    @staticmethod
+    def generate_method(sub_module):
+        def method(cls, *args, **kwargs):
+            return cls.build_command(sub_module, *args, **kwargs)
+
+        return method
+
     def build_command(cls, sub_module, *args, **kwargs):
         args_str = " ".join(map(str, args))
         kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
         return f"{cls.module} {sub_module} {args_str} {kwargs_str} "
 
 
-class Query(metaclass=Meta):
-    class Block(metaclass=Meta):
+class Keys(metaclass=Meta):
+    sub_module = ["add", "delete", "export", "import", "list", "migrate", "mnemonic", "parse", "rename", "show"]
 
-        @classmethod
-        def block(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Query.module} {cls.module} {args} {kwargs_str} "
+
+class Query(metaclass=Meta):
+    sub_module = ["block"]
+
+    # class Block(metaclass=Meta):
+    #     pass
+
+        # @classmethod
+        # def block(cls, *args, **kwargs):
+        #     args = " ".join(map(str, args))
+        #     kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+        #     return f"{Query.module} {cls.module} {args} {kwargs_str} "
 
     class Tx(metaclass=Meta):
 
@@ -178,186 +197,141 @@ class Query(metaclass=Meta):
             return f"{Query.module} {cls.module} {cls.sub_module['validator']}   {args}"
 
 
-class Tx(metaclass=Meta):
-    class Bank(metaclass=Meta):
-        sub_module = dict(
-            send="send",
-            multi_send="multi-send",
-            send_to_admin="sendToAdmin",
-            send_to_treasury="sendToTreasury",
-        )
-
-        @classmethod
-        def send(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Tx.module} {cls.module} {cls.sub_module['send']} {args} {kwargs_str} "
-
-        @classmethod
-        def send_to_admin(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Tx.module} {cls.module} {cls.sub_module['send_to_admin']} {args} {kwargs_str} "
-
-        @classmethod
-        def send_to_treasury(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Tx.module} {cls.module} {cls.sub_module['send_to_treasury']} {args} {kwargs_str} "
-
-    class Staking(metaclass=Meta):
-        sub_module = dict(
-            create_validator="create-validator",
-            delegate="delegate",
-            deposit_fixed="deposit-fixed",
-            edit_validator="edit-validator",
-            new_kyc="new-kyc",
-            new_region="new-region",
-            new_siid="new-siid",
-            remove_region="remove-region",
-            remove_siid="remove-siid",
-            set_fixed_deposit_interest_rate="set-fixed-deposit-interest-rate",
-            stake="stake",
-            unkyc_unbond="unKycUnbond",
-            unbond="unbond",
-            unstake="unstake",
-            withdraw_fixed="withdraw-fixed",
-        )
-
-        @classmethod
-        def create_validator(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Tx.module} {cls.module} {cls.sub_module['create_validator']} {args} {kwargs_str} "
-
-        @classmethod
-        def delegate(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Tx.module} {cls.module} {cls.sub_module['delegate']} {args} {kwargs_str} "
-
-        @classmethod
-        def deposit_fixed(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Tx.module} {cls.module} {cls.sub_module['deposit_fixed']} {args} {kwargs_str} "
-
-        @classmethod
-        def edit_validator(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Tx.module} {cls.module} {cls.sub_module['edit_validator']} {args} {kwargs_str} "
-
-        @classmethod
-        def new_kyc(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Tx.module} {cls.module} {cls.sub_module['new_kyc']} {args} {kwargs_str} "
-
-        @classmethod
-        def new_region(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Tx.module} {cls.module} {cls.sub_module['new_region']} {args} {kwargs_str} "
-
-        @classmethod
-        def new_siid(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Tx.module} {cls.module} {cls.sub_module['new_siid']} {args} {kwargs_str} "
-
-        @classmethod
-        def remove_region(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Tx.module} {cls.module} {cls.sub_module['remove_region']} {args} {kwargs_str} "
-
-        @classmethod
-        def remove_siid(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Tx.module} {cls.module} {cls.sub_module['remove_siid']} {args} {kwargs_str} "
-
-        @classmethod
-        def set_fixed_deposit_interest_rate(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Tx.module} {cls.module} {cls.sub_module['set_fixed_deposit_interest_rate']} {args} {kwargs_str} "
-
-        @classmethod
-        def stake(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Tx.module} {cls.module} {cls.sub_module['stake']} {args} {kwargs_str} "
-
-        @classmethod
-        def unkyc_unbond(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Tx.module} {cls.module} {cls.sub_module['unkyc_unbond']} {args} {kwargs_str} "
-
-        @classmethod
-        def unbond(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Tx.module} {cls.module} {cls.sub_module['unbond']} {args} {kwargs_str} "
-
-        @classmethod
-        def unstake(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Tx.module} {cls.module} {cls.sub_module['unstake']} {args} {kwargs_str} "
-
-        @classmethod
-        def withdraw_fixed(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Tx.module} {cls.module} {cls.sub_module['withdraw_fixed']} {args} {kwargs_str} "
-
-
-class Keys(metaclass=Meta):
-    sub_module = dict(
-        add="add",
-        delete="delete",
-        export="export",
-        import_="import",
-        list="list",
-        migrate="migrate",
-        mnemonic="mnemonic",
-        parse="parse",
-        rename="rename",
-        show="show",
-    )
-
-    @classmethod
-    def add(cls, *args, **kwargs):
-        return cls.build_command(cls.sub_module['add'], *args, **kwargs)
-        # return f"{cls.module} {cls.sub_module['add']} {args} {kwargs_str} "
-
-    @classmethod
-    def delete(cls, *args, **kwargs):
-        args = " ".join(map(str, args))
-        kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-        return f"{cls.module} {cls.sub_module['delete']} {args} {kwargs_str} "
-
-    @classmethod
-    def export(cls, *args, **kwargs):
-        args += ("--unarmored-hex", "--unsafe")
-        args = " ".join(map(str, args))
-        kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-        return f"{cls.module} {cls.sub_module['export']} {args} {kwargs_str} "
-
-    @classmethod
-    def list(cls, *args, **kwargs):
-        args = " ".join(map(str, args))
-        kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-        return f"{cls.module} {cls.sub_module['list']} {args} {kwargs_str} "
-
-    @classmethod
-    def show(cls, *args, **kwargs):
-        args = " ".join(map(str, args))
-        kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-        return f"{cls.module} {cls.sub_module['show']} {args} {kwargs_str} "
+# class Tx(metaclass=Meta):
+#     class Bank(metaclass=Meta):
+#         sub_module = dict(
+#             send="send",
+#             multi_send="multi-send",
+#             send_to_admin="sendToAdmin",
+#             send_to_treasury="sendToTreasury",
+#         )
+#
+#         @classmethod
+#         def send(cls, *args, **kwargs):
+#             args = " ".join(map(str, args))
+#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+#             return f"{Tx.module} {cls.module} {cls.sub_module['send']} {args} {kwargs_str} "
+#
+#         @classmethod
+#         def send_to_admin(cls, *args, **kwargs):
+#             args = " ".join(map(str, args))
+#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+#             return f"{Tx.module} {cls.module} {cls.sub_module['send_to_admin']} {args} {kwargs_str} "
+#
+#         @classmethod
+#         def send_to_treasury(cls, *args, **kwargs):
+#             args = " ".join(map(str, args))
+#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+#             return f"{Tx.module} {cls.module} {cls.sub_module['send_to_treasury']} {args} {kwargs_str} "
+#
+#     class Staking(metaclass=Meta):
+#         sub_module = dict(
+#             create_validator="create-validator",
+#             delegate="delegate",
+#             deposit_fixed="deposit-fixed",
+#             edit_validator="edit-validator",
+#             new_kyc="new-kyc",
+#             new_region="new-region",
+#             new_siid="new-siid",
+#             remove_region="remove-region",
+#             remove_siid="remove-siid",
+#             set_fixed_deposit_interest_rate="set-fixed-deposit-interest-rate",
+#             stake="stake",
+#             unkyc_unbond="unKycUnbond",
+#             unbond="unbond",
+#             unstake="unstake",
+#             withdraw_fixed="withdraw-fixed",
+#         )
+#
+#         @classmethod
+#         def create_validator(cls, *args, **kwargs):
+#             args = " ".join(map(str, args))
+#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+#             return f"{Tx.module} {cls.module} {cls.sub_module['create_validator']} {args} {kwargs_str} "
+#
+#         @classmethod
+#         def delegate(cls, *args, **kwargs):
+#             args = " ".join(map(str, args))
+#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+#             return f"{Tx.module} {cls.module} {cls.sub_module['delegate']} {args} {kwargs_str} "
+#
+#         @classmethod
+#         def deposit_fixed(cls, *args, **kwargs):
+#             args = " ".join(map(str, args))
+#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+#             return f"{Tx.module} {cls.module} {cls.sub_module['deposit_fixed']} {args} {kwargs_str} "
+#
+#         @classmethod
+#         def edit_validator(cls, *args, **kwargs):
+#             args = " ".join(map(str, args))
+#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+#             return f"{Tx.module} {cls.module} {cls.sub_module['edit_validator']} {args} {kwargs_str} "
+#
+#         @classmethod
+#         def new_kyc(cls, *args, **kwargs):
+#             args = " ".join(map(str, args))
+#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+#             return f"{Tx.module} {cls.module} {cls.sub_module['new_kyc']} {args} {kwargs_str} "
+#
+#         @classmethod
+#         def new_region(cls, *args, **kwargs):
+#             args = " ".join(map(str, args))
+#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+#             return f"{Tx.module} {cls.module} {cls.sub_module['new_region']} {args} {kwargs_str} "
+#
+#         @classmethod
+#         def new_siid(cls, *args, **kwargs):
+#             args = " ".join(map(str, args))
+#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+#             return f"{Tx.module} {cls.module} {cls.sub_module['new_siid']} {args} {kwargs_str} "
+#
+#         @classmethod
+#         def remove_region(cls, *args, **kwargs):
+#             args = " ".join(map(str, args))
+#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+#             return f"{Tx.module} {cls.module} {cls.sub_module['remove_region']} {args} {kwargs_str} "
+#
+#         @classmethod
+#         def remove_siid(cls, *args, **kwargs):
+#             args = " ".join(map(str, args))
+#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+#             return f"{Tx.module} {cls.module} {cls.sub_module['remove_siid']} {args} {kwargs_str} "
+#
+#         @classmethod
+#         def set_fixed_deposit_interest_rate(cls, *args, **kwargs):
+#             args = " ".join(map(str, args))
+#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+#             return f"{Tx.module} {cls.module} {cls.sub_module['set_fixed_deposit_interest_rate']} {args} {kwargs_str} "
+#
+#         @classmethod
+#         def stake(cls, *args, **kwargs):
+#             args = " ".join(map(str, args))
+#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+#             return f"{Tx.module} {cls.module} {cls.sub_module['stake']} {args} {kwargs_str} "
+#
+#         @classmethod
+#         def unkyc_unbond(cls, *args, **kwargs):
+#             args = " ".join(map(str, args))
+#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+#             return f"{Tx.module} {cls.module} {cls.sub_module['unkyc_unbond']} {args} {kwargs_str} "
+#
+#         @classmethod
+#         def unbond(cls, *args, **kwargs):
+#             args = " ".join(map(str, args))
+#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+#             return f"{Tx.module} {cls.module} {cls.sub_module['unbond']} {args} {kwargs_str} "
+#
+#         @classmethod
+#         def unstake(cls, *args, **kwargs):
+#             args = " ".join(map(str, args))
+#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+#             return f"{Tx.module} {cls.module} {cls.sub_module['unstake']} {args} {kwargs_str} "
+#
+#         @classmethod
+#         def withdraw_fixed(cls, *args, **kwargs):
+#             args = " ".join(map(str, args))
+#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
+#             return f"{Tx.module} {cls.module} {cls.sub_module['withdraw_fixed']} {args} {kwargs_str} "
 
 
 class Node:
@@ -436,17 +410,12 @@ class Node:
 
 
 if __name__ == '__main__':
-    node1 = Node("--node=tcp://192.168.0.207:26657")
-    # print(node1.base_cmd)
-    #
-    # q_block = Query.Block.block()
-    #
-    # print(node1.generate_query_cmd(q_block))
-    #
-    # q_balances = Query.Bank.balances("me12tr8ju53p7hp3t70hy9k83wvctut350etfn0d6")
-    #
-    # res = node1.executor(node1.generate_query_cmd(q_balances))
-    # print(res)
+    # node1 = Node("--node=tcp://192.168.0.207:26657")
+
+    res = Query.block("100")
+    print(res)
+    pass
+
     # send_cmd = Tx.Bank.send(
     #     "me16kgchstxh398tgprvduqjfyaa7atpvnd2mx7t7",
     #     "me12tr8ju53p7hp3t70hy9k83wvctut350etfn0d6",
@@ -478,9 +447,15 @@ if __name__ == '__main__':
     #     var = getattr(self.config.Flags, arg)
     #     base_cmd += var + " "
 
-    key_cmd = Keys.add("test-py-3")
-    key_add_cmd = node1.generate_keys_cmd(key_cmd)
-    res = node1.executor(key_add_cmd)
-    print(res)
+    # key_cmd = Keys.add("test-0001")
+    # key_add_cmd = node1.generate_keys_cmd(key_cmd)
+    #
+    # key_cmd = Keys.delete("test-0001")
+    # key_delete_cmd = "echo 'y' | " + node1.generate_keys_cmd(key_cmd)
+    #
+    # res = node1.executor(key_add_cmd)
+    # print(res)
+    # res2 = node1.executor(key_delete_cmd)
+    # print(res2)
 
     pass
