@@ -3,6 +3,7 @@
 import math
 from loguru import logger
 
+
 class Reward(object):
     # def __init__(self):
     one_block = int(math.ceil((50 * 10 ** 8) / ((365 * 24 * 60 * 60) / 5)))
@@ -54,18 +55,20 @@ class Reward(object):
         :param amount: 金额
         :return 预估收益
         """
-        uamount = amount * (10 ** 6)
+        u_amount = amount * (10 ** 6)
         logger.info(
-            f"设置的年化利率是:{rate}百分比,选择的定期月是{month}个月,存入的本金是{uamount}umec")
-        rewards = int(rate * month / 12 * uamount)
+            f"设置的年化利率是:{rate}百分比,选择的定期月是{month}个月,存入的本金是{u_amount}umec")
+        rewards = int(rate * month / 12 * u_amount)
         logger.info(f"到期后获得的利息是{rewards}")
 
         return rewards
 
 
 if __name__ == '__main__':
-
     # r.nokyc_reward(10000,1000,996)
     # r.kyc_reward(10000,10000,0)
-    print(Reward.fixed_reward(rate=c, month=6, amount=1000000000))
+    # print(Reward.fixed_reward(rate=c, month=6, amount=1000000000))
     # print(r.fixed_reward(rate=0.05, month=1, amount=100000000))
+    print(Reward.reward_nokyc(stake=1469, end_height=100, start_height=99))
+    reward = Reward.reward_nokyc(stake=1, end_height=101, start_height=100)
+    # Reward.fixed_reward(rate=)

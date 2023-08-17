@@ -116,7 +116,7 @@ class Query(BaseClass):
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
         @staticmethod
-        def show_fixed_deposit_by_region(region_id, query_type):
+        def show_fixed_deposit_by_region(region_id, query_type="ALL_STATE"):
             cmd = Query.work_home + f"{Query.chain_bin} q staking show-fixed-deposit-by-region {region_id} " \
                                     f"{query_type} {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
@@ -154,6 +154,12 @@ class Query(BaseClass):
         @staticmethod
         def params():
             cmd = Query.work_home + f"{Query.chain_bin} q staking params {Query.chain_id} {Query.connect_node}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
+
+        @staticmethod
+        def distribution(user_addr):
+            cmd = Query.work_home + f"{Query.chain_bin} q distribution rewards {user_addr} {Query.chain_id} "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
@@ -230,6 +236,17 @@ class Query(BaseClass):
             cmd = Query.work_home + f"{Query.chain_bin} q mint params {Query.chain_id} {Query.connect_node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
+
+    class Account(object):
+        @staticmethod
+        def auth_account(pool_name="treasury_pool"):
+            """
+            查询所有指定模块，，且返回模块地址，
+            :param pool_name: 模块账户地址，默认是国库地址
+            """
+            cmd = Query.work_home + f"./me-chaind query auth accounts | grep -w '{pool_name}' -B 6 | grep 'address'"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))['address']
 
 
 class HttpQuery(BaseClass):
@@ -366,7 +383,10 @@ class HttpQuery(BaseClass):
             if month is None:
                 return response.json().get('FixedDepositAnnualRate')
             else:
-                return response.json().get('FixedDepositAnnualRate').get(f'annualRate_{month}_months')
+                rate_info = response.json().get('FixedDepositAnnualRate').get(f'annualRate_{month}_months')
+                rate = round(float(rate_info), 3)
+                # return response.json().get('FixedDepositAnnualRate').get(f'annualRate_{month}_months')
+                return rate
 
     class Group:
         @staticmethod
@@ -418,9 +438,15 @@ if __name__ == '__main__':
     # print(q_ssh.Staking.kyc_by_region(region_id="jpn"))
     # print(q_ssh.Staking.list_fixed_deposit())
     hq = HttpQuery()
+    # s=hq.Staking.fixed_deposit()
+    # s = hq.Staking.fixed_deposit_rate(month=1)
+    # print(s, type(s))
+    a=hq.Staking.kyc(addr="me13rt4yckef6yuy3a097ahqpqfll0ez0kcum4u69")['kyc']['regionId']
+    print(a)
     # print(hq.Staking.delegation(addr="me13a4rmm64wetlatj5z6jcfxkxtraxdcm8jl0z8u"))
-    print(hq.Staking.region(region_id="pry"))
-    print(hq.Staking.validator(addr="mevaloper183rayk6wts2mgcrvqp8ydssphvxdkdw53e6llf"))
+    # print(hq.Staking.region(region_id="pry"))
+    # print(hq.Staking.validator(addr="mevaloper183rayk6wts2mgcrvqp8ydssphvxdkdw53e6llf"))
+    # print(q_ssh.Account.auth_account())
     # print(hq.Tx.query_tx(tx_hash="36B83E7A30FB8D45FB24860E95EC95968F566CFAF4E5020EFA58936B475C25F6"))
     # v = hq.Staking.validator()
     # print(v)
