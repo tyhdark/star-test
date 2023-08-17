@@ -9,6 +9,7 @@ from tools.parse_response import HttpResponse
 from x.query import Query, HttpQuery
 from x.tx import Tx
 from tools.compute import Compute
+from tools.name import RegionInfo, ValidatorInfo
 
 
 # 单元测试fee模块模块
@@ -280,7 +281,7 @@ class TestFee(object):
         time.sleep(self.tx.sleep_time)
 
         user_balance = HttpResponse.get_balance_unit(user_addr)
-        assert user_balance == Compute.to_u(send_amount)-self.base_cfg.fees-200+1
+        assert user_balance == Compute.to_u(send_amount) - self.base_cfg.fees - 200 + 1
 
         # # 取回
         # del_data = dict(from_addr=user_addr, amount=10)
@@ -327,7 +328,20 @@ class TestFee(object):
         time.sleep(self.tx.sleep_time)
 
         user_balance = HttpResponse.get_balance_unit(user_addr)
-        assert user_balance == Compute.to_u(100-10)-200
+        assert user_balance == Compute.to_u(100 - 10) - 200
+
+        time.sleep(self.tx.sleep_time)
+        # 定期提取10  费率是200
+        user_fixed_info_end = HttpResponse.get_fixed_deposit_by_addr_hq(addr=user_addr)
+        myid = user_fixed_info_end[0]['id']
+        withdraw = dict(from_addr=user_addr, fixed_delegation_id=myid, fees=200)
+        resp = self.tx.staking.withdraw_fixed(**withdraw)
+        time.sleep(self.tx.sleep_time)
+        assert self.hq.tx.query_tx(resp['txhash'])['code'] == 0
+
+        # 用户定期委托10 赎回10 有效的手续费都是200
+        user_balance = HttpResponse.get_balance_unit(user_addr)
+        assert user_balance == Compute.to_u(100) - 400
 
     def test_withdraw_fixed_fee(self):
         """
@@ -359,3 +373,31 @@ class TestFee(object):
         del_data = dict(from_addr=user_addr, amount=10, fees="xy")
         resp = self.tx.staking.deposit_fixed(**del_data)
         assert "invalid" in resp
+
+    def test_kyc_fee(self):
+        """
+        验证kyc下修改fees
+        """
+        user_info = self.test_key.test_add()['address']
+        region_id_variable = RegionInfo.region_for_id_existing()
+
+        kyc_data = dict(user_addr=user_info, region_id=region_id_variable, fees=50)
+        resp = self.tx.staking.new_kyc(**kyc_data)
+        assert 13 == resp['code']
+
+        kyc_data = dict(user_addr=user_info, region_id=region_id_variable, fees=0)
+        resp = self.tx.staking.new_kyc(**kyc_data)
+        assert 13 == resp['code']
+
+        kyc_data = dict(user_addr=user_info, region_id=region_id_variable, fees=-10)
+        resp = self.tx.staking.new_kyc(**kyc_data)
+        assert "invalid" in resp
+
+        kyc_data = dict(user_addr=user_info, region_id=region_id_variable, fees="xx")
+        resp = self.tx.staking.new_kyc(**kyc_data)
+        assert "invalid" in resp
+
+        kyc_data = dict(user_addr=user_info, region_id=region_id_variable, fees=200)
+        resp = self.tx.staking.new_kyc(**kyc_data)
+        time.sleep(self.tx.sleep_time)
+        assert self.hq.tx.query_tx(resp['txhash'])['code'] == 0
