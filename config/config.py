@@ -36,8 +36,7 @@ class Host(IterMixin):
     port: int
     username: str
     password: str
-    work_dir: str
-    chain_bin: str
+    chain_work_path: str
 
 
 @dataclass
