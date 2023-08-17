@@ -14,7 +14,7 @@ class Interaction:
         listen_info = 'Enter keyring passphrase:'
 
         while not resp.endswith(listen_info):
-            stdout = channel.recv(9999)
+            stdout = channel.recv(1024 * 5)
             resp += stdout.decode('utf-8')
 
         channel.send("12345678" + "\n")
@@ -23,13 +23,13 @@ class Interaction:
     def ready(channel):
         """
         读取数据并返回
-            - channel.recv(9999)
+            - channel.recv(1024*5)
         """
         resp2 = ""
         while True:
             time.sleep(1)
             if channel.recv_ready():
-                stdout = channel.recv(9999)
+                stdout = channel.recv(1024 * 5)
                 resp2 += stdout.decode('utf-8')
                 if resp2 != "" and not resp2.isspace():
                     logger.debug(f"read console message: {resp2}")
@@ -52,11 +52,10 @@ class Interaction:
         while True:
             time.sleep(0.5)
             if channel.recv_ready():
-                stdout = channel.recv(9999)
+                stdout = channel.recv(1024 * 5)
                 resp += stdout.decode('utf-8')
                 resp = resp.lstrip("y")
                 if resp is not None and not resp.isspace():
-                    logger.debug(f"console message: {resp}")
                     break
         return resp
 
