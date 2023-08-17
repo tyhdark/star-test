@@ -150,6 +150,39 @@ class ValidatorInfo:
                                i.get('operator_address') in no_region_oper_list]
         return random.choice(no_region_node_list)
 
+    @classmethod
+    def validator_bind_node_for_region(cls, bind=False):
+        """随机返回一个节点 node 名称
+        :param bind: 是否已绑定区 默认是没绑定的
+        :return 如果返回的list有值就随机拿一个数据返回，如果为空则返回空的list
+        """
+        # 把所有区的节点对应的地址拿过来，
+        region_addr = (cls.hq.Staking.region()).get("region")
+        region_oper_list = [i.get('operator_address') for i in region_addr ]
+
+        # 把所有节点的地址拿过来
+        operators_address = cls.hq.staking.validator()
+
+        all_oper_list = [o.get('operator_address') for o in operators_address ]
+
+        if bind:
+            no_region_oper_list = all_oper_list
+        else:
+            no_region_oper_list = [i for i in all_oper_list if i not in region_oper_list]
+        # 根据判断的节点地址去它的node名称
+        # no_region_node_list = []
+        # for i in operators_address:
+        #     for n in no_region_oper_list:
+        #         if i.get('operator_address') == n:
+        #             no_region_node_list.append(i.get('description').get('moniker'))
+        # 用推导式的方式写就是下面这样的：
+        no_region_node_list = [i.get('description').get('moniker') for i in operators_address if
+                               i.get('operator_address') in no_region_oper_list]
+        if len(no_region_node_list) == 0:
+            return no_region_node_list
+        else:
+            return random.choice(no_region_node_list)
+
 
     @classmethod
     def validator_node_for_create(cls,node=None):
