@@ -10,3 +10,5 @@ allure-pytest==2.13.0
 allure-python-commons==2.13.0
 tenacity==8.2.2
 pytest-progress==1.2.5
+paramiko~=3.0.0
+ssh~=1.8.0
