@@ -1,0 +1,40 @@
+#请传 大于等于0且小于100的数值 或非数值的其他参数
+- error_data: 0
+  error_return: 13
+
+- error_data: 0.0
+  error_return: 13
+
+#- error_data: 1.1111
+#  error_return: 13
+#
+#- error_data: 1
+#  error_return: 13
+#
+#- error_data: 80
+#  error_return: 13
+#
+#- error_data: 99
+#  error_return: 13
+#
+##请传 负数 或非数值的其他参数
+#- error_data: -1
+#  error_return: "invalid"
+#
+#- error_data: -100
+#  error_return: "invalid"
+#
+#- error_data: -9999
+#  error_return: "invalid"
+#
+#- error_data: -99.9
+#  error_return: "invalid"
+#
+#- error_data: ""
+#  error_return: "invalid"
+#
+#- error_data: "+"
+#  error_return: "invalid"
+#
+#- error_data: ","
+#  error_return: "invalid"

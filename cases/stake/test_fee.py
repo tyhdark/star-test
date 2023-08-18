@@ -2,6 +2,8 @@
 import inspect
 import time
 
+import pytest
+import yaml
 from loguru import logger
 
 from cases import unitcases
@@ -10,9 +12,15 @@ from x.query import Query, HttpQuery
 from x.tx import Tx
 from tools.compute import Compute
 from tools.name import RegionInfo, ValidatorInfo
+from x.base import BaseClass
+
+with open('test_fee.yml', 'r') as file:
+    test_data = yaml.safe_load(file)
 
 
 # 单元测试fee模块模块
+
+
 class TestFee(object):
     tx = Tx()
     hq = HttpQuery()
@@ -26,6 +34,94 @@ class TestFee(object):
     test_fixed = unitcases.Fixed()
     base_cfg = test_bank.tx
     user_addr = None
+
+    @pytest.fixture(scope='class')
+    def setup_class_get_kyc_user_info(self):
+        user_info = self.test_kyc.test_new_kyc_user()
+        user_addr = user_info
+
+        send_amount = 100
+        self.base_cfg.Bank.send_to_admin(amount=(send_amount + 1))  # 怕管理员没钱，国库先转钱给管理员
+        # 给用户发钱
+        send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr, amount=send_amount)
+        self.test_bank.test_send(**send_data)
+
+        self.user_addr = user_addr
+        logger.info("TestFee/get_kyc_user_info----------------->创建一个kyc")
+
+        yield user_addr
+
+        # 删除用户
+        self.test_key.test_delete_key(user_addr)
+        logger.info("TestFee/get_kyc_user_info----------------->删除一个kyc")
+
+    @pytest.fixture()
+    def get_error_user_info(self):
+        # 初始化数据 让 user1_tyh 满足异常测试的情况 既有余额、也有活期、定期委托
+        logger.info("TestFee/get_kyc_info")
+        user_name = "user1_tyh"
+        user_addr = self.q.Key.address_of_name(username=user_name)
+        region_id = "ita"
+        if user_addr is None:
+            # 创建用户
+            user_info = unitcases.Keys().test_add(user_name)
+            user_addr = user_info['address']
+            # 管理员给用户转钱 100
+            send_data = dict(from_addr=BaseClass.super_addr, to_addr=user_addr, amount=100)
+            self.tx.bank.send_tx(**send_data)
+            time.sleep(2)
+            # 做kyc认证
+            region_id_variable = RegionInfo.region_for_id_existing()
+            kyc_data = dict(user_addr=user_addr, region_id=region_id_variable)
+            resp = self.tx.staking.new_kyc(**kyc_data)
+            time.sleep(2)
+            assert self.hq.tx.query_tx(resp['txhash'])['code'] == 0
+            # 定期委托10
+            del_data = dict(from_addr=user_addr, amount=10, month=24)
+            self.tx.staking.deposit_fixed(**del_data)
+            yield user_addr, region_id
+        else:
+            yield user_addr, region_id
+
+    @pytest.mark.parametrize("test_fee", test_data)
+    def test_fee_error(self, test_fee, get_error_user_info):
+        """验证各种场景下fees 传入错误、异常参数的情况"""
+        user_addr, region_id = get_error_user_info
+
+        amount = 10
+        # 验证转账
+        send_data = dict(from_addr=self.tx.super_addr, to_addr=user_addr,
+                         amount=amount, fees=test_fee['error_data'])
+        resp = self.tx.bank.send_tx(**send_data)
+        assert_resp(resp, test_fee)
+
+        # 验证活期委托
+        del_data = dict(from_addr=user_addr, amount=amount, fees=test_fee['error_data'])
+        resp = self.tx.staking.delegate(**del_data)
+        assert_resp(resp, test_fee)
+
+        # 验证活期赎回
+        un_del_data = dict(from_addr=user_addr, amount=amount, fees=test_fee['error_data'])
+        resp = self.tx.staking.undelegate_kyc(**un_del_data)
+        assert_resp(resp, test_fee)
+
+        # 验证定期委托
+        dep_data = dict(from_addr=user_addr, amount=amount, fees=test_fee['error_data'])
+        resp = self.tx.staking.deposit_fixed(**dep_data)
+        assert_resp(resp, test_fee)
+
+        # 验证定期提取
+        user_fixed_info_end = HttpResponse.get_fixed_deposit_by_addr_hq(addr=user_addr)
+        withdraw_data = dict(from_addr=user_addr, fixed_delegation_id=user_fixed_info_end[0]['id'],
+                             fees=test_fee['error_data'])
+        resp = self.tx.staking.withdraw_fixed(**withdraw_data)
+        assert_resp(resp, test_fee)
+
+        # 验证kyc
+        kyc_data = dict(user_addr=user_addr, region_id=region_id,
+                        fees=test_fee['error_data'])
+        resp = self.tx.staking.new_kyc(**kyc_data)
+        assert_resp(resp, test_fee)
 
     def test_send_fee(self):
         """
@@ -45,25 +141,6 @@ class TestFee(object):
         self.test_bank.test_send(**send_data)
 
         user_send_amount = 50
-        # 用户1给2转 50 费率=0 的时候 不成功 code:13
-        send_data = dict(from_addr=user_addr1, to_addr=user_addr2, amount=user_send_amount, fees=0)
-        resp = self.tx.bank.send_tx(**send_data)
-        assert 13 == resp['code']
-
-        # 用户1给2转 50 费率<100 的时候 不成功 code:13
-        send_data = dict(from_addr=user_addr1, to_addr=user_addr2, amount=user_send_amount, fees=80)
-        resp = self.tx.bank.send_tx(**send_data)
-        assert 13 == resp['code']
-
-        # 用户1给2转 50 费率是负数 的时候 不成功 code:13 参数报invalid
-        send_data = dict(from_addr=user_addr1, to_addr=user_addr2, amount=user_send_amount, fees=-10)
-        resp = self.tx.bank.send_tx(**send_data)
-        assert "invalid" in resp
-
-        # 用户1给2转 50 费率不是数字类型 的时候 不成功 code:13 参数报invalid
-        send_data = dict(from_addr=user_addr1, to_addr=user_addr2, amount=user_send_amount, fees="x")
-        resp = self.tx.bank.send_tx(**send_data)
-        assert "invalid" in resp
 
         # 用户1给2转 50 费率=200 的时候
         test_fess = 200
@@ -150,22 +227,6 @@ class TestFee(object):
         user_balance = HttpResponse.get_balance_unit(user2_addr)
         assert user_balance == Compute.to_u(send_amount - 10) - 100
 
-        del_data = dict(from_addr=user_addr, amount=10, fees=50)
-        resp = self.tx.staking.delegate(**del_data)
-        assert 13 == resp['code']
-
-        del_data = dict(from_addr=user_addr, amount=10, fees=0)
-        resp = self.tx.staking.delegate(**del_data)
-        assert 13 == resp['code']
-
-        del_data = dict(from_addr=user_addr, amount=10, fees=-10)
-        resp = self.tx.staking.delegate(**del_data)
-        assert "invalid" in resp
-
-        del_data = dict(from_addr=user_addr, amount=10, fees="xy")
-        resp = self.tx.staking.delegate(**del_data)
-        assert "invalid" in resp
-
         # 手续费是200的时候能成功交易，手续费正常扣除200
         delegate_amount = 10
         del_data = dict(from_addr=user_addr, amount=delegate_amount, fees=200)
@@ -227,22 +288,6 @@ class TestFee(object):
         user_delegate_info = HttpResponse.get_delegate(user_addr)
         assert int(user_delegate_info['unKycAmount']) == Compute.to_u(delegate_amount)
 
-        del_data = dict(from_addr=user_addr, amount=10, fees=50)
-        resp = self.tx.staking.undelegate_nokyc(**del_data)
-        assert 13 == resp['code']
-
-        del_data = dict(from_addr=user_addr, amount=10, fees=0)
-        resp = self.tx.staking.undelegate_nokyc(**del_data)
-        assert 13 == resp['code']
-
-        del_data = dict(from_addr=user_addr, amount=10, fees=-10)
-        resp = self.tx.staking.undelegate_nokyc(**del_data)
-        assert "invalid" in resp
-
-        del_data = dict(from_addr=user_addr, amount=10, fees="xy")
-        resp = self.tx.staking.undelegate_nokyc(**del_data)
-        assert "invalid" in resp
-
         # 赎回10 休眠一下免得查的金额是赎回之前的
         del_data = dict(from_addr=user_addr, amount=5)
         self.tx.staking.undelegate_nokyc(**del_data)
@@ -297,22 +342,6 @@ class TestFee(object):
         del_data = dict(from_addr=user_addr, amount=delegate_amount, fees=100)
         self.test_del.test_delegate(**del_data)
 
-        del_data = dict(from_addr=user_addr, amount=10, fees=50)
-        resp = self.tx.staking.undelegate_kyc(**del_data)
-        assert 13 == resp['code']
-
-        del_data = dict(from_addr=user_addr, amount=10, fees=0)
-        resp = self.tx.staking.undelegate_kyc(**del_data)
-        assert 13 == resp['code']
-
-        del_data = dict(from_addr=user_addr, amount=10, fees=-10)
-        resp = self.tx.staking.undelegate_kyc(**del_data)
-        assert "invalid" in resp
-
-        del_data = dict(from_addr=user_addr, amount=10, fees="xy")
-        resp = self.tx.staking.undelegate_kyc(**del_data)
-        assert "invalid" in resp
-
         # 200的手续费  但前的余额 = 本来的钱-活期委托的10-手续费+赎回活期委托的10 -200的手续费
         del_data = dict(from_addr=user_addr, amount=10, fees=200)
         self.tx.staking.undelegate_kyc(**del_data)
@@ -344,22 +373,6 @@ class TestFee(object):
         send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr, amount=send_amount)
         self.test_bank.test_send(**send_data)
 
-        deposit_data = dict(from_addr=user_addr, amount=10, fees=50)
-        resp = self.tx.staking.deposit_fixed(**deposit_data)
-        assert 13 == resp['code']
-
-        del_data = dict(from_addr=user_addr, amount=10, fees=0)
-        resp = self.tx.staking.deposit_fixed(**del_data)
-        assert 13 == resp['code']
-
-        del_data = dict(from_addr=user_addr, amount=10, fees=-10)
-        resp = self.tx.staking.deposit_fixed(**del_data)
-        assert "invalid" in resp
-
-        del_data = dict(from_addr=user_addr, amount=10, fees="xy")
-        resp = self.tx.staking.deposit_fixed(**del_data)
-        assert "invalid" in resp
-
         # 定期委托10  费率是200
         del_data = dict(from_addr=user_addr, amount=10, fees=200)
         self.tx.staking.deposit_fixed(**del_data)
@@ -382,61 +395,78 @@ class TestFee(object):
         user_balance = HttpResponse.get_balance_unit(user_addr)
         assert user_balance == Compute.to_u(100) - 400
 
-    def test_withdraw_fixed_fee(self):
+    @pytest.mark.parametrize("deposit_fees", (Compute.to_u(990000000), 100, 100.0, 100.1, 100.49, 100.9, 200))
+    def test_withdraw_fixed_fee(self, setup_class_get_kyc_user_info, deposit_fees):
         """
         验证定期提取下修改fees
         """
         logger.info("TestFee/test_withdraw_fixed_fee")
-        user_info = self.test_kyc.test_new_kyc_user()
-        user_addr = user_info
+        user_addr = setup_class_get_kyc_user_info
 
-        send_amount = 100
-        self.base_cfg.Bank.send_to_admin(amount=(send_amount + 1))  # 怕管理员没钱，国库先转钱给管理员
-
-        # 给用户发钱
-        send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr, amount=send_amount)
-        self.test_bank.test_send(**send_data)
-
-        deposit_data = dict(from_addr=user_addr, amount=10, fees=50)
-        resp = self.tx.staking.deposit_fixed(**deposit_data)
-        assert 13 == resp['code']
-
-        del_data = dict(from_addr=user_addr, amount=10, fees=0)
+        before_user_balance = HttpResponse.get_balance_unit(user_addr)
+        # 定期委托10
+        del_data = dict(from_addr=user_addr, amount=10, month=48)
         resp = self.tx.staking.deposit_fixed(**del_data)
-        assert 13 == resp['code']
+        assert self.hq.tx.query_tx(resp['txhash'])['code'] == 0
 
-        del_data = dict(from_addr=user_addr, amount=10, fees=-10)
-        resp = self.tx.staking.deposit_fixed(**del_data)
-        assert "invalid" in resp
+        # 定期提取10  费率是200
 
-        del_data = dict(from_addr=user_addr, amount=10, fees="xy")
-        resp = self.tx.staking.deposit_fixed(**del_data)
-        assert "invalid" in resp
+        user_fixed_info_end = HttpResponse.get_fixed_deposit_by_addr_hq(addr=user_addr)
+        withdraw = dict(from_addr=user_addr, fixed_delegation_id=user_fixed_info_end[0]['id'], fees=deposit_fees)
+        resp = self.tx.staking.withdraw_fixed(**withdraw)
+        time.sleep(self.tx.sleep_time)
 
-    def test_kyc_fee(self):
+        # 如果传入的手续费数据大于管理员本金就判断交易无法成功且返回1144的code
+        user_balance = HttpResponse.get_balance_unit(user_addr)
+        if deposit_fees > user_balance:
+            time.sleep(self.tx.sleep_time)
+            assert resp['code'] == 1144
+            return
+
+        assert self.hq.tx.query_tx(resp['txhash'])['code'] == 0
+        after_user_balance = HttpResponse.get_balance_unit(user_addr)
+        # 手续费忽略小数  这个需要减去定期委托用掉的100手续费
+        assert before_user_balance - self.base_cfg.fees - after_user_balance == int(deposit_fees)
+
+    @pytest.mark.parametrize("kyc_fees", (Compute.to_u(990000000), 100, 100.0, 100.1, 100.49, 100.9, 200))
+    def test_kyc_fee(self, kyc_fees):
         """
         验证kyc下修改fees
         """
-        user_info = self.test_key.test_add()['address']
-        region_id_variable = RegionInfo.region_for_id_existing()
-
-        kyc_data = dict(user_addr=user_info, region_id=region_id_variable, fees=50)
+        user_addr = self.test_key.test_add()['address']
+        try:
+            region_id_variable = RegionInfo.region_for_id_existing()
+        except Exception as e:
+            assert 0, "No region, please create region!"
+        before_super_balance = HttpResponse.get_balance_unit(self.base_cfg.super_addr)
+        kyc_data = dict(user_addr=user_addr, region_id=region_id_variable, fees=kyc_fees)
         resp = self.tx.staking.new_kyc(**kyc_data)
-        assert 13 == resp['code']
 
-        kyc_data = dict(user_addr=user_info, region_id=region_id_variable, fees=0)
-        resp = self.tx.staking.new_kyc(**kyc_data)
-        assert 13 == resp['code']
+        # 如果传入的手续费数据大于管理员本金就判断交易无法成功且返回1146的code
+        super_balance = HttpResponse.get_balance_unit(self.base_cfg.super_addr)
+        if kyc_fees > super_balance:
+            time.sleep(self.tx.sleep_time)
+            assert resp['code'] == 1146
+            return
 
-        kyc_data = dict(user_addr=user_info, region_id=region_id_variable, fees=-10)
-        resp = self.tx.staking.new_kyc(**kyc_data)
-        assert "invalid" in resp
-
-        kyc_data = dict(user_addr=user_info, region_id=region_id_variable, fees="xx")
-        resp = self.tx.staking.new_kyc(**kyc_data)
-        assert "invalid" in resp
-
-        kyc_data = dict(user_addr=user_info, region_id=region_id_variable, fees=200)
-        resp = self.tx.staking.new_kyc(**kyc_data)
         time.sleep(self.tx.sleep_time)
         assert self.hq.tx.query_tx(resp['txhash'])['code'] == 0
+        after_super_balance = HttpResponse.get_balance_unit(self.base_cfg.super_addr)
+        # 手续费忽略小数
+        assert before_super_balance - after_super_balance == int(kyc_fees)
+
+        # 删除用户
+        self.test_key.test_delete_key(user_addr)
+
+
+def assert_resp(resp, test_fee):
+    """
+    判断返回的结果
+    :param resp: 命令发出后的返回结果
+    :param test_fee: yal 里的测试数据
+    :return:
+    """
+    if isinstance(resp, dict):
+        assert test_fee['error_return'] == resp['code']
+    else:
+        assert test_fee['error_return'] in resp
