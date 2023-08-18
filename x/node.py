@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import inspect
+from typing import Callable
 
 from loguru import logger
 
 from config.config import app_chain
+from ssh import Client
 from tools.console import Result, Interaction
-from tools.host import Host
 
 
 class Meta(type):
@@ -14,21 +15,40 @@ class Meta(type):
         super().__init__(name, bases, attrs)
 
         sub_module = attrs.get('sub_module', [])
-        for module in sub_module:
-            method = cls.generate_method(module)
-            setattr(cls, module, classmethod(method))
+        parent_module = attrs.get('parent_module', '')
+        if isinstance(sub_module, list):
+            for module in sub_module:
+                method = cls.generate_method(parent_module, module)
+                setattr(cls, module, classmethod(method))
+        elif isinstance(sub_module, dict):
+            for k, module in sub_module.items():
+                method = cls.generate_method(parent_module, module)
+                setattr(cls, k, classmethod(method))
+        else:
+            raise f"sub_module type error: {type(sub_module)}, expect list or dict"
 
     @staticmethod
-    def generate_method(sub_module):
+    def generate_method(parent_module, sub_module) -> Callable[..., str]:
         def method(cls, *args, **kwargs):
-            return cls.build_command(sub_module, *args, **kwargs)
+            return cls.build_command(parent_module, sub_module, *args, **kwargs)
 
         return method
 
-    def build_command(cls, sub_module, *args, **kwargs):
+    def build_command(cls, parent_module, sub_module, *args, **kwargs):
         args_str = " ".join(map(str, args))
         kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-        return f"{cls.module} {sub_module} {args_str} {kwargs_str} "
+        return f"{parent_module} {cls.module} {sub_module} {args_str} {kwargs_str} "
+
+    def __getattr__(cls, attr):
+        raise AttributeError(f"'{cls.__name__}' class has no attribute '{attr}'")
+
+    def help(cls):
+        for attr_name in cls.sub_module:
+            attr = getattr(cls, attr_name)
+            if not callable(attr):
+                raise TypeError(f"attribute '{attr_name}' is not callable")
+        print(f"Available methods: {list(cls.sub_module)}")
+        print(f"Example usage: {cls.__name__}.{list(cls.sub_module)[0]}('argument')")
 
 
 class Keys(metaclass=Meta):
@@ -36,33 +56,15 @@ class Keys(metaclass=Meta):
 
 
 class Query(metaclass=Meta):
-    sub_module = ["block"]
-
-    # class Block(metaclass=Meta):
-    #     pass
-
-        # @classmethod
-        # def block(cls, *args, **kwargs):
-        #     args = " ".join(map(str, args))
-        #     kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-        #     return f"{Query.module} {cls.module} {args} {kwargs_str} "
-
-    class Tx(metaclass=Meta):
-
-        @classmethod
-        def tx(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Query.module} {cls.module} {args} {kwargs_str} "
+    sub_module = ["block", "tx"]
 
     class Bank(metaclass=Meta):
-        sub_module = dict(balances="balances")
-
-        @classmethod
-        def balances(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Query.module} {cls.module} {cls.sub_module['balances']} {args} {kwargs_str} "
+        parent_module = "query"
+        sub_module = dict(
+            balances="balances",
+            denom_metadata="denom-metadata",
+            total="total"
+        )
 
     class Staking(metaclass=Meta):
         sub_module = dict(
@@ -87,256 +89,72 @@ class Query(metaclass=Meta):
             validator="validator",
             validators="validators", )
 
-        @classmethod
-        def delegation(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Query.module} {cls.module} {cls.sub_module['delegation']} {args} {kwargs_str} "
+    class Distribution(metaclass=Meta):
+        parent_module = "query"
+        sub_module = dict(
+            rewards="rewards",
+            params="params",
+        )
 
-        @classmethod
-        def delegations_to(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Query.module} {cls.module} {cls.sub_module['delegations_to']} {args} {kwargs_str} "
-
-        @classmethod
-        def historical_info(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Query.module} {cls.module} {cls.sub_module['historical_info']} {args} {kwargs_str} "
-
-        @classmethod
-        def kyc_by_region(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Query.module} {cls.module} {cls.sub_module['kyc_by_region']} {args} {kwargs_str} "
-
-        @classmethod
-        def list_fixed_deposit(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Query.module} {cls.module} {cls.sub_module['list_fixed_deposit']} {args} {kwargs_str} "
-
-        @classmethod
-        def list_kyc(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Query.module} {cls.module} {cls.sub_module['list_kyc']} {args} {kwargs_str} "
-
-        @classmethod
-        def list_region(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Query.module} {cls.module} {cls.sub_module['list_region']} {args} {kwargs_str} "
-
-        @classmethod
-        def list_siid(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Query.module} {cls.module} {cls.sub_module['list_siid']} {args} {kwargs_str}"
-
-        @classmethod
-        def params(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-            return f"{Query.module} {cls.module} {cls.sub_module['params']} {args} {kwargs_str} "
-
-        @classmethod
-        def show_fixed_deposit(cls, fixed_deposit_id, *args, **kwargs):
-            args = " ".join(map(str, args))
-            return f"{Query.module} {cls.module} {cls.sub_module['show_fixed_deposit']} {fixed_deposit_id} {args}"
-
-        @classmethod
-        def show_fixed_deposit_by_acct(cls, account_addr, fixed_deposit_id, *args, **kwargs):
-            args = " ".join(map(str, args))
-            return f"{Query.module} {cls.module} {cls.sub_module['show_fixed_deposit_by_acct']} {account_addr} {fixed_deposit_id} {args}"
-
-        @classmethod
-        def show_fixed_deposit_by_region(cls, region, fixed_deposit_id, *args, **kwargs):
-            args = " ".join(map(str, args))
-            return f"{Query.module} {cls.module} {cls.sub_module['show_fixed_deposit_by_region']} {region} {fixed_deposit_id} {args}"
-
-        @classmethod
-        def show_fixed_deposit_interest_rate(cls, fixed_deposit_id, interest_rate, *args, **kwargs):
-            args = " ".join(map(str, args))
-            return f"{Query.module} {cls.module} {cls.sub_module['show_fixed_deposit_interest_rate']} {fixed_deposit_id} {interest_rate} {args}"
-
-        @classmethod
-        def show_kyc(cls, account_addr, *args, **kwargs):
-            args = " ".join(map(str, args))
-            return f"{Query.module} {cls.module} {cls.sub_module['show_kyc']} {account_addr} {args}"
-
-        @classmethod
-        def show_region(cls, region, *args, **kwargs):
-            args = " ".join(map(str, args))
-            return f"{Query.module} {cls.module} {cls.sub_module['show_region']} {region} {args}"
-
-        @classmethod
-        def show_siid(cls, siid, *args, **kwargs):
-            args = " ".join(map(str, args))
-            return f"{Query.module} {cls.module} {cls.sub_module['show_siid']} {siid} {args}"
-
-        @classmethod
-        def siid_by_account(cls, account_addr, *args, **kwargs):
-            args = " ".join(map(str, args))
-            return f"{Query.module} {cls.module} {cls.sub_module['siid_by_account']} {account_addr} {args}"
-
-        @classmethod
-        def unbonding_delegation(cls, account_addr, validator_addr, *args, **kwargs):
-            args = " ".join(map(str, args))
-            return f"{Query.module} {cls.module} {cls.sub_module['unbonding_delegation']} {account_addr} {validator_addr} {args}"
-
-        @classmethod
-        def validator(cls, validator_addr, *args, **kwargs):
-            args = " ".join(map(str, args))
-            return f"{Query.module} {cls.module} {cls.sub_module['validator']} {validator_addr} {args}"
-
-        @classmethod
-        def validators(cls, *args, **kwargs):
-            args = " ".join(map(str, args))
-            return f"{Query.module} {cls.module} {cls.sub_module['validator']}   {args}"
+    class Group(metaclass=Meta):
+        parent_module = "query"
+        sub_module = dict(
+            group_info="group-info",
+            group_members="group-members",
+            groups_by_admin="groups-by-admin",
+            groups_by_member="groups-by-member",
+        )
 
 
-# class Tx(metaclass=Meta):
-#     class Bank(metaclass=Meta):
-#         sub_module = dict(
-#             send="send",
-#             multi_send="multi-send",
-#             send_to_admin="sendToAdmin",
-#             send_to_treasury="sendToTreasury",
-#         )
-#
-#         @classmethod
-#         def send(cls, *args, **kwargs):
-#             args = " ".join(map(str, args))
-#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-#             return f"{Tx.module} {cls.module} {cls.sub_module['send']} {args} {kwargs_str} "
-#
-#         @classmethod
-#         def send_to_admin(cls, *args, **kwargs):
-#             args = " ".join(map(str, args))
-#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-#             return f"{Tx.module} {cls.module} {cls.sub_module['send_to_admin']} {args} {kwargs_str} "
-#
-#         @classmethod
-#         def send_to_treasury(cls, *args, **kwargs):
-#             args = " ".join(map(str, args))
-#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-#             return f"{Tx.module} {cls.module} {cls.sub_module['send_to_treasury']} {args} {kwargs_str} "
-#
-#     class Staking(metaclass=Meta):
-#         sub_module = dict(
-#             create_validator="create-validator",
-#             delegate="delegate",
-#             deposit_fixed="deposit-fixed",
-#             edit_validator="edit-validator",
-#             new_kyc="new-kyc",
-#             new_region="new-region",
-#             new_siid="new-siid",
-#             remove_region="remove-region",
-#             remove_siid="remove-siid",
-#             set_fixed_deposit_interest_rate="set-fixed-deposit-interest-rate",
-#             stake="stake",
-#             unkyc_unbond="unKycUnbond",
-#             unbond="unbond",
-#             unstake="unstake",
-#             withdraw_fixed="withdraw-fixed",
-#         )
-#
-#         @classmethod
-#         def create_validator(cls, *args, **kwargs):
-#             args = " ".join(map(str, args))
-#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-#             return f"{Tx.module} {cls.module} {cls.sub_module['create_validator']} {args} {kwargs_str} "
-#
-#         @classmethod
-#         def delegate(cls, *args, **kwargs):
-#             args = " ".join(map(str, args))
-#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-#             return f"{Tx.module} {cls.module} {cls.sub_module['delegate']} {args} {kwargs_str} "
-#
-#         @classmethod
-#         def deposit_fixed(cls, *args, **kwargs):
-#             args = " ".join(map(str, args))
-#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-#             return f"{Tx.module} {cls.module} {cls.sub_module['deposit_fixed']} {args} {kwargs_str} "
-#
-#         @classmethod
-#         def edit_validator(cls, *args, **kwargs):
-#             args = " ".join(map(str, args))
-#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-#             return f"{Tx.module} {cls.module} {cls.sub_module['edit_validator']} {args} {kwargs_str} "
-#
-#         @classmethod
-#         def new_kyc(cls, *args, **kwargs):
-#             args = " ".join(map(str, args))
-#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-#             return f"{Tx.module} {cls.module} {cls.sub_module['new_kyc']} {args} {kwargs_str} "
-#
-#         @classmethod
-#         def new_region(cls, *args, **kwargs):
-#             args = " ".join(map(str, args))
-#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-#             return f"{Tx.module} {cls.module} {cls.sub_module['new_region']} {args} {kwargs_str} "
-#
-#         @classmethod
-#         def new_siid(cls, *args, **kwargs):
-#             args = " ".join(map(str, args))
-#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-#             return f"{Tx.module} {cls.module} {cls.sub_module['new_siid']} {args} {kwargs_str} "
-#
-#         @classmethod
-#         def remove_region(cls, *args, **kwargs):
-#             args = " ".join(map(str, args))
-#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-#             return f"{Tx.module} {cls.module} {cls.sub_module['remove_region']} {args} {kwargs_str} "
-#
-#         @classmethod
-#         def remove_siid(cls, *args, **kwargs):
-#             args = " ".join(map(str, args))
-#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-#             return f"{Tx.module} {cls.module} {cls.sub_module['remove_siid']} {args} {kwargs_str} "
-#
-#         @classmethod
-#         def set_fixed_deposit_interest_rate(cls, *args, **kwargs):
-#             args = " ".join(map(str, args))
-#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-#             return f"{Tx.module} {cls.module} {cls.sub_module['set_fixed_deposit_interest_rate']} {args} {kwargs_str} "
-#
-#         @classmethod
-#         def stake(cls, *args, **kwargs):
-#             args = " ".join(map(str, args))
-#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-#             return f"{Tx.module} {cls.module} {cls.sub_module['stake']} {args} {kwargs_str} "
-#
-#         @classmethod
-#         def unkyc_unbond(cls, *args, **kwargs):
-#             args = " ".join(map(str, args))
-#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-#             return f"{Tx.module} {cls.module} {cls.sub_module['unkyc_unbond']} {args} {kwargs_str} "
-#
-#         @classmethod
-#         def unbond(cls, *args, **kwargs):
-#             args = " ".join(map(str, args))
-#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-#             return f"{Tx.module} {cls.module} {cls.sub_module['unbond']} {args} {kwargs_str} "
-#
-#         @classmethod
-#         def unstake(cls, *args, **kwargs):
-#             args = " ".join(map(str, args))
-#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-#             return f"{Tx.module} {cls.module} {cls.sub_module['unstake']} {args} {kwargs_str} "
-#
-#         @classmethod
-#         def withdraw_fixed(cls, *args, **kwargs):
-#             args = " ".join(map(str, args))
-#             kwargs_str = " ".join([f"--{key}={value}" for key, value in kwargs.items() if value != ""])
-#             return f"{Tx.module} {cls.module} {cls.sub_module['withdraw_fixed']} {args} {kwargs_str} "
+class Tx(metaclass=Meta):
+    class Bank(metaclass=Meta):
+        parent_module = "tx"
+        sub_module = dict(
+            send="send",
+            multi_send="multi-send",
+            send_to_admin="sendToAdmin",
+            send_to_treasury="sendToTreasury",
+        )
+
+    class Staking(metaclass=Meta):
+        parent_module = "tx"
+        sub_module = dict(
+            create_validator="create-validator",
+            delegate="delegate",
+            deposit_fixed="deposit-fixed",
+            edit_validator="edit-validator",
+            new_kyc="new-kyc",
+            new_region="new-region",
+            new_siid="new-siid",
+            remove_region="remove-region",
+            remove_siid="remove-siid",
+            set_fixed_deposit_interest_rate="set-fixed-deposit-interest-rate",
+            stake="stake",
+            unkyc_unbond="unKycUnbond",
+            unbond="unbond",
+            unstake="unstake",
+            withdraw_fixed="withdraw-fixed",
+        )
+
+    class Distribution(metaclass=Meta):
+        parent_module = "tx"
+        sub_module = dict(
+            withdraw_rewards="withdraw-rewards",
+        )
+
+    class Group(metaclass=Meta):
+        parent_module = "tx"
+        sub_module = dict(
+            create_group="create-group",
+            update_group="delete-group",
+            leave_group="leave-group",
+            update_group_member="update-group-member",
+        )
 
 
 class Node:
-    ssh_client = Host(ip=app_chain.Host.ip, port=app_chain.Host.port,
-                      username=app_chain.Host.username, password=app_chain.Host.password)
+    ssh_client = Client(ip=app_chain.Host.ip, port=app_chain.Host.port,
+                        username=app_chain.Host.username, password=app_chain.Host.password)
     channel = ssh_client.create_invoke_shell()
     config = app_chain
 
@@ -345,7 +163,7 @@ class Node:
         if "--node" not in node:
             node = f"--node={node}"
         self.config.Flags.node = node
-        self.superadmin = self.__superadmin()
+        self.superadmin = self.__get_superadmin_addr()
         self.__init_instance_config()
 
     def update_config(self, attr: str, key: str, value: str):
@@ -370,13 +188,13 @@ class Node:
         self.update_config("Flags", "fees", "--fees=100umec")
         self.update_config("Flags", "gas", "--gas=200000")
 
-    def __superadmin(self):
-        get_superadmin_addr = f"{self.config.Host.chain_work_path} keys show superadmin -a {self.config.Flags.keyring_backend}"
-        return self.ssh_client.ssh(get_superadmin_addr)
-
     @property
     def base_cmd(self):
         return f"{self.config.Host.chain_work_path} "
+
+    def __get_superadmin_addr(self):
+        get_superadmin_cmd = f"{self.base_cmd} keys show superadmin -a {self.config.Flags.keyring_backend}"
+        return self.ssh_client.ssh(get_superadmin_cmd)
 
     def generate_query_cmd(self, cmd: str):
         query_cmd = self.base_cmd + f"{self.config.Flags.node} {self.config.GlobalFlags.chain_id} "
@@ -411,9 +229,15 @@ class Node:
 
 if __name__ == '__main__':
     # node1 = Node("--node=tcp://192.168.0.207:26657")
+    # d1 = dict(key="value1", key2="value2")
+    # a1 = [7, 8, 9]
+    # print(Query.block("100", "123", "456", *a1, **d1))
+    Keys.help()
+    print(Keys.add("abcd"))
 
-    res = Query.block("100")
-    print(res)
+    print(Query.Bank.balances("addr"))
+    print(Query.Bank.denom_metadata("12"))
+    Tx.Staking.help()
     pass
 
     # send_cmd = Tx.Bank.send(

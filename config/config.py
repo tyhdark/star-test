@@ -41,26 +41,17 @@ class Host(IterMixin):
 
 @dataclass
 class Mint(IterMixin):
+    convert_unit: int
     total_coin: int
-
-
-@dataclass
-class Compute(IterMixin):
-    precision: int
-
-
-@dataclass
-class Coin(IterMixin):
     base_denom: str
     denom: str
 
 
 @dataclass
-class Stake(IterMixin):
+class Staking(IterMixin):
     period: dict
     annual_rate: dict
     fixed_type: dict
-    validator_token: int
 
 
 @dataclass
@@ -117,12 +108,10 @@ class Flags(IterMixin):
 @dataclass
 class ApplicationChain(IterMixin):
     Host: Host
-    Compute: Compute
-    Mint: Mint
-    Stake: Stake
-    Coin: Coin
     GlobalFlags: GlobalFlags
     Flags: Flags
+    Mint: Mint
+    Staking: Staking
 
 
 class Config(NacosConfig):
