@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+import time
 
+import yaml
 from fabric import Connection, Config
 from paramiko.channel import Channel
 
@@ -10,14 +12,13 @@ class Client:
         self.ip = ip
         self.port = port
         self.username = username
-        self.certificate = certificate
         self.password = password
+        self.certificate = certificate
         self._connection = None
+        self.channel = self.create_invoke_shell()
 
     def __eq__(self, other):
-        if self.ip == other.ip and self.username == other.username:
-            return True
-        return False
+        return True if self.ip == other.ip and self.username == other.username else False
 
     def __hash__(self):
         return hash(id(self))
@@ -26,12 +27,8 @@ class Client:
     def connection(self):
         if self._connection and self._connection.is_connected:
             return self._connection
-
-        if self.certificate:
-            config = None
-        else:
-            config = Config(overrides={'sudo': {'password': self.password}})
-
+        # TODO: 证书登录
+        config = None if self.certificate else Config(overrides={'sudo': {'password': self.password}})
         self._connection = Connection(self.ip, self.username, self.port, config=config,
                                       connect_kwargs={'password': self.password})
         return self._connection
@@ -53,17 +50,73 @@ class Client:
             return result.stdout.strip()
         return result
 
-    def create_session(self) -> Channel:
-        """创建一个会话"""
-        channel = self.connection.create_session()
-        return channel
+    def _create_session(self) -> Channel:
+        return self.connection.create_session()
 
     def create_invoke_shell(self) -> Channel:
         """开启一个虚拟窗口"""
-        channel = self.create_session()
+        channel = self._create_session()
         channel.get_pty()
         channel.invoke_shell()
         return channel
+
+    class Interactive:
+        read_size = 1024 * 5
+
+        @classmethod
+        def input_password(cls, channel, resp: str, password: str):
+            """输入密码"""
+            listen_info = 'Enter keyring passphrase:'
+            if resp.endswith(listen_info):
+                channel.send(f"{password}" + "\n")
+            else:
+                raise Exception("not found listen info")
+
+        @classmethod
+        def read_channel_data(cls, channel, size=read_size) -> str:
+            """
+            循环读取channel数据直到接收完整的数据或达到终止条件
+            :param channel: SSH通道对象
+            :param size: 每次读取的数据大小
+            :return: 完整的数据字符串
+            """
+            resp = ""
+            while True:
+                time.sleep(0.5)
+                if channel.recv_ready():
+                    stdout = channel.recv(size)
+                    resp += stdout.decode('utf-8')
+                    if not resp.isspace():
+                        break
+            return resp
+
+        @classmethod
+        def input_yes_or_no(cls, channel, boolean: bool = True):
+            channel.send("y" + "\n") if boolean else channel.send("n" + "\n")
+            resp = cls.read_channel_data(channel)
+            resp = resp.lstrip("y")
+            return resp
+
+
+class Result:
+
+    @classmethod
+    def split_esc(cls, data: str):
+        """按esc切割数据"""
+        data_info = data.split("")
+        return yaml.load(data_info[0], Loader=yaml.FullLoader)
+
+    @classmethod
+    def yaml_to_dict(cls, yaml_path: str, is_file=False) -> dict:
+        """yaml数据/文件转dict"""
+        if yaml_path.isspace():
+            return {}
+        if is_file:
+            with open(yaml_path) as file:
+                dict_value = yaml.load(file.read(), Loader=yaml.FullLoader)
+        else:
+            dict_value = yaml.load(yaml_path, Loader=yaml.FullLoader)
+        return dict_value
 
 
 if __name__ == '__main__':

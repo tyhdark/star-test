@@ -5,8 +5,7 @@ from typing import Callable
 from loguru import logger
 
 from config.config import app_chain
-from ssh import Client
-from tools.console import Result, Interaction
+from ssh import Client, Result
 
 
 class Meta(type):
@@ -155,7 +154,6 @@ class Tx(metaclass=Meta):
 class Node:
     ssh_client = Client(ip=app_chain.Host.ip, port=app_chain.Host.port,
                         username=app_chain.Host.username, password=app_chain.Host.password)
-    channel = ssh_client.create_invoke_shell()
     config = app_chain
 
     def __init__(self, node: str):
@@ -194,7 +192,7 @@ class Node:
 
     def __get_superadmin_addr(self):
         get_superadmin_cmd = f"{self.base_cmd} keys show superadmin -a {self.config.Flags.keyring_backend}"
-        return self.ssh_client.ssh(get_superadmin_cmd)
+        return self.ssh_client.exec_cmd(get_superadmin_cmd)
 
     def generate_query_cmd(self, cmd: str):
         query_cmd = self.base_cmd + f"{self.config.Flags.node} {self.config.GlobalFlags.chain_id} "
@@ -213,14 +211,14 @@ class Node:
     def executor(self, cmd):
         logger.info(f"{inspect.stack()[0][3]}: {cmd}")
         if "keys add" in cmd:
-            _ = self.channel.send(cmd + "\n")
-            resp_info = Interaction.ready(self.channel)
+            _ = self.ssh_client.channel.send(cmd + "\n")
+            resp_info = self.ssh_client.Interactive.read_channel_data(self.ssh_client.channel)
             if "existing" in resp_info:
-                resp_info = Interaction.yes_or_no(self.channel)
+                resp_info = self.ssh_client.Interactive.input_yes_or_no(self.ssh_client.channel)
             assert "**Important**" in resp_info
             return resp_info
 
-        resp_info = self.ssh_client.ssh(cmd, strip=False)
+        resp_info = self.ssh_client.exec_cmd(cmd, strip=False)
         if resp_info.failed:
             logger.info(f"resp_info.stderr: {resp_info.stderr}")
             return resp_info.stderr
@@ -228,58 +226,4 @@ class Node:
 
 
 if __name__ == '__main__':
-    # node1 = Node("--node=tcp://192.168.0.207:26657")
-    # d1 = dict(key="value1", key2="value2")
-    # a1 = [7, 8, 9]
-    # print(Query.block("100", "123", "456", *a1, **d1))
-    Keys.help()
-    print(Keys.add("abcd"))
-
-    print(Query.Bank.balances("addr"))
-    print(Query.Bank.denom_metadata("12"))
-    Tx.Staking.help()
-    pass
-
-    # send_cmd = Tx.Bank.send(
-    #     "me16kgchstxh398tgprvduqjfyaa7atpvnd2mx7t7",
-    #     "me12tr8ju53p7hp3t70hy9k83wvctut350etfn0d6",
-    #     "100mec"
-    # )
-    # send_cmd += "-b=block"
-
-    # keys_add = Keys.add("test-py-2")
-    # keys_export = Keys.export("test-py-2")
-    # keys_export = node1.generate_keys_cmd(keys_export)
-    # keys_export = 'echo "y" | ' + keys_export
-    # res2 = node1.executor(keys_export)
-    # print(res2)
-    # print(node1.executor(node1.generate_keys_cmd(Keys.list())))
-
-    # new_kyc_dict = {
-    #     "from": node1.superadmin,
-    #     # "account": "me1xqzz674wqnzsdcqszmcwwe3u587jhhlwyyukdk",
-    #     # "region_id": "ITA",
-    #     # "inviteAccount": "",
-    # }
-    # new_kyc_args = ["me1xqzz674wqnzsdcqszmcwwe3u587jhhlwyyukdk", "arm", ]
-    # res = Tx.Staking.new_kyc(*new_kyc_args, **new_kyc_dict)
-    # cmd1 = node1.generate_tx_cmd(res) + "-b=block"
-    # result = node1.executor(cmd1)
-    #
-    # print(result)
-    # for arg in args:
-    #     var = getattr(self.config.Flags, arg)
-    #     base_cmd += var + " "
-
-    # key_cmd = Keys.add("test-0001")
-    # key_add_cmd = node1.generate_keys_cmd(key_cmd)
-    #
-    # key_cmd = Keys.delete("test-0001")
-    # key_delete_cmd = "echo 'y' | " + node1.generate_keys_cmd(key_cmd)
-    #
-    # res = node1.executor(key_add_cmd)
-    # print(res)
-    # res2 = node1.executor(key_delete_cmd)
-    # print(res2)
-
     pass
