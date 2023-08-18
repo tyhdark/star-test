@@ -130,10 +130,9 @@ class Config(NacosConfig):
     def deserialize_application_chain(self):
         _host = self.__deserialize("Host")
         _mint = self.__deserialize("Mint")
-        _compute = self.__deserialize("Compute")
-        _coin = self.__deserialize("Coin")
-        _stake = self.__deserialize("Stake")
-        app = ApplicationChain(Host=_host, Mint=_mint, Compute=_compute, Coin=_coin, Stake=_stake,
+        _stake = self.__deserialize("Staking")
+
+        app = ApplicationChain(Host=_host, Mint=_mint, Staking=_stake,
                                GlobalFlags=GlobalFlags(), Flags=Flags())
         return app
 
