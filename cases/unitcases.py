@@ -81,7 +81,7 @@ class Kyc(Keys):
         return user_info
 
 
-class Validator( Kyc):
+class Validator(Kyc):
     def test_create_validator(self, node_name=None):
         """创建验证者节点，如果没有指定node_name，node名称会自动去拿线上没有的，token金额要写到配置文件里面去"""
         if node_name is None:
@@ -232,6 +232,8 @@ if __name__ == '__main__':
     v = Validator()
     k = Kyc()
     keys = Keys()
+    bank = k.test_show(user_name="test_bank")
+    print(bank['address'])
     # print(k.test_new_kyc_user())
 
     # print(b.test_send(from_addr=Tx.super_addr, to_addr=addr, amount=10000))
@@ -259,7 +261,6 @@ if __name__ == '__main__':
     # print(b.test_send(**data_send))
     # print(keys.test_add())
 
-
     # print(b.test_send(**data_send))
     # print(d.test_delegate(**data_del))
     # print(keys.test_add())
@@ -273,6 +274,6 @@ if __name__ == '__main__':
     # r.test_create_region_wang()
     # print(v.test_create_validator())
     # print(k.test_new_kyc_user(region_id='hti', addr=None))
-    print(r.test_create_region(node_name='node1'))
-    print("1221")
+    # print(r.test_create_region(node_name='node1'))
+    # print("1221")
     pass

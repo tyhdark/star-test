@@ -244,7 +244,7 @@ class Query(BaseClass):
             查询所有指定模块，，且返回模块地址，
             :param pool_name: 模块账户地址，默认是国库地址
             """
-            cmd = Query.work_home + f"./me-chaind query auth accounts | grep -w '{pool_name}' -B 6 | grep 'address'"
+            cmd = Query.work_home + f"./me-chaind query auth module-accounts | grep -w 'name: {pool_name}' -B 6 | grep 'address'"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))['address']
 

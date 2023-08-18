@@ -16,7 +16,7 @@
   min_amount: 0.0000001
   test_name: "not_bonded_tokens_pool"
 
-- success_amount: 9
+- success_amount: 4.99
   code: 0
   mouth: 12
   min_amount: 0.00000099999

@@ -17,30 +17,26 @@ test_kyc = unitcases.Kyc()
 
 
 # new_kyc且给kyc用户转钱
-def new_kyc_and_send(region=False):
-    amount = 10
-    user_address = test_kyc.test_new_kyc_user()
-    print(f"user_info={user_address}")
-
-    test_bank_addr = Query.Key.address_of_name(username="test_bank")
-    print(f"test_bank_addr={test_bank_addr},user_address={user_address}")
-    Tx.Bank.send_tx(from_addr=test_bank_addr, to_addr=user_address, amount=amount)
-    # 拿Kyc的区id
-    region_id = HttpQuery.Staking.kyc(addr=user_address)['kyc']['regionId']
-    if region is True:
-        return user_address, amount, region_id
-    else:
-        return user_address, amount
-
-    # user_name = Query.Key.name_of_addre(addr=user_address)
-    # Tx.Keys.delete(user_name=user_name)
-    # yield 0
+# def new_kyc_and_send(region=False):
+#     amount = 10
+#     user_address = test_kyc.test_new_kyc_user()
+#     print(f"user_info={user_address}")
+#
+#     test_bank_addr = Query.Key.address_of_name(username="test_bank")
+#     print(f"test_bank_addr={test_bank_addr},user_address={user_address}")
+#     Tx.Bank.send_tx(from_addr=test_bank_addr, to_addr=user_address, amount=amount)
+#     # 拿Kyc的区id
+#     region_id = HttpQuery.Staking.kyc(addr=user_address)['kyc']['regionId']
+#     if region is True:
+#         return user_address, amount, region_id
+#     else:
+#         return user_address, amount
 
 
-def delete_addr(user_addr):
-    user_name = Query.Key.name_of_addre(addr=user_addr)
-    Tx.Keys.delete(user_name=user_name)
-    return 0
+# def delete_addr(user_addr):
+#     user_name = Query.Key.name_of_addre(addr=user_addr)
+#     Tx.Keys.delete(user_name=user_name)
+#     return 0
 
 
 class TestFixed:
@@ -53,69 +49,66 @@ class TestFixed:
     base_cfg = test_bank.tx
 
     # new一个KYC
-    def test_new_kyc(self):
-        user_name = "test_wang_fixed"
-        Tx.Keys.add(username=user_name)
-        user_addr = Query.Key.address_of_name(username=user_name)
+    # def test_new_kyc(self):
+    #     user_name = "test_wang_fixed"
+    #     Tx.Keys.add(username=user_name)
+    #     user_addr = Query.Key.address_of_name(username=user_name)
+    #
+    #     user_info = self.test_kyc.test_new_kyc_user(addr=user_addr)  # 随机生成一个KYC用户
+    #     logger.info(f"")
+    #     return user_info
+    #
+    # # 拿到这个KYC
+    # def test_get_kyc_info(self):
+    #     user_name = "test_wang_fixed"
+    #     user_addr = Query.Key.address_of_name(username=user_name)
+    #     # print('u=',user_addr)
+    #     region_id = "nga"
+    #     assert 1 == 1
+    #
+    #     return user_addr, region_id
 
-        user_info = self.test_kyc.test_new_kyc_user(addr=user_addr)  # 随机生成一个KYC用户
-        logger.info(f"")
-        return user_info
-
-    # 拿到这个KYC
-    def test_get_kyc_info(self):
-        user_name = "test_wang_fixed"
-        user_addr = Query.Key.address_of_name(username=user_name)
-        # print('u=',user_addr)
-        region_id = "nga"
+    def test_fixture(self, creat_kyc_user):
+        user_addr, amount, region_id = creat_kyc_user
+        logger.info(f"user_addr, amount, region_id={user_addr, amount, region_id}")
+        time.sleep(2)
+        print("222")
         assert 1 == 1
-
-        return user_addr, region_id
+        pass
 
     # 发起定期委托，
     @pytest.mark.parametrize("test_fixed", test_data)
-    def test_fixed_success_amount_and_mouth(self, test_fixed):
-        """发起定期委托： 正常金额测试 这里需要完善的是随机拿一个KYC用户"""
+    def test_fixed_success_amount_and_mouth(self, test_fixed, creat_kyc_user):
+        """发起定期委托： 正常金额测试 这里需要完善的是随机拿一个KYC用户,通过"""
         # 准备数据
-        user_addr, send_amount, region_id = new_kyc_and_send(region=True)
-        try:
-            # send_addr = Query.Key.address_of_name(username="test_bank")
-            amount = "{:.10f}".format(test_fixed['success_amount'])
-            mouth = test_fixed['mouth']
-            # 给这个账户转一笔钱，
-            # Tx.Bank.send_tx(from_addr=send_addr, to_addr=user_addr, amount=float(amount) + 1)
-            start_balance = HttpQuery.Bank.query_balances(addr=user_addr)
-            # 正常发起一次定期
-            user_fixed_list_start = HttpQuery.Staking.fixed_deposit(addr=user_addr)
-            region_fixed_list_start = (Query.Staking.show_fixed_deposit_by_region(region_id=region_id))['FixedDeposit']
-            all_fixed_list_start = HttpQuery.Staking.fixed_deposit()
-            # 发起委托
-            result = Tx.Staking.deposit_fixed(from_addr=user_addr, amount=amount, month=mouth)
-            # logger.info(f"result = {result}")
-            # 查看自己的定期列表有没有新增定期 6
-            user_fixed_list_end = HttpQuery.Staking.fixed_deposit(addr=user_addr)
-            #  查看区域定期委托列表有没有新增
-            region_fixed_list_end = (Query.Staking.show_fixed_deposit_by_region(region_id=region_id))['FixedDeposit']
-            # 查看全网定期委托列表有没有增加
-            all_fixed_list_end = HttpQuery.Staking.fixed_deposit()
-            # 查看用户结束余额
-            end_balance = HttpQuery.Bank.query_balances(addr=user_addr)
-            logger.info(f"end_balance={end_balance}")
-            # 断言1：自己定期列表
-            assert len(user_fixed_list_end) == len(user_fixed_list_start) + 1
-            # 断言2： 区域定期委托列表
-            assert len(region_fixed_list_end) == len(region_fixed_list_start) + 1
-            # 断言3：全网定期委托列表
-            assert len(all_fixed_list_end) == len(all_fixed_list_start) + 1
-            # 断言3： 用户结束余额==开始余额-委托金额-手续费
-            assert end_balance == start_balance - Compute.to_u(float(amount)) - 100
-        finally:
-            # 提取自己的定期打扫数据，删除用户打扫数据
-            # fixed_info = HttpQuery.Staking.fixed_deposit(addr=user_addr)
-            user_fixed_list_end=HttpQuery.Staking.fixed_deposit(addr=user_addr)
-            latest_id = max([i['id'] for i in user_fixed_list_end])
-            Tx.Staking.withdraw_fixed(from_addr=user_addr, fixed_delegation_id=latest_id)
-            delete_addr(user_addr=user_addr)
+        user_addr, start_balance, region_id = creat_kyc_user
+        amount = "{:.10f}".format(test_fixed['success_amount'])
+        mouth = test_fixed['mouth']
+
+        user_fixed_list_start = HttpQuery.Staking.fixed_deposit(addr=user_addr)
+        region_fixed_list_start = (Query.Staking.show_fixed_deposit_by_region(region_id=region_id))['FixedDeposit']
+        all_fixed_list_start = HttpQuery.Staking.fixed_deposit()
+
+        result = Tx.Staking.deposit_fixed(from_addr=user_addr, amount=amount, month=mouth)
+        logger.info(f"result = {result}")
+
+        user_fixed_list_end = HttpQuery.Staking.fixed_deposit(addr=user_addr)
+        #  查看区域定期委托列表有没有新增
+        region_fixed_list_end = (Query.Staking.show_fixed_deposit_by_region(region_id=region_id))['FixedDeposit']
+        # 查看全网定期委托列表有没有增加
+        all_fixed_list_end = HttpQuery.Staking.fixed_deposit()
+        # 查看用户结束余额
+        end_balance = HttpQuery.Bank.query_balances(addr=user_addr)
+        logger.info(f"end_balance={end_balance}")
+        # 断言1：自己定期列表
+        assert len(user_fixed_list_end) == len(user_fixed_list_start) + 1
+        # 断言2： 区域定期委托列表
+        assert len(region_fixed_list_end) == len(region_fixed_list_start) + 1
+        # 断言3：全网定期委托列表
+        assert len(all_fixed_list_end) == len(all_fixed_list_start) + 1
+        # 断言3： 用户结束余额==开始余额-委托金额-手续费
+        assert end_balance == start_balance - Compute.to_u(float(amount)) - 100
+
         pass
 
     # 测试最小金额

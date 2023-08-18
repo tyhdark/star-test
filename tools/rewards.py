@@ -2,6 +2,7 @@
 # 这个文件用来手动计算收益的
 import math
 from loguru import logger
+from decimal import Decimal
 
 
 class Reward(object):
@@ -58,7 +59,12 @@ class Reward(object):
         u_amount = amount * (10 ** 6)
         logger.info(
             f"设置的年化利率是:{rate}百分比,选择的定期月是{month}个月,存入的本金是{u_amount}umec")
-        rewards = int(rate * month / 12 * u_amount)
+        s = Decimal((rate * u_amount * (3 / 12)) )
+        # d = s
+        # logger.info(f"d={d}")
+        # s = "{:.10f}".format((rate * month / 12))
+        logger.info(f"s = {s}")
+        rewards = int(Decimal(rate * month / 12) * u_amount)
         logger.info(f"到期后获得的利息是{rewards}")
 
         return rewards
@@ -69,6 +75,8 @@ if __name__ == '__main__':
     # r.kyc_reward(10000,10000,0)
     # print(Reward.fixed_reward(rate=c, month=6, amount=1000000000))
     # print(r.fixed_reward(rate=0.05, month=1, amount=100000000))
-    print(Reward.reward_nokyc(stake=1469, end_height=100, start_height=99))
-    reward = Reward.reward_nokyc(stake=1, end_height=101, start_height=100)
+    # print(Reward.reward_nokyc(stake=1469, end_height=100, start_height=99))
+    # reward = Reward.reward_nokyc(stake=1, end_height=101, start_height=100)
     # Reward.fixed_reward(rate=)
+    reward = Reward.fixed_reward(rate=0.05, month=1, amount=9)
+    print(reward)

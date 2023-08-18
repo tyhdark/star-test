@@ -47,9 +47,9 @@ class Tx(BaseClass):
             return Tx._executor(cmd)
 
         @staticmethod
-        def send_to_admin(amount, superadmin=BaseClass.super_addr, fees=Fees):
+        def send_to_admin(amount, super_addr=BaseClass.super_addr, fees=Fees):
             """国库往超管转钱，不需要传参,传金额就行，保留"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx bank sendToAdmin {amount}{Tx.coin['c']} --from={superadmin} " \
+            cmd = Tx.work_home + f"{Tx.chain_bin} tx bank sendToAdmin {amount}{Tx.coin['c']} --from={super_addr} " \
                                  f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
@@ -82,14 +82,14 @@ class Tx(BaseClass):
             return Tx._executor(cmd)
 
         @staticmethod
-        def create_validator(node_name: str, amount=None, fees=Fees, ):
+        def create_validator(node_name: str, amount=None, fees=Fees):
             """创建验证者节点，需要传入对应的node几,可用，"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking create-validator  --amount={amount}{Tx.coin['c']}  " \
-                                 f"--pubkey=$({Tx.chain_bin} tendermint show-validator --home=../nodes/{node_name})  " \
-                                 f"--moniker=\"{node_name}\" " \
-                                 f" --commission-rate=\"0.10\" --commission-max-rate=\"0.20\"  " \
-                                 f" --commission-max-change-rate=\"0.01\" --from={Tx.super_addr}  " \
-                                 f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
+
+            cmd = Tx.work_home + f'{Tx.chain_bin} tx staking create-validator  --amount={amount}{Tx.coin["c"]}  ' \
+                                 f'--pubkey=$({Tx.chain_bin} tendermint show-validator --home=../nodes/{node_name})  ' \
+                                 f'--moniker={node_name}  --commission-rate=0.10 --commission-max-rate=0.20   ' \
+                                 f'--commission-max-change-rate=0.01 --from={Tx.super_addr}  ' \
+                                 f'--fees={fees}{Tx.coin["uc"]}  {Tx.chain_id} {Tx.keyring_backend} -y -b=block'
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
