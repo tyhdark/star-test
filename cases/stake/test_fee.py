@@ -34,6 +34,7 @@ class TestFee(object):
     test_fixed = unitcases.Fixed()
     base_cfg = test_bank.tx
     user_addr = None
+    is_first_success = False
 
     @pytest.fixture(scope='class')
     def setup_class_get_kyc_user_info(self):
@@ -323,77 +324,81 @@ class TestFee(object):
         # 删除用户
         self.test_key.test_delete_key(user_addr)
 
-    def test_kyc_un_delegate_fee(self):
+    @pytest.mark.parametrize("un_delegate_fees", (Compute.to_u(990000000), 100, 100.0, 100.1, 100.49, 100.9, 200))
+    def test_kyc_un_delegate_fee(self, setup_class_get_kyc_user_info, un_delegate_fees):
         """
         验证kyc_un_delegate下修改fees
         """
         logger.info("TestFee/test_kyc_un_delegate_fee")
-        user_info = self.test_kyc.test_new_kyc_user()
-        user_addr = user_info
 
-        send_amount = 100
-        self.base_cfg.Bank.send_to_admin(amount=(send_amount + 1))  # 怕管理员没钱，国库先转钱给管理员
+        user_addr = setup_class_get_kyc_user_info
+        before_user_balance = HttpResponse.get_balance_unit(user_addr)
 
-        send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr, amount=send_amount)
-        self.test_bank.test_send(**send_data)
-
-        # 委托10
-        delegate_amount = 10
-        del_data = dict(from_addr=user_addr, amount=delegate_amount, fees=100)
+        # 委托2
+        delegate_amount = 2
+        del_data = dict(from_addr=user_addr, amount=delegate_amount)
         self.test_del.test_delegate(**del_data)
-
-        # 200的手续费  但前的余额 = 本来的钱-活期委托的10-手续费+赎回活期委托的10 -200的手续费
-        del_data = dict(from_addr=user_addr, amount=10, fees=200)
-        self.tx.staking.undelegate_kyc(**del_data)
 
         time.sleep(self.tx.sleep_time)
 
+        # 赎回2
+        del_data = dict(from_addr=user_addr, amount=2, fees=un_delegate_fees)
+        resp = self.tx.staking.undelegate_kyc(**del_data)
+
+        # 如果传入的手续费数据大于管理员本金就判断交易无法成功且返回1144的code
         user_balance = HttpResponse.get_balance_unit(user_addr)
-        assert user_balance == Compute.to_u(send_amount) - self.base_cfg.fees - 200 + 1
+        if un_delegate_fees > user_balance:
+            time.sleep(self.tx.sleep_time)
+            assert resp['code'] == 1144
+            return
 
-        # # 取回
-        # del_data = dict(from_addr=user_addr, amount=10)
-        # resp = self.tx.staking.undelegate_kyc(**del_data)
+        assert self.hq.tx.query_tx(resp['txhash'])['code'] == 0
+        after_user_balance = HttpResponse.get_balance_unit(user_addr)
+        # 断言手续费是否为最初的余额-掉定期委托的金额-使用的手续费 - 活期委托用掉的默认手续费
+        # 这里+1是因为会产生一个1u的收益，但这个收益是不满1u的时候被预先给的，如果后续产生的收益0.0几没有补上成为1,后续只会产生0 ?有问题！
 
-        # 删除用户
-        self.test_key.test_delete_key(user_addr)
+        # if self.is_first_success:
+        #     income_amount = 0
+        # else:
+        #     income_amount = 1
+        #     self.is_first_success = True
+        income_amount = 0
 
-    def test_deposit_fixed_fee(self):
+        assert before_user_balance - self.base_cfg.fees - after_user_balance + income_amount == int(un_delegate_fees)
+
+    @pytest.mark.parametrize("deposit_fees", (Compute.to_u(990000000), 100, 100.0, 100.1, 100.49, 100.9, 200))
+    def test_deposit_fixed_fee(self, setup_class_get_kyc_user_info, deposit_fees):
         """
         验证定期质押下修改fees
         """
         logger.info("TestFee/test_deposit_fixed_fee")
-        user_info = self.test_kyc.test_new_kyc_user()
-        user_addr = user_info
 
-        send_amount = 100
-        self.base_cfg.Bank.send_to_admin(amount=(send_amount + 1))  # 怕管理员没钱，国库先转钱给管理员
+        user_addr = setup_class_get_kyc_user_info
 
-        # 给用户发钱
-        send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr, amount=send_amount)
-        self.test_bank.test_send(**send_data)
+        before_user_balance = HttpResponse.get_balance_unit(user_addr)
+        # 定期委托10
+        del_data = dict(from_addr=user_addr, amount=2, month=48, fees=deposit_fees)
+        resp = self.tx.staking.deposit_fixed(**del_data)
 
-        # 定期委托10  费率是200
-        del_data = dict(from_addr=user_addr, amount=10, fees=200)
-        self.tx.staking.deposit_fixed(**del_data)
-
-        time.sleep(self.tx.sleep_time)
-
+        # 如果传入的手续费数据大于管理员本金就判断交易无法成功且返回1144的code
         user_balance = HttpResponse.get_balance_unit(user_addr)
-        assert user_balance == Compute.to_u(100 - 10) - 200
+        if deposit_fees > user_balance:
+            time.sleep(self.tx.sleep_time)
+            assert resp['code'] == 1144
+            return
 
-        time.sleep(self.tx.sleep_time)
-        # 定期提取10  费率是200
-        user_fixed_info_end = HttpResponse.get_fixed_deposit_by_addr_hq(addr=user_addr)
-        myid = user_fixed_info_end[0]['id']
-        withdraw = dict(from_addr=user_addr, fixed_delegation_id=myid, fees=200)
-        resp = self.tx.staking.withdraw_fixed(**withdraw)
-        time.sleep(self.tx.sleep_time)
         assert self.hq.tx.query_tx(resp['txhash'])['code'] == 0
+        after_user_balance = HttpResponse.get_balance_unit(user_addr)
+        # 断言手续费是否为最初的余额-掉定期委托的金额-使用的手续费
+        assert before_user_balance - after_user_balance - Compute.to_u(2) == int(deposit_fees)
 
-        # 用户定期委托10 赎回10 有效的手续费都是200
-        user_balance = HttpResponse.get_balance_unit(user_addr)
-        assert user_balance == Compute.to_u(100) - 400
+        time.sleep(self.tx.sleep_time)
+
+        # 委托的定期要赎回，避免污染数据
+        user_fixed_info_end = HttpResponse.get_fixed_deposit_by_addr_hq(addr=user_addr)
+        withdraw = dict(from_addr=user_addr, fixed_delegation_id=user_fixed_info_end[0]['id'])
+        resp = self.tx.staking.withdraw_fixed(**withdraw)
+        assert self.hq.tx.query_tx(resp['txhash'])['code'] == 0
 
     @pytest.mark.parametrize("deposit_fees", (Compute.to_u(990000000), 100, 100.0, 100.1, 100.49, 100.9, 200))
     def test_withdraw_fixed_fee(self, setup_class_get_kyc_user_info, deposit_fees):
@@ -405,7 +410,7 @@ class TestFee(object):
 
         before_user_balance = HttpResponse.get_balance_unit(user_addr)
         # 定期委托10
-        del_data = dict(from_addr=user_addr, amount=10, month=48)
+        del_data = dict(from_addr=user_addr, amount=2, month=48)
         resp = self.tx.staking.deposit_fixed(**del_data)
         assert self.hq.tx.query_tx(resp['txhash'])['code'] == 0
 
