@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 # 这个文件用来手动计算收益的
 import math
+
 from loguru import logger
+
 
 class Reward(object):
     # def __init__(self):
@@ -64,7 +66,6 @@ class Reward(object):
 
 
 if __name__ == '__main__':
-
     # r.nokyc_reward(10000,1000,996)
     # r.kyc_reward(10000,10000,0)
     print(Reward.fixed_reward(rate=c, month=6, amount=1000000000))
