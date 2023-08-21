@@ -107,11 +107,48 @@ class TestFee(object):
         user_info = self.test_key.test_add()
         user_addr = user_info['address']
 
+        user1_info = self.test_key.test_add()
+        user_addr1 = user1_info['address']
+
+        user2_info = self.test_key.test_add()
+        user2_addr = user2_info['address']
+
+        # send to user
         send_amount = 100
         self.base_cfg.Bank.send_to_admin(amount=(send_amount + 1))  # 怕管理员没钱，国库先转钱给管理员
 
         send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr, amount=send_amount)
         self.test_bank.test_send(**send_data)
+
+        # send to user1
+        send_amount = 100
+        self.base_cfg.Bank.send_to_admin(amount=(send_amount + 1))  # 怕管理员没钱，国库先转钱给管理员
+
+        send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr1, amount=send_amount)
+        self.test_bank.test_send(**send_data)
+
+        del_data = dict(from_addr=user_addr1, amount=10, fees=100.49)
+        resp = self.tx.staking.delegate(**del_data)
+        assert 0 == resp['code']
+
+        time.sleep(self.tx.sleep_time)
+        user_balance = HttpResponse.get_balance_unit(user_addr1)
+        assert user_balance == Compute.to_u(send_amount - 10) - 100
+
+        # send to user2
+        send_amount = 100
+        self.base_cfg.Bank.send_to_admin(amount=(send_amount + 1))  # 怕管理员没钱，国库先转钱给管理员
+
+        send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user2_addr, amount=send_amount)
+        self.test_bank.test_send(**send_data)
+
+        del_data = dict(from_addr=user2_addr, amount=10, fees=100.99)
+        resp = self.tx.staking.delegate(**del_data)
+        assert 0 == resp['code']
+
+        time.sleep(self.tx.sleep_time)
+        user_balance = HttpResponse.get_balance_unit(user2_addr)
+        assert user_balance == Compute.to_u(send_amount - 10) - 100
 
         del_data = dict(from_addr=user_addr, amount=10, fees=50)
         resp = self.tx.staking.delegate(**del_data)
@@ -164,6 +201,8 @@ class TestFee(object):
 
         # 删除用户
         self.test_key.test_delete_key(user_addr)
+        self.test_key.test_delete_key(user_addr1)
+        self.test_key.test_delete_key(user2_addr)
 
     def test_no_kyc_un_delegate_fee(self):
         """
