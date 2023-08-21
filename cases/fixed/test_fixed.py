@@ -113,9 +113,11 @@ class TestFixed:
 
     # 测试最小金额
     @pytest.mark.parametrize("test_fixed", test_data)
-    def test_fixed_min_or_max_amount(self, test_fixed):
+    def test_fixed_min_or_max_amount(self, test_fixed, creat_kyc_user):
         """发起定期，最大（超过自身余额）或者最小（小于0.01mec）金额测试"""
-        user_addr, region_id = self.test_get_kyc_info()
+        user_addr, start_balance, region_id = creat_kyc_user
+
+        # user_addr, region_id = self.test_get_kyc_info()
         # 发起定期委托
         amount = "{:.10f}".format(test_fixed['min_amount'])
 
@@ -129,8 +131,9 @@ class TestFixed:
 
     # 测试最大月份
     @pytest.mark.parametrize("test_fixed", [2, 4, 5, 7, 8, 10, 11, 13, 14, 15, 16, 17, 19, 20, 21])
-    def test_fixed_error_mouth(self, test_fixed):
-        user_addr, region_id = self.test_get_kyc_info()
+    def test_fixed_error_mouth(self, test_fixed, creat_kyc_user):
+        user_addr, start_balance, region_id = creat_kyc_user
+        # user_addr, region_id = self.test_get_kyc_info()
         mouth = test_fixed
         # 发起定期委托
         result = Tx.Staking.deposit_fixed(from_addr=user_addr, amount=mouth, month=mouth)
@@ -163,152 +166,121 @@ class TestFixed:
 
 
 class TestFixedWithdraw:
-    test_region = unitcases.Region()
-    test_del = unitcases.Delegate()
-    test_kyc = unitcases.Kyc()
-    test_key = unitcases.Keys()
-    test_bank = unitcases.Bank()
-    test_fixed = unitcases.Fixed()
-    base_cfg = test_bank.tx
+    # test_region = unitcases.Region()
+    # test_del = unitcases.Delegate()
+    # test_kyc = unitcases.Kyc()
+    # test_key = unitcases.Keys()
+    # test_bank = unitcases.Bank()
+    # test_fixed = unitcases.Fixed()
+    # base_cfg = test_bank.tx
 
     # new_kyc 且给kyc用户转钱
 
     # 正常提取定期，计算收益
-    def test_withdraw_expire(self):
+    def test_withdraw_expire(self, creat_kyc_user):
+        """发起一笔定期，等待60秒到期后提取收益"""
         # 用户发起定期委托
-        # fixed_data = dict(from_addr=user_addr,)
-        user_addr, send_amount = new_kyc_and_send()
-        # user_addr = user_info
-        # send_amount = send_amount_info
-        fixed_amount = send_amount - 1
+        user_addr, start_balance, region_id = creat_kyc_user
+        fixed_amount = start_balance - 1
         month = 1
-        try:
+        Tx.Staking.deposit_fixed(from_addr=user_addr, month=month, amount=fixed_amount)
 
-            Tx.Staking.deposit_fixed(from_addr=user_addr, month=month, amount=fixed_amount)
-            start_balance = HttpQuery.Bank.query_balances(addr=user_addr)
-            # 查询自己的定期委托，拿出fixed_id
-            fixed_info = HttpQuery.Staking.fixed_deposit(addr=user_addr)
-            fixed_id = max([i['id'] for i in fixed_info])
-            # 等待1分钟
-            time.sleep(60)
-            # 用户提取定期委托
-            Tx.Staking.withdraw_fixed(from_addr=user_addr, fixed_delegation_id=fixed_id)
-            # 查询用户余额
-            end_balance = HttpQuery.Bank.query_balances(addr=user_addr)
-            # 用户到账和手动计算
-            rate = HttpQuery.Staking.fixed_deposit_rate(month=month)
-            reward = Reward.fixed_reward(rate=rate, month=month, amount=fixed_amount)
-            logger.info(f"end_balance={end_balance}")
-            assert end_balance == start_balance + Compute.to_u(fixed_amount) - 100 + reward
-        # new_kyc_and_send_delete()
-        finally:
-            delete_addr(user_addr=user_addr)
-        pass
+        fixed_info = HttpQuery.Staking.fixed_deposit(addr=user_addr)
+        fixed_id = max([i['id'] for i in fixed_info])
+        # 等待1分钟
+        time.sleep(60)
+        # 用户提取定期委托
+        Tx.Staking.withdraw_fixed(from_addr=user_addr, fixed_delegation_id=fixed_id)
+        # 查询用户余额
+        end_balance = HttpQuery.Bank.query_balances(addr=user_addr)
+        # 用户到账和手动计算
+        rate = HttpQuery.Staking.fixed_deposit_rate(month=month)
+        reward = Reward.fixed_reward(rate=rate, month=month, amount=fixed_amount)
+        logger.info(f"end_balance={end_balance}")
+        assert end_balance == start_balance - 100 + reward
 
     #  提取未到期的定期
-    def test_withdraw_no_expire(self):
-        user_addr, send_amount = new_kyc_and_send()
-        amount = send_amount - 1
-        # 查询用户余额
-        try:
-            start_balance = HttpQuery.Bank.query_balances(addr=user_addr)
-            user_fixed_list_start = HttpQuery.Staking.fixed_deposit(addr=user_addr)
-            all_fixed_list_start = HttpQuery.Staking.fixed_deposit()
-
-            # 先发起一笔定期
-            Tx.Staking.deposit_fixed(from_addr=user_addr, amount=amount, month="1")
-            # 查出用户定期id 拿到用户的委托id
-            fixed_info = HttpQuery.Staking.fixed_deposit(addr=user_addr)
-            latest_id = max([i['id'] for i in fixed_info])
-
-            # 然后提取一笔定期
-            Tx.Staking.withdraw_fixed(from_addr=user_addr, fixed_delegation_id=latest_id)
-            # 获取用户余额
-            end_balance = HttpQuery.Bank.query_balances(addr=user_addr)
-            user_fixed_list_end = HttpQuery.Staking.fixed_deposit(addr=user_addr)
-            all_fixed_list_end = HttpQuery.Staking.fixed_deposit()
-
-            # 断言1 ：用户余额
-            assert end_balance == start_balance - 100 - 100
-            # 断言2：用户委托列表
-            assert len(user_fixed_list_start) == len(user_fixed_list_end)
-            # 断言3：全网委托列表
-            assert len(all_fixed_list_start) == len(all_fixed_list_end)
-        finally:
-            delete_addr(user_addr=user_addr)
-
-        pass
-
-    # 输入已经提取过的id
-    def test_deposit_id_done(self):
-        user_addr, send_amount = new_kyc_and_send()
-        amount = 0.01
-        # 查询用户余额
-        try:
-            start_balance = HttpQuery.Bank.query_balances(addr=user_addr)
-            user_fixed_list_start = HttpQuery.Staking.fixed_deposit(addr=user_addr)
-            all_fixed_list_start = HttpQuery.Staking.fixed_deposit()
-
-            # 先发起一笔定期
-            Tx.Staking.deposit_fixed(from_addr=user_addr, amount=amount, month="1")
-            # 查出用户定期id 拿到用户的委托id
-            fixed_info = HttpQuery.Staking.fixed_deposit(addr=user_addr)
-            latest_id = max([i['id'] for i in fixed_info])
-
-            # 然后提取一笔定期
-            Tx.Staking.withdraw_fixed(from_addr=user_addr, fixed_delegation_id=latest_id)
-            # 然后再提取一笔
-            repeat_withdraw_info = Tx.Staking.withdraw_fixed(from_addr=user_addr, fixed_delegation_id=latest_id)
-            # 获取用户余额
-
-            end_balance = HttpQuery.Bank.query_balances(addr=user_addr)
-            user_fixed_list_end = HttpQuery.Staking.fixed_deposit(addr=user_addr)
-            all_fixed_list_end = HttpQuery.Staking.fixed_deposit()
-            # 断言响应
-            assert "fixed deposit not found" in str(repeat_withdraw_info)
-            # 断言用户余额
-            assert end_balance == start_balance - 100
-            # 断言个人和区域委托列表没有任何变化
-            assert len(user_fixed_list_start) == len(user_fixed_list_end)
-            assert len(all_fixed_list_start) == len(all_fixed_list_end)
-        finally:
-            delete_addr(user_addr=user_addr)
-
-    # 换一个人提取定期
-    def test_deposit_withdraw_payee_error(self):
-        user_addr = "me1m8yxlprg75d5esvlv23u9nyzanax2wu44yjmls"
-        user_addr2 = "me1m63cs3c4zmfl7amecg9xc0sd6ynh5jk70475f0"
-        amount = 0.01
-        # 查询用户余额
+    def test_withdraw_no_expire(self, creat_kyc_user):
+        """发起一笔定期，未到期提取定期委托"""
+        user_addr, start_balance, region_id = creat_kyc_user
+        fixed_amount = start_balance - 1000000
         user_fixed_list_start = HttpQuery.Staking.fixed_deposit(addr=user_addr)
-        # region_fixed_list_start = (Query.Staking.show_fixed_deposit_by_region(region_id=region_id))['FixedDeposit']
         all_fixed_list_start = HttpQuery.Staking.fixed_deposit()
 
         # 先发起一笔定期
-        Tx.Staking.deposit_fixed(from_addr=user_addr, amount=amount, month="1")
+        Tx.Staking.deposit_fixed(from_addr=user_addr, amount=fixed_amount, month="1")
         # 查出用户定期id 拿到用户的委托id
         fixed_info = HttpQuery.Staking.fixed_deposit(addr=user_addr)
         latest_id = max([i['id'] for i in fixed_info])
 
         # 然后提取一笔定期
-        withdraw_info = Tx.Staking.withdraw_fixed(from_addr=user_addr2, fixed_delegation_id=latest_id)
-        print(withdraw_info)
+        Tx.Staking.withdraw_fixed(from_addr=user_addr, fixed_delegation_id=latest_id)
         # 获取用户余额
-
         end_balance = HttpQuery.Bank.query_balances(addr=user_addr)
         user_fixed_list_end = HttpQuery.Staking.fixed_deposit(addr=user_addr)
         all_fixed_list_end = HttpQuery.Staking.fixed_deposit()
-        assert "only depositor can withdraw (fixed deposit payee error): do fixed withdraw error" in str(withdraw_info)
-        # 断言个人和区域委托列表没有任何变化
-        assert len(user_fixed_list_end) == len(user_fixed_list_start) + 1
-        assert len(all_fixed_list_end) == len(all_fixed_list_start) + 1
-        # 提取定期打扫数据
-        Tx.Staking.withdraw_fixed(from_addr=user_addr, fixed_delegation_id=latest_id)
 
-    def test_delete(self):
-        user_addr, send_amount = new_kyc_and_send()
-        print("user_addr, send_amount", user_addr, send_amount)
-        time.sleep(3)
-        r = new_kyc_and_send()
-        print(r)
-        pass
+        # 断言1 ：用户余额
+        assert end_balance == start_balance - 100 - 100
+        # 断言2：用户委托列表
+        assert len(user_fixed_list_start) == len(user_fixed_list_end)
+        # 断言3：全网委托列表
+        assert len(all_fixed_list_start) == len(all_fixed_list_end)
+
+    # 输入已经提取过的id
+    def test_deposit_id_done(self, creat_kyc_user):
+        """发起一笔定期，然后提取两次，输入已经提取过的id"""
+        user_addr, start_balance, region_id = creat_kyc_user
+        fixed_amount = (start_balance - 1000000) / 1000000
+        user_fixed_list_start = HttpQuery.Staking.fixed_deposit(addr=user_addr)
+        all_fixed_list_start = HttpQuery.Staking.fixed_deposit()
+        # 先发起一笔定期
+        Tx.Staking.deposit_fixed(from_addr=user_addr, amount=fixed_amount, month="1")
+        # 查出用户定期id 拿到用户的委托id
+        fixed_info = HttpQuery.Staking.fixed_deposit(addr=user_addr)
+        latest_id = max([i['id'] for i in fixed_info])
+        # 然后提取一笔定期
+        Tx.Staking.withdraw_fixed(from_addr=user_addr, fixed_delegation_id=latest_id)
+        # 然后再提取一笔
+        repeat_withdraw_info = Tx.Staking.withdraw_fixed(from_addr=user_addr, fixed_delegation_id=latest_id)
+        # 获取用户余额
+        end_balance = HttpQuery.Bank.query_balances(addr=user_addr)
+        user_fixed_list_end = HttpQuery.Staking.fixed_deposit(addr=user_addr)
+        all_fixed_list_end = HttpQuery.Staking.fixed_deposit()
+        # 断言响应
+        assert "fixed deposit not found" in str(repeat_withdraw_info)
+        # 断言用户余额
+        assert end_balance == start_balance - 100 - 100 - 100
+        # 断言个人和区域委托列表没有任何变化
+        assert len(user_fixed_list_start) == len(user_fixed_list_end)
+        assert len(all_fixed_list_start) == len(all_fixed_list_end)
+
+
+# 换一个人提取定期
+def test_deposit_withdraw_payee_error(creat_kyc_user, creat_one_addr_and_send_del):
+    """A发起定期，B去提取A的定期"""
+    user_addr_a, user_a_balances, region_id = creat_kyc_user
+    user_addr_b, user_b_balances = creat_one_addr_and_send_del
+    amount = (user_a_balances - 1000000) / 1000000
+    # 查询用户余额
+    user_fixed_list_start = HttpQuery.Staking.fixed_deposit(addr=user_addr_a)
+    all_fixed_list_start = HttpQuery.Staking.fixed_deposit()
+
+    # 先发起一笔定期
+    Tx.Staking.deposit_fixed(from_addr=user_addr_a, amount=amount, month="1")
+    # 查出用户定期id 拿到用户的委托id
+    fixed_info = HttpQuery.Staking.fixed_deposit(addr=user_addr_a)
+    latest_id = max([i['id'] for i in fixed_info])
+
+    # 然后换用户提取一笔定期
+    withdraw_info = Tx.Staking.withdraw_fixed(from_addr=user_addr_b, fixed_delegation_id=latest_id)
+    print(withdraw_info)
+    # 获取用户余额
+    user_fixed_list_end = HttpQuery.Staking.fixed_deposit(addr=user_addr_a)
+    all_fixed_list_end = HttpQuery.Staking.fixed_deposit()
+    assert "only depositor can withdraw (fixed deposit payee error): do fixed withdraw error" in str(withdraw_info)
+    # 断言个人和区域委托列表没有任何变化
+    assert len(user_fixed_list_end) == len(user_fixed_list_start) + 1
+    assert len(all_fixed_list_end) == len(all_fixed_list_start) + 1
+    # 提取定期打扫数据
+    Tx.Staking.withdraw_fixed(from_addr=user_addr_a, fixed_delegation_id=latest_id)

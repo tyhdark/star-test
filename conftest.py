@@ -91,7 +91,7 @@ def balance():
 
 
 @pytest.fixture
-def creat_user_and_delete():
+def creat_two_user_and_delete():
     """ 给test_send用例用的"""
     # 在测试之前执行的操作
     print("Setup")
@@ -107,7 +107,25 @@ def creat_user_and_delete():
     kyc.test_delete_key(addr=user_addr_b)
 
     # 在测试之后执行的操作
-    print("Teardown_用户已删除")
+    print("creat_two_user_and_delete_Teardown_用户已删除")
+
+@pytest.fixture
+def creat_one_addr_and_send_del():
+    print("Setup")
+    amount = 5
+    user_addr_a = kyc.test_new_kyc_user()
+    bank_addr = (kyc.test_show(user_name="test_bank"))["address"]
+    kyc.tx.Bank.send_tx(from_addr=bank_addr, to_addr=user_addr_a, amount=amount)
+    # kyc.tx.Bank.send_tx(from_addr=bank_addr, to_addr=user_addr_a, amount=amount)
+
+    # 返回测试函数前的上下文，类似于 setup 方法
+    yield user_addr_a, amount
+    kyc.test_delete_key(addr=user_addr_a)
+    # kyc.test_delete_key(addr=user_addr_b)
+
+    # 在测试之后执行的操作
+    print("creat_one_addr_and_send_del_Teardown_用户已删除")
+
 
 
 @pytest.fixture()
@@ -124,9 +142,10 @@ def creat_kyc_user():
     # 然后删除该用户
     user_name = kyc.q.Key.name_of_addre(addr=user_addr)
     kyc.tx.Keys.delete(user_name=user_name)
-    print("Teardown_用户已删除")
+    print("creat_kyc_user_Teardown_用户已删除")
 
     pass
+
 
 # if __name__ == '__main__':
 # print(get_region_id_existing())
