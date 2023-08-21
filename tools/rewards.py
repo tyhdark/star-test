@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 # 这个文件用来手动计算收益的
 import math
+
 from loguru import logger
 from decimal import Decimal
+
 
 
 class Reward(object):
