@@ -169,6 +169,7 @@ class TestDelegate(object):
 
         # 传入金额为0 命令应该错误
         assert self.error_delegation(del_data=dict(from_addr=user_addr, amount=0))
+        time.sleep(self.tx.sleep_time)
 
         # 传入金额为-1 命令应该错误
         assert self.error_delegation(del_data=dict(from_addr=user_addr, amount=-1))
@@ -281,6 +282,7 @@ class TestDelegate(object):
 
         # 传入金额为0 命令应该错误
         assert self.error_delegation(del_data=dict(from_addr=user_addr, amount=0))
+        time.sleep(self.tx.sleep_time)
 
         # 传入金额为-1 命令应该错误
         assert self.error_delegation(del_data=dict(from_addr=user_addr, amount=-1))
@@ -308,7 +310,7 @@ class TestDelegate(object):
         resp = self.tx.staking.delegate(from_addr=user_addr, amount=user_balance)
         time.sleep(self.tx.sleep_time)
         tx_resp = self.q.tx.query_tx(resp['txhash'])
-        assert tx_resp['code'] == 5
+        assert tx_resp['code'] == 52
 
         # 委托金额 < 余额-手续费 用户发起10块钱委托
         delegate_amount = 10
