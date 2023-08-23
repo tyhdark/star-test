@@ -92,9 +92,6 @@ class TestRegion(object):
         # 断言 传入已绑定区的验证者
         assert 'already bonded validators' in self.hq.tx.query_tx(resp['txhash'])['raw_log']
 
-        # resp = self.q.staking.show_region(region_name.lower())
-        # assert 'NotFound' in resp
-
     @pytest.mark.parametrize("error_region_name", ("xxxx", "USa", "100.9", "TTT"))
     def test_un_bind_validator_create_region_error_region_name(self, error_region_name):
         """
@@ -124,7 +121,7 @@ class TestRegion(object):
            - validator 未绑定区的验证者
            - exit_region_name 已创建的取名
            + expect: 1.如果所有验证者都已绑定区，忽略该用例
-                     2.传已创建的区名无法创建区1asdasda
+                     2.传已创建的区名无法创建区
         """
         logger.info("TestRegion/test_un_bind_validator_create_region_exit_region_name")
         if len(ValidatorInfo.validator_bind_node_for_region(bind=False)) == 0:

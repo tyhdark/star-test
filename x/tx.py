@@ -105,7 +105,7 @@ class Tx(BaseClass):
             """
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking {stake_or_unstake} {operator_address} " \
                                  f"{amount}{Tx.coin['c']} --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} " \
-                                 f"{Tx.chain_id} {Tx.keyring_backend} -y  "
+                                 f"{Tx.chain_id} {Tx.keyring_backend} -y "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -143,7 +143,7 @@ class Tx(BaseClass):
             2.减少质押金额 < 实际质押额 则按传入金额兑付, 收益重新计算但不主动发放
             """
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking unKycUnbond {amount}{Tx.coin['c']} --from={from_addr} " \
-                                 f" --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y  "
+                                 f" --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
