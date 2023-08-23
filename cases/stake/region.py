@@ -124,7 +124,7 @@ class TestRegion(object):
            - validator 未绑定区的验证者
            - exit_region_name 已创建的取名
            + expect: 1.如果所有验证者都已绑定区，忽略该用例
-                     2.传已创建的区名无法创建区
+                     2.传已创建的区名无法创建区1
         """
         logger.info("TestRegion/test_un_bind_validator_create_region_exit_region_name")
         if len(ValidatorInfo.validator_bind_node_for_region(bind=False)) == 0:
