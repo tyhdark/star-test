@@ -14,7 +14,7 @@ from tools.compute import Compute
 from tools.name import RegionInfo, ValidatorInfo
 from x.base import BaseClass
 
-with open('test_fee.yml', 'r') as file:
+with open('./cases/stake/test_fee.yml', 'r') as file:
     test_data = yaml.safe_load(file)
 
 
@@ -161,7 +161,7 @@ class TestFee(object):
 
         # 如果传入的手续费数据大于管理员本金就判断交易无法成功且返回1144的code
         if send_fees > before_user_balance - user_send_amount:
-            time.sleep(self.tx.self.tx.sleep_time)
+            time.sleep(self.tx.sleep_time)
             assert resp['code'] == 1144
             return
 
@@ -226,11 +226,11 @@ class TestFee(object):
         user_delegate_amount = 2
         send_data = dict(from_addr=user_addr, amount=user_delegate_amount, fees=send_fees)
         resp = self.tx.staking.delegate(**send_data)
-        time.sleep(self.tx.self.tx.sleep_time)
+        time.sleep(self.tx.sleep_time)
 
         # 如果传入的手续费数据大于余额就判断交易无法成功且返回1146的code      为什么这里是1146？
         if send_fees > before_user_balance - user_delegate_amount:
-            time.sleep(self.tx.self.tx.sleep_time)
+            time.sleep(self.tx.sleep_time)
             assert resp['code'] == 1146
             return
 
@@ -267,17 +267,17 @@ class TestFee(object):
         del_data = dict(from_addr=user_addr, amount=delegate_amount)
         self.test_del.test_delegate(**del_data)
 
-        time.sleep(self.tx.self.tx.sleep_time)
+        time.sleep(self.tx.sleep_time)
 
         # 赎回1
         del_data = dict(from_addr=user_addr, amount=delegate_amount, fees=un_delegate_fees)
         resp = self.tx.staking.undelegate_nokyc(**del_data)
-        time.sleep(self.tx.self.tx.sleep_time)
+        time.sleep(self.tx.sleep_time)
 
         # 如果传入的手续费数据大于余额就判断交易无法成功且返回1146的code      为什么这里是1146？
         user_balance = HttpResponse.get_balance_unit(user_addr)
         if un_delegate_fees > user_balance:
-            time.sleep(self.tx.self.tx.sleep_time)
+            time.sleep(self.tx.sleep_time)
             assert resp['code'] == 1146
             return
 
@@ -307,12 +307,12 @@ class TestFee(object):
         del_data = dict(from_addr=user_addr, amount=delegate_amount)
         self.test_del.test_delegate(**del_data)
 
-        time.sleep(self.tx.self.tx.sleep_time)
+        time.sleep(self.tx.sleep_time)
 
         # 赎回2
         del_data = dict(from_addr=user_addr, amount=delegate_amount, fees=un_delegate_fees)
         resp = self.tx.staking.undelegate_kyc(**del_data)
-        time.sleep(self.tx.self.tx.sleep_time)
+        time.sleep(self.tx.sleep_time)
         # 如果传入的手续费数据大于管理员本金就判断交易无法成功且返回1144的code
         user_balance = HttpResponse.get_balance_unit(user_addr)
         if un_delegate_fees > user_balance:
@@ -346,7 +346,7 @@ class TestFee(object):
         # 定期委托10
         del_data = dict(from_addr=user_addr, amount=2, month=48, fees=deposit_fees)
         resp = self.tx.staking.deposit_fixed(**del_data)
-        time.sleep(self.tx.self.tx.sleep_time)
+        time.sleep(self.tx.sleep_time)
         # 如果传入的手续费数据大于管理员本金就判断交易无法成功且返回1144的code
         user_balance = HttpResponse.get_balance_unit(user_addr)
         if deposit_fees > user_balance:
@@ -358,13 +358,13 @@ class TestFee(object):
         # 断言手续费是否为最初的余额-掉定期委托的金额-使用的手续费
         assert before_user_balance - after_user_balance - Compute.to_u(2) == int(deposit_fees)
 
-        time.sleep(self.tx.self.tx.sleep_time)
+        time.sleep(self.tx.sleep_time)
 
         # 委托的定期要赎回，避免污染数据
         user_fixed_info_end = HttpResponse.get_fixed_deposit_by_addr_hq(addr=user_addr)
         withdraw = dict(from_addr=user_addr, fixed_delegation_id=user_fixed_info_end[0]['id'])
         resp = self.tx.staking.withdraw_fixed(**withdraw)
-        time.sleep(self.tx.self.tx.sleep_time)
+        time.sleep(self.tx.sleep_time)
         assert self.hq.tx.query_tx(resp['txhash'])['code'] == 0
 
     @pytest.mark.parametrize("deposit_fees", (Compute.to_u(990000000), 100, 100.0, 100.1, 100.49, 100.9, 200))
@@ -379,13 +379,13 @@ class TestFee(object):
         # 定期委托10
         del_data = dict(from_addr=user_addr, amount=2, month=48)
         resp = self.tx.staking.deposit_fixed(**del_data)
-        time.sleep(self.tx.self.tx.sleep_time)
+        time.sleep(self.tx.sleep_time)
         assert self.hq.tx.query_tx(resp['txhash'])['code'] == 0
 
         user_fixed_info_end = HttpResponse.get_fixed_deposit_by_addr_hq(addr=user_addr)
         withdraw = dict(from_addr=user_addr, fixed_delegation_id=user_fixed_info_end[0]['id'], fees=deposit_fees)
         resp = self.tx.staking.withdraw_fixed(**withdraw)
-        time.sleep(self.tx.self.tx.sleep_time)
+        time.sleep(self.tx.sleep_time)
 
         # 如果传入的手续费数据大于管理员本金就判断交易无法成功且返回1144的code
         user_balance = HttpResponse.get_balance_unit(user_addr)
@@ -439,7 +439,7 @@ class TestFee(object):
         before_super_balance = HttpResponse.get_balance_unit(self.base_cfg.super_addr)
         kyc_data = dict(user_addr=user_addr, region_id=variable_region_id, fees=kyc_fees)
         resp = self.tx.staking.new_kyc(**kyc_data)
-        time.sleep(self.tx.self.tx.sleep_time)
+        time.sleep(self.tx.sleep_time)
         # 如果传入的手续费数据大于管理员本金就判断交易无法成功且返回1146的code
         super_balance = HttpResponse.get_balance_unit(self.base_cfg.super_addr)
         if kyc_fees > super_balance:
