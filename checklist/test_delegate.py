@@ -700,7 +700,7 @@ class TestRegionDelegate(object):
 
     @pytest.mark.skip
     def test_withdrw_rewards_wang(self):
-        """只提取活期收益，计算收益是否符合当前产生的收益"""
+        """只提取活期收益，计算收益是否符合当前产生的收益1 failed, 23 passed, 62 deselected"""
         pass
 
     @pytest.mark.skip

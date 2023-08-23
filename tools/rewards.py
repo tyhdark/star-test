@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 # 这个文件用来手动计算收益的
 import math
-
 from loguru import logger
 from decimal import Decimal
-
 
 
 class Reward(object):
@@ -45,6 +43,7 @@ class Reward(object):
         one_reward = (cls.one_block * (stakes / (20000000000 * 10 ** 6))) * 10 ** 6
         logger.info(f"单块委托收益：{one_reward}umec")
         heights = end_height - start_height
+        logger.info(f"经历的块高为：{heights}")
         all_height_reward = int(one_reward * heights)
         logger.info(f"KYC所有块高收益：{all_height_reward}umec")
         return all_height_reward
@@ -66,7 +65,7 @@ class Reward(object):
         # logger.info(f"d={d}")
         # s = "{:.10f}".format((rate * month / 12))
         logger.info(f"s = {s}")
-        rewards = int(Decimal(rate * month / 12) * u_amount)
+        rewards = int((rate * month / 12) * u_amount)
         logger.info(f"到期后获得的利息是{rewards}")
 
         return rewards
@@ -80,5 +79,5 @@ if __name__ == '__main__':
     # print(Reward.reward_nokyc(stake=1469, end_height=100, start_height=99))
     # reward = Reward.reward_nokyc(stake=1, end_height=101, start_height=100)
     # Reward.fixed_reward(rate=)
-    reward = Reward.fixed_reward(rate=0.05, month=1, amount=9)
+    reward = Reward.fixed_reward(rate=0.05, month=1, amount=9.0)
     print(reward)

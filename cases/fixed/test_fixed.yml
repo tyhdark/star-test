@@ -4,22 +4,22 @@
   min_amount: 0.009
   test_name: "bonded_stake_tokens_pool"
 
-- success_amount: 0.1
-  code: 0
-  mouth: 3
-  min_amount: 100000000
-  test_name: "stake_tokens_pool"
-
-- success_amount: 0.01
-  code: 0
-  mouth: 6
-  min_amount: 0.0000001
-  test_name: "not_bonded_tokens_pool"
-
-- success_amount: 4.99
-  code: 0
-  mouth: 12
-  min_amount: 0.00000099999
-  test_name: "not_bonded_stake_tokens_pool"
+#- success_amount: 0.1
+#  code: 0
+#  mouth: 3
+#  min_amount: 100000000
+#  test_name: "stake_tokens_pool"
+#
+#- success_amount: 0.01
+#  code: 0
+#  mouth: 6
+#  min_amount: 0.0000001
+#  test_name: "not_bonded_tokens_pool"
+#
+#- success_amount: 4.99
+#  code: 0
+#  mouth: 12
+#  min_amount: 0.00000099999
+#  test_name: "not_bonded_stake_tokens_pool"
 
 

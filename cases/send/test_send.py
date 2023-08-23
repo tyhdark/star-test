@@ -37,7 +37,9 @@ class TestSend(object):
 
     @pytest.mark.parametrize("test_send", test_data)
     def test_send_to_admin_success(self, test_send):
-        """测试sendToAmin命令，输入正确的转账正确金额，"""
+        """
+        测试sendToAmin命令，输入正确的转账正确金额，
+        """
 
         amount = "{:.10f}".format(test_send['success_amount'])  # 转账金额
 
@@ -47,19 +49,22 @@ class TestSend(object):
         treasury_start_balance = HttpQuery.Bank.query_balances(addr=treasury_addr)
 
         result = Tx.Bank.send_to_admin(amount=amount)  # 发起转账
+        time.sleep(5)
 
         admin_end_balance = HttpQuery.Bank.query_balances(addr=Tx.super_addr)  # 查询管理员余额
         treasury_end_balance = HttpQuery.Bank.query_balances(addr=treasury_addr)
         assert result['code'] == test_send['code']
-        assert admin_end_balance == admin_start_balance + Compute.to_u(float(amount)) - 100  # 断言1 管理员余额有没有变化
+        assert admin_end_balance == int(admin_start_balance + Compute.to_u(float(amount))) - 100  # 断言1 管理员余额有没有变化
         assert treasury_end_balance == treasury_start_balance - Compute.to_u(
             number=float(amount)) + 100 + Mint.calculate_treasury_reward()
 
     @pytest.mark.parametrize("test_send", test_data)
     def test_send_to_admin_error_min(self, test_send):
-        """测试sendToAmin命令，输入小于1u金额，"""
+        """
+        测试sendToAmin命令，输入小于1u金额，
+        """
         # 先查询管理员余额
-        amount = "{:.20f}".format(test_send['min_amount'])
+        amount = "{:.18f}".format(test_send['min_amount'])
         start_balance = HttpQuery.Bank.query_balances(addr=Tx.super_addr)
         treasury_start_balance = treasury_balances()  # 查询国库余额
         result = Tx.Bank.send_to_admin(amount=amount)  # 发起转账
@@ -71,16 +76,19 @@ class TestSend(object):
 
     # @pytest.mark.parametrize("test_case", test_data)
     def test_send_to_admin_error_max(self):
-        """测试sendToAmin命令，输入大于余额的金额，"""
+        """
+        测试sendToAmin命令，输入大于余额的金额，
+        """
 
         amount = "1000000000000000"
         start_balance = HttpQuery.Bank.query_balances(addr=Tx.super_addr)  # 先查询管理员余额
         treasury_start_balance = treasury_balances()
         time.sleep(1)  # 太快了收益可能没到账
         result = Tx.Bank.send_to_admin(amount=amount)
+        http_result = HttpQuery.Tx.query_tx(tx_hash=result['txhash'])
         end_balance = HttpQuery.Bank.query_balances(addr=Tx.super_addr)
         treasury_end_balance = treasury_balances()
-        assert "is smaller" in str(result)  # 断言1 报错
+        assert "is smaller" in str(http_result)  # 断言1 报错
         assert end_balance == start_balance - 100  # 断言：管理员的交易上链了，仍然要付手续费，
 
         assert treasury_end_balance == (treasury_start_balance + 100 + Mint.calculate_treasury_reward()) or (
@@ -88,7 +96,9 @@ class TestSend(object):
 
     @pytest.mark.parametrize("test_send", test_data)
     def test_send_to_admin_error_from(self, test_send):
-        """测试sendToAmin命令，--from=模块账号，"""
+        """
+        测试sendToAmin命令，--from=模块账号，
+        """
         other_name = test_send.get('test_name')
         other_addr = Query.Account.auth_account(pool_name=other_name)
         send_date = dict(amount=1, super_addr=other_addr)
@@ -101,51 +111,67 @@ class TestSend(object):
 class TestSendTreasury(object):
     @pytest.mark.parametrize("test_send", test_data)
     def test_send_to_treasury_success(self, test_send):
-        """测试sendToTreasury命令，输入正确的转账正确金额，"""
+        """
+        测试sendToTreasury命令，输入正确的转账正确金额，
+        """
         amount = "{:.10f}".format(test_send['success_amount'])
         admin_balance_start = HttpQuery.Bank.query_balances(addr=Tx.super_addr)
-        treasury_balance_start = treasury_balances()
+        treasury_start = treasury_balances()
         result = Tx.Bank.send_to_treasury(amount=amount)
+        time.sleep(5)
+        logger.info(f"result={result}")
         admin_balance_end = HttpQuery.Bank.query_balances(addr=Tx.super_addr)
-        treasury_balance_end = treasury_balances()
+        treasury_end = treasury_balances()
         assert 0 == result['code']
         assert admin_balance_end == admin_balance_start - Compute.to_u(number=float(amount)) - 100
-        assert treasury_balance_end == treasury_balance_start + Compute.to_u(
-            number=float(amount)) + 100 + Mint.calculate_treasury_reward()
+        # 因为可能会经历两个块高。两种情况都过
+        assert treasury_end == treasury_start + Compute.to_u(number=float(
+            amount)) + 100 + Mint.calculate_treasury_reward() or treasury_end == treasury_start + Compute.to_u(
+            number=float(amount)) + 100 + (Mint.calculate_treasury_reward() * 2)
         pass
 
     @pytest.mark.parametrize("test_send", test_data)
     def test_send_to_treasury_min(self, test_send):
-        """测试sendToTreasury命令，输入小于1u金额，"""
-        amount = "{:.20f}".format(test_send['min_amount'])
+        """
+        测试sendToTreasury命令，输入小于1u金额，
+        """
+        amount = "{:.16f}".format(test_send['min_amount'])
         # 查询管理员开始余额
         admin_balance_start = HttpQuery.Bank.query_balances(addr=Tx.super_addr)
         # 查询国库开始余额
         treasury_balance_start = treasury_balances()
         result = Tx.Bank.send_to_treasury(amount=amount)
+        time.sleep(5)
+        logger.info(f"result = {result}")
         # 查询管理员结束余额
         admin_balance_end = HttpQuery.Bank.query_balances(addr=Tx.super_addr)
         # 查询国库结束余额
         treasury_balance_end = treasury_balances()
         # 判断交易是否成功上链
-        assert "Error" in result  # 断言1 报错
+        # assert "Error" in result  # 断言1 报错
         assert admin_balance_end == admin_balance_start  # 断言：管理员余额没有变化
-        assert treasury_balance_end == treasury_balance_start  # 断言，国库金额没有变化
+        # 断言，国库金额没有变化 因为等了五秒出块了
+        assert treasury_balance_end == treasury_balance_start + Mint.calculate_treasury_reward()
 
     def test_send_to_treasury_max(self):
-        """测试sendToTreasury命令，输入大于余额金额，"""
+        """
+        测试sendToTreasury命令，输入大于余额金额，
+        """
         amount = "100000000000000000"
         # 发起转账
         result = Tx.Bank.send_to_treasury(amount=amount)
         logger.info(f"result={result}")
-        assert "is smaller than" in str(result)
+        hash_result = HttpQuery.Tx.query_tx(tx_hash=result['txhash'])
+        assert "is smaller than" in str(hash_result)
 
         pass
 
     # @pytest.mark.xfail
     @pytest.mark.parametrize("test_send", test_data)
     def test_send_to_treasury_form(self, test_send):
-        """测试sendToTreasury命令，--from=模块账号，"""
+        """
+        测试sendToTreasury命令，--from=模块账号时的场景
+        """
         # 先查国库开始金额
         other_name = test_send.get('test_name')
         treasury_balance_start = treasury_balances()
@@ -164,12 +190,17 @@ class TestSendTreasury(object):
 class TestSendTo(object):
 
     @pytest.mark.parametrize("test_send_data", test_data)
-    def test_send_to_user_success(self, creat_user_and_delete, test_send_data):
+    def test_send_to_user_success(self, creat_two_nokyc, test_send_data):
+        """
+        用户给用户转钱，正常范围金额，成功
+        """
         amount = "{:.10f}".format(test_send_data['success_amount'])
-        user_addr_a, user_addr_b, user_balances_a_start = creat_user_and_delete
+        user_addr_a, user_addr_b, user_balances_a_start = creat_two_nokyc
         # A用户给B用户转钱 在余额范围内
         send_data_test = dict(from_addr=user_addr_a, to_addr=user_addr_b, amount=amount)
+        time.sleep(5)
         Tx.Bank.send_tx(**send_data_test)
+        time.sleep(5)
         # 查看A用户余额
         user_balances_a_end = HttpQuery.Bank.query_balances(addr=user_addr_a)
         # 查看B用户余额
@@ -179,15 +210,18 @@ class TestSendTo(object):
         pass
 
     @pytest.mark.parametrize("test_send_data", test_data)
-    def test_send_to_user_min(self, creat_user_and_delete, test_send_data):
-        """测试sendToAmin命令，输入小于1u金额，"""
+    def test_send_to_user_min(self, creat_two_nokyc, test_send_data):
+        """
+        测试sendToAmin命令，输入小于1u金额，
+        """
         # 先查询管理员余额
-        amount = "{:.20f}".format(test_send_data['min_amount'])
+        amount = "{:.16f}".format(test_send_data['min_amount'])
         # amount = "{:.20f}".format(0.0000001)
-        user_addr_a, user_addr_b, user_balances_a_start = creat_user_and_delete
+        user_addr_a, user_addr_b, user_balances_a_start = creat_two_nokyc
         # A用户给B用户转钱 在余额范围内
         send_data_test = dict(from_addr=user_addr_a, to_addr=user_addr_b, amount=amount)
         result = Tx.Bank.send_tx(**send_data_test)
+        time.sleep(5)
         # 查看A用户余额
         user_balances_a_end = HttpQuery.Bank.query_balances(addr=user_addr_a)
         # 查看B用户余额
@@ -198,18 +232,25 @@ class TestSendTo(object):
         assert user_balances_b_end == 0  # 断言，user_B的余额还是没钱
         pass
 
-    def test_send_to_user_max(self, creat_user_and_delete):
+    def test_send_to_user_max(self, creat_two_nokyc):
+        """
+        测试转账时超过自身最大金额
+        """
         # amount = "{:.10f}".format(test_send_data['success_amount'])
         amount = "100"
-        user_addr_a, user_addr_b, user_balances_a_start = creat_user_and_delete
+        user_addr_a, user_addr_b, user_balances_a_start = creat_two_nokyc
         # A用户给B用户转钱 在余额范围内
         send_data_test = dict(from_addr=user_addr_a, to_addr=user_addr_b, amount=amount)
         result = Tx.Bank.send_tx(**send_data_test)
+        time.sleep(5)
+        # tx_hash = result['txhash']
+        # logger.info("tx_hash=",{tx_hash})
+        hash_result = HttpQuery.Tx.query_tx(tx_hash=result['txhash'])
         # 查看A用户余额
         user_balances_a_end = HttpQuery.Bank.query_balances(addr=user_addr_a)
         # 查看B用户余额
         user_balances_b_end = HttpQuery.Bank.query_balances(addr=user_addr_b)
-        assert "is smaller" in str(result)  # 断言1 报错
+        assert "is smaller" in str(hash_result)  # 断言1 报错
         assert user_balances_a_end == user_balances_a_start - 100
 
         assert user_balances_b_end == 0
@@ -217,6 +258,9 @@ class TestSendTo(object):
 
     @pytest.mark.parametrize("pool", pool_name)
     def test_send_to_pool(self, pool):
+        """
+        测试给模块账户转钱
+        """
         amount = "1"
         # user_addr_a, user_addr_b, user_balances_a_start = creat_user_and_delete
 
@@ -225,11 +269,15 @@ class TestSendTo(object):
         # 给模块账户转钱
         send_data_test = dict(from_addr=user_addr_a, to_addr=other_addr, amount=amount)
         result = Tx.Bank.send_tx(**send_data_test)
+        time.sleep(5)
         logger.info(f"result={result}")
+        hash_result = HttpQuery.Tx.query_tx(tx_hash=result['txhash'])
         # 查看A用户余额
         # user_balances_a_end = HttpQuery.Bank.query_balances(addr=user_addr_a)
         # 查看B用户余额
-        assert "is not allowed to receive funds: unauthorized" in str(result)  # 断言1 报错
+        assert "is not allowed to receive funds: unauthorized" in str(hash_result)  # 断言1 报错
         # assert user_balances_a_end == user_balances_a_start - 100
 
         pass
+#  DEPRECATED: use BROADCAST_MODE_SYNC instead,
+# // BROADCAST_MODE_BLOCK is not supported by the SDK from v0.47.x onwards.

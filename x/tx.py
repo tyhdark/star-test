@@ -84,12 +84,12 @@ class Tx(BaseClass):
         @staticmethod
         def create_validator(node_name: str, amount=None, fees=Fees):
             """创建验证者节点，需要传入对应的node几,可用，"""
-            cmd = Tx.work_home + f"{Tx.chain_bin} tx staking create-validator  --amount={amount}{Tx.coin['c']}  " \
-                                 f"--pubkey=$({Tx.chain_bin} tendermint show-validator --home=../nodes/{node_name})  " \
-                                 f"--moniker=\"{node_name}\" " \
-                                 f" --commission-rate=\"0.10\" --commission-max-rate=\"0.20\"  " \
-                                 f" --commission-max-change-rate=\"0.01\" --from={Tx.super_addr}  " \
-                                 f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y -b=block"
+
+            cmd = Tx.work_home + f'{Tx.chain_bin} tx staking create-validator  --amount={amount}{Tx.coin["c"]}  ' \
+                                 f'--pubkey=$({Tx.chain_bin} tendermint show-validator --home=../nodes/{node_name})  ' \
+                                 f'--moniker={node_name}  --commission-rate=0.10 --commission-max-rate=0.20   ' \
+                                 f'--commission-max-change-rate=0.01 --from={Tx.super_addr}  ' \
+                                 f'--fees={fees}{Tx.coin["uc"]}  {Tx.chain_id} {Tx.keyring_backend} -y '
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -105,7 +105,7 @@ class Tx(BaseClass):
             """
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking {stake_or_unstake} {operator_address} " \
                                  f"{amount}{Tx.coin['c']} --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} " \
-                                 f"{Tx.chain_id} {Tx.keyring_backend} -y "
+                                 f"{Tx.chain_id} {Tx.keyring_backend} -y  "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -143,7 +143,7 @@ class Tx(BaseClass):
             2.减少质押金额 < 实际质押额 则按传入金额兑付, 收益重新计算但不主动发放
             """
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking unKycUnbond {amount}{Tx.coin['c']} --from={from_addr} " \
-                                 f" --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y "
+                                 f" --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y  "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
