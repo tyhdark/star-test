@@ -346,14 +346,14 @@ class TestDelegate(object):
         user_balance = HttpResponse.get_balance_unit(user_addr)
         assert user_balance == 0
 
-        # 管理员给用户转100块
-        send_amount = 100
-        self.base_cfg.Bank.send_to_admin(amount=(send_amount + 1))  # 怕管理员没钱，国库先转钱给管理员
-        time.sleep(self.tx.sleep_time)
-
-        send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr, amount=send_amount)
-        self.test_bank.test_send(**send_data)
-        time.sleep(self.tx.sleep_time)
+        # # 管理员给用户转100块
+        # send_amount = 100
+        # self.base_cfg.Bank.send_to_admin(amount=(send_amount + 1))  # 怕管理员没钱，国库先转钱给管理员
+        # time.sleep(self.tx.sleep_time)
+        #
+        # send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=user_addr, amount=send_amount)
+        # self.test_bank.test_send(**send_data)
+        # time.sleep(self.tx.sleep_time)
 
         # 没有余额的情况下进行活期委托 委托10  返回：code=1144
         # raw_log'0umec is smaller than 10umec: insufficient funds: send coins to node validator  error'
@@ -443,7 +443,7 @@ class TestDelegate(object):
 
         # 超过金额应该被全部赎回没成功，所以活期委托还是10-5 = 5
         user_delegate_info = HttpResponse.get_delegate(user_addr)
-        assert int(user_delegate_info['amount']) == Compute.to_u(delegate_amount - un_del_amount)
+        assert int(user_delegate_info['amount']) == Compute.to_u(delegate_amount - 5)
 
         # 当前不可提取的活期委托 应该是1 这是kyc认证后送的
         user_delegate_info = HttpResponse.get_delegate(user_addr)

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import inspect
 import time
 
 import pytest
@@ -9,8 +8,6 @@ from cases import unitcases
 from tools.name import RegionInfo, ValidatorInfo
 from x.query import Query, HttpQuery
 from x.tx import Tx
-from tools.compute import Compute
-from config.chain import config, GasLimit, Fees
 
 
 # 单元测试region模块
@@ -33,9 +30,10 @@ class TestRegion(object):
         """
         未绑定的验证者去创建区
         @Desc:
-           - validator 已经绑定区的验证者
+           - validator 未绑定区的验证者
            - region 链上没有的区
-           + expect: 验证者已经被绑定，无法创建区
+           + expect: 1.如果所有验证者都绑定区忽略该用例
+                     2.区创建成功，能正常查询到区id
         """
         logger.info("TestRegion/test_un_bind_validator_create_region")
         if len(ValidatorInfo.validator_bind_node_for_region(bind=False)) == 0:
@@ -57,13 +55,28 @@ class TestRegion(object):
         # 断言能查到这个区已被创建
         assert region_id == rep['region']['regionId']
 
+    def test_show_region(self):
+        """
+        查询已存在的区
+        @Desc:
+           - exit_region_name 已存在的区
+           + expect: 能正常查询到已存在的区相关信息
+        """
+        exit_region_name = (RegionInfo.region_for_id_existing()).upper()
+        # 根据区id查到这个区的信息
+        region_id = exit_region_name.lower()
+        rep = self.q.staking.show_region(region_id)
+        # 断言能查到这个区
+        assert region_id == rep['region']['regionId']
+
     def test_already_bind_validator_create_region(self):
         """
         用已绑定的验证者去创建区
         @Desc:
            - validator 已经绑定区的验证者
            - region 链上没有的区
-           + expect: 验证者已经被绑定，无法创建区
+           + expect: 1.如果所有验证者都没绑定，没有满足该用例的条件，忽略该用例
+                     2.验证者已经被绑定，无法创建区
         """
         logger.info("TestRegion/test_already_bind_validator_create_region")
 
@@ -79,13 +92,18 @@ class TestRegion(object):
         # 断言 传入已绑定区的验证者
         assert 'already bonded validators' in self.hq.tx.query_tx(resp['txhash'])['raw_log']
 
-        # resp = self.q.staking.show_region(**dict(region_id=region_name))
-        # assert 'Not Found' in resp
+        # resp = self.q.staking.show_region(region_name.lower())
+        # assert 'NotFound' in resp
 
     @pytest.mark.parametrize("error_region_name", ("xxxx", "USa", "100.9", "TTT"))
     def test_un_bind_validator_create_region_error_region_name(self, error_region_name):
         """
         未绑定的验证者去创建区,传入错误的区名
+        @Desc:
+           - validator 未绑定区的验证者
+           - error_region_name 异常的区名
+           + expect: 1.如果所有验证者都绑定区忽略该用例
+                     2.传入错误的区名无法创建区
         """
         logger.info("TestRegion/test_un_bind_validator_create_region_error_region_name")
         if len(ValidatorInfo.validator_bind_node_for_region(bind=False)) == 0:
@@ -99,11 +117,14 @@ class TestRegion(object):
         # 断言 区名错误
         assert "regionName parameter error" in res
 
-    @pytest.mark.skipif(len(ValidatorInfo.validator_bind_node_for_region(bind=False)) == 0,
-                        reason="所有验证者都已被绑定")
     def test_un_bind_validator_create_region_exit_region_name(self):
         """
         未绑定的验证者去创建区,传入已存在的区名
+        @Desc:
+           - validator 未绑定区的验证者
+           - exit_region_name 已创建的取名
+           + expect: 1.如果所有验证者都已绑定区，忽略该用例
+                     2.传已创建的区名无法创建区
         """
         logger.info("TestRegion/test_un_bind_validator_create_region_exit_region_name")
         if len(ValidatorInfo.validator_bind_node_for_region(bind=False)) == 0:
