@@ -133,4 +133,5 @@ deploy/
 nacos-data/
 wangtest/
 wangtestcase/
+tangtestcase/
 .idea/
