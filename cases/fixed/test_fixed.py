@@ -203,7 +203,7 @@ class TestFixedWithdraw:
     #  提取未到期的定期
     def test_withdraw_no_expire(self, creat_one_kyc_region):
         """
-        发起一笔定期，未到期提取定期委托
+        发起一笔定期，未到期提取定期委托1
         """
         user_addr, start_balance, region_id = creat_one_kyc_region
         fixed_amount = (start_balance - 1000000) / (10 ** 6)
