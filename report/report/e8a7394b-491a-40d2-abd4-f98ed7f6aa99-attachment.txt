@@ -1,0 +1,40 @@
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_headers.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_headers.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_body.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_body.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_headers.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json'), (b'Grpc-Metadata-Content-Type', b'application/grpc+cosmos-sdk-grpc-codec'), (b'Grpc-Metadata-X-Cosmos-Block-Height', b'8500'), (b'X-Server-Time', b'1692796340'), (b'Date', b'Wed, 23 Aug 2023 13:12:20 GMT'), (b'Content-Length', b'1392')])
+[32mINFO    [0m httpx:_client.py:1013 HTTP Request: GET http://192.168.0.207:1317/cosmos/staking/v1beta1/region "HTTP/1.1 200 OK"
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_body.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_body.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 response_closed.started
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 response_closed.complete
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 226] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 226] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 226 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 226] Sesch channel 226 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 226] EOF received (226)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 226] EOF sent (226)
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_headers.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_headers.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_body.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_body.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_headers.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json'), (b'Grpc-Metadata-Content-Type', b'application/grpc+cosmos-sdk-grpc-codec'), (b'Grpc-Metadata-X-Cosmos-Block-Height', b'8501'), (b'X-Server-Time', b'1692796344'), (b'Date', b'Wed, 23 Aug 2023 13:12:24 GMT'), (b'Content-Length', b'1392')])
+[32mINFO    [0m httpx:_client.py:1013 HTTP Request: GET http://192.168.0.207:1317/cosmos/staking/v1beta1/region "HTTP/1.1 200 OK"
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_body.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_body.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 response_closed.started
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 response_closed.complete
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 227] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 227] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 227 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 227] Sesch channel 227 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 227] EOF received (227)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 227] EOF sent (227)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 228] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 228] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 228 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 228] Sesch channel 228 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 228] EOF received (228)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 228] EOF sent (228)

@@ -1,0 +1,116 @@
+[35mDEBUG   [0m faker.factory:factory.py:76 Looking for locale `en_US` in provider `faker.providers.address`.
+[35mDEBUG   [0m faker.factory:factory.py:95 Provider `faker.providers.address` has been localized to `en_US`.
+[35mDEBUG   [0m faker.factory:factory.py:76 Looking for locale `en_US` in provider `faker.providers.automotive`.
+[35mDEBUG   [0m faker.factory:factory.py:95 Provider `faker.providers.automotive` has been localized to `en_US`.
+[35mDEBUG   [0m faker.factory:factory.py:76 Looking for locale `en_US` in provider `faker.providers.bank`.
+[35mDEBUG   [0m faker.factory:factory.py:86 Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
+[35mDEBUG   [0m faker.factory:factory.py:76 Looking for locale `en_US` in provider `faker.providers.barcode`.
+[35mDEBUG   [0m faker.factory:factory.py:95 Provider `faker.providers.barcode` has been localized to `en_US`.
+[35mDEBUG   [0m faker.factory:factory.py:76 Looking for locale `en_US` in provider `faker.providers.color`.
+[35mDEBUG   [0m faker.factory:factory.py:95 Provider `faker.providers.color` has been localized to `en_US`.
+[35mDEBUG   [0m faker.factory:factory.py:76 Looking for locale `en_US` in provider `faker.providers.company`.
+[35mDEBUG   [0m faker.factory:factory.py:95 Provider `faker.providers.company` has been localized to `en_US`.
+[35mDEBUG   [0m faker.factory:factory.py:76 Looking for locale `en_US` in provider `faker.providers.credit_card`.
+[35mDEBUG   [0m faker.factory:factory.py:95 Provider `faker.providers.credit_card` has been localized to `en_US`.
+[35mDEBUG   [0m faker.factory:factory.py:76 Looking for locale `en_US` in provider `faker.providers.currency`.
+[35mDEBUG   [0m faker.factory:factory.py:95 Provider `faker.providers.currency` has been localized to `en_US`.
+[35mDEBUG   [0m faker.factory:factory.py:76 Looking for locale `en_US` in provider `faker.providers.date_time`.
+[35mDEBUG   [0m faker.factory:factory.py:95 Provider `faker.providers.date_time` has been localized to `en_US`.
+[35mDEBUG   [0m faker.factory:factory.py:106 Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+[35mDEBUG   [0m faker.factory:factory.py:106 Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+[35mDEBUG   [0m faker.factory:factory.py:76 Looking for locale `en_US` in provider `faker.providers.geo`.
+[35mDEBUG   [0m faker.factory:factory.py:95 Provider `faker.providers.geo` has been localized to `en_US`.
+[35mDEBUG   [0m faker.factory:factory.py:76 Looking for locale `en_US` in provider `faker.providers.internet`.
+[35mDEBUG   [0m faker.factory:factory.py:95 Provider `faker.providers.internet` has been localized to `en_US`.
+[35mDEBUG   [0m faker.factory:factory.py:106 Provider `faker.providers.isbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+[35mDEBUG   [0m faker.factory:factory.py:76 Looking for locale `en_US` in provider `faker.providers.job`.
+[35mDEBUG   [0m faker.factory:factory.py:95 Provider `faker.providers.job` has been localized to `en_US`.
+[35mDEBUG   [0m faker.factory:factory.py:76 Looking for locale `en_US` in provider `faker.providers.lorem`.
+[35mDEBUG   [0m faker.factory:factory.py:95 Provider `faker.providers.lorem` has been localized to `en_US`.
+[35mDEBUG   [0m faker.factory:factory.py:76 Looking for locale `en_US` in provider `faker.providers.misc`.
+[35mDEBUG   [0m faker.factory:factory.py:95 Provider `faker.providers.misc` has been localized to `en_US`.
+[35mDEBUG   [0m faker.factory:factory.py:76 Looking for locale `en_US` in provider `faker.providers.passport`.
+[35mDEBUG   [0m faker.factory:factory.py:95 Provider `faker.providers.passport` has been localized to `en_US`.
+[35mDEBUG   [0m faker.factory:factory.py:76 Looking for locale `en_US` in provider `faker.providers.person`.
+[35mDEBUG   [0m faker.factory:factory.py:95 Provider `faker.providers.person` has been localized to `en_US`.
+[35mDEBUG   [0m faker.factory:factory.py:76 Looking for locale `en_US` in provider `faker.providers.phone_number`.
+[35mDEBUG   [0m faker.factory:factory.py:95 Provider `faker.providers.phone_number` has been localized to `en_US`.
+[35mDEBUG   [0m faker.factory:factory.py:106 Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+[35mDEBUG   [0m faker.factory:factory.py:106 Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+[35mDEBUG   [0m faker.factory:factory.py:106 Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+[35mDEBUG   [0m faker.factory:factory.py:76 Looking for locale `en_US` in provider `faker.providers.ssn`.
+[35mDEBUG   [0m faker.factory:factory.py:95 Provider `faker.providers.ssn` has been localized to `en_US`.
+[35mDEBUG   [0m faker.factory:factory.py:106 Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 2] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 2] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 2 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 2] Sesch channel 2 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 2] EOF received (2)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 2] EOF sent (2)
+[35mDEBUG   [0m httpcore.connection:_trace.py:45 connect_tcp.started host='192.168.0.207' port=1317 local_address=None timeout=10 socket_options=None
+[35mDEBUG   [0m httpcore.connection:_trace.py:45 connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x7fd00c1bf310>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_headers.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_headers.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_body.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_body.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_headers.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json'), (b'Grpc-Metadata-Content-Type', b'application/grpc+cosmos-sdk-grpc-codec'), (b'Grpc-Metadata-X-Cosmos-Block-Height', b'8303'), (b'X-Server-Time', b'1692795352'), (b'Date', b'Wed, 23 Aug 2023 12:55:52 GMT'), (b'Content-Length', b'1392')])
+[32mINFO    [0m httpx:_client.py:1013 HTTP Request: GET http://192.168.0.207:1317/cosmos/staking/v1beta1/region "HTTP/1.1 200 OK"
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_body.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_body.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 response_closed.started
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 response_closed.complete
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 3] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 3] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 3 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 3] Sesch channel 3 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 3] EOF received (3)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 3] EOF sent (3)
+[35mDEBUG   [0m httpcore.connection:_trace.py:45 close.started
+[35mDEBUG   [0m httpcore.connection:_trace.py:45 close.complete
+[35mDEBUG   [0m httpcore.connection:_trace.py:45 connect_tcp.started host='192.168.0.207' port=1317 local_address=None timeout=10 socket_options=None
+[35mDEBUG   [0m httpcore.connection:_trace.py:45 connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x7fcfffe9c610>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_headers.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_headers.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_body.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_body.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_headers.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json'), (b'Grpc-Metadata-Content-Type', b'application/grpc+cosmos-sdk-grpc-codec'), (b'Grpc-Metadata-X-Cosmos-Block-Height', b'8304'), (b'X-Server-Time', b'1692795357'), (b'Date', b'Wed, 23 Aug 2023 12:55:57 GMT'), (b'Transfer-Encoding', b'chunked')])
+[32mINFO    [0m httpx:_client.py:1013 HTTP Request: GET http://192.168.0.207:1317/cosmos/tx/v1beta1/txs/FEA453FD3698745522A714F322B38F6858785E3EA9106363718713CFA1EF4365 "HTTP/1.1 200 OK"
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_body.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_body.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 response_closed.started
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 response_closed.complete
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 4] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 4] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 4 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 4] Sesch channel 4 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 4] EOF received (4)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 4] EOF sent (4)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 5] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 5] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 5 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 5] Sesch channel 5 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 5] EOF received (5)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 5] EOF sent (5)
+[35mDEBUG   [0m httpcore.connection:_trace.py:45 close.started
+[35mDEBUG   [0m httpcore.connection:_trace.py:45 close.complete
+[35mDEBUG   [0m httpcore.connection:_trace.py:45 connect_tcp.started host='192.168.0.207' port=1317 local_address=None timeout=10 socket_options=None
+[35mDEBUG   [0m httpcore.connection:_trace.py:45 connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x7fcfffe9d270>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_headers.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_headers.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_body.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_body.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_headers.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json'), (b'Grpc-Metadata-Content-Type', b'application/grpc+cosmos-sdk-grpc-codec'), (b'Grpc-Metadata-X-Cosmos-Block-Height', b'8307'), (b'X-Server-Time', b'1692795370'), (b'Date', b'Wed, 23 Aug 2023 12:56:10 GMT'), (b'Content-Length', b'153')])
+[32mINFO    [0m httpx:_client.py:1013 HTTP Request: GET http://192.168.0.207:1317/cosmos/staking/v1beta1/kyc/me1vayu7f09wz3y0xyekakfqk8t5pukq3swsxxr8p "HTTP/1.1 200 OK"
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_body.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_body.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 response_closed.started
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 response_closed.complete
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 6] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 6] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 6 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 6] Sesch channel 6 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 6] EOF received (6)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 6] EOF sent (6)

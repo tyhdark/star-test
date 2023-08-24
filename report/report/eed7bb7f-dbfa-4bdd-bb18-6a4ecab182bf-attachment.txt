@@ -1,0 +1,33 @@
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 404] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 404] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 404 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 404] Sesch channel 404 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 404] EOF received (404)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 404] EOF sent (404)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 405] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 405] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 405 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 405] Sesch channel 405 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 405] EOF received (405)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 405] EOF sent (405)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 406] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 406] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 406 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 406] Sesch channel 406 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 406] EOF received (406)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 406] EOF sent (406)
+[35mDEBUG   [0m httpcore.connection:_trace.py:45 close.started
+[35mDEBUG   [0m httpcore.connection:_trace.py:45 close.complete
+[35mDEBUG   [0m httpcore.connection:_trace.py:45 connect_tcp.started host='192.168.0.207' port=1317 local_address=None timeout=10 socket_options=None
+[35mDEBUG   [0m httpcore.connection:_trace.py:45 connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x7fd00c1bead0>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_headers.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_headers.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_body.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_body.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_headers.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json'), (b'Grpc-Metadata-Content-Type', b'application/grpc+cosmos-sdk-grpc-codec'), (b'Grpc-Metadata-X-Cosmos-Block-Height', b'8585'), (b'X-Server-Time', b'1692796765'), (b'Date', b'Wed, 23 Aug 2023 13:19:25 GMT'), (b'Transfer-Encoding', b'chunked')])
+[32mINFO    [0m httpx:_client.py:1013 HTTP Request: GET http://192.168.0.207:1317/cosmos/tx/v1beta1/txs/CE926E37F4565C7D4D9B91FFAB67D24D1F67ADD66471168E19F1E5061D79E1C4 "HTTP/1.1 200 OK"
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_body.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_body.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 response_closed.started
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 response_closed.complete

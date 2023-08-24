@@ -1,0 +1,511 @@
+"Status","Start Time","Stop Time","Duration in ms","Parent Suite","Suite","Sub Suite","Test Class","Test Method","Name","Description"
+"passed","Wed Aug 23 21:14:25 CST 2023","Wed Aug 23 21:14:31 CST 2023","5592","cases.send","test_send","TestSend","","","test_send_to_admin_success[test_send3]","
+        测试sendToAmin命令，输入正确的转账正确金额，
+        "
+"passed","Wed Aug 23 21:12:20 CST 2023","Wed Aug 23 21:12:27 CST 2023","6462","cases.kyc","test_kyc","TestKyc","","","test_kyc_from_pool[pool_name_data8]","
+        测试非superadmin账户。拿模块账号认证KYC
+        "
+"skipped","Wed Aug 23 21:37:46 CST 2023","Wed Aug 23 21:37:46 CST 2023","9","cases.stake","test_fee","TestFee","","","test_create_region_fee[100.49]","
+        验证创建区的费用
+        "
+"passed","Wed Aug 23 21:39:16 CST 2023","Wed Aug 23 21:39:21 CST 2023","4375","cases.stake","test_region","TestRegion","","","test_already_bind_validator_create_region","
+        用已绑定的验证者去创建区
+        @Desc:
+           - validator 已经绑定区的验证者
+           - region 链上没有的区
+           + expect: 1.如果所有验证者都没绑定，没有满足该用例的条件，忽略该用例
+                     2.验证者已经被绑定，无法创建区
+        "
+"passed","Wed Aug 23 21:27:41 CST 2023","Wed Aug 23 21:27:53 CST 2023","12200","cases.stake","test_fee","TestFee","","","test_send_fee[990000000000000]","
+        验证send下修改fees
+        "
+"passed","Wed Aug 23 21:04:34 CST 2023","Wed Aug 23 21:04:34 CST 2023","176","cases.fixed","test_fixed","TestFixed","","","test_fixed_error_mouth[16]",""
+"passed","Wed Aug 23 21:14:57 CST 2023","Wed Aug 23 21:15:03 CST 2023","5752","cases.send","test_send","TestSendTreasury","","","test_send_to_treasury_success[test_send3]","
+        测试sendToTreasury命令，输入正确的转账正确金额，
+        "
+"passed","Thu Aug 24 10:09:48 CST 2023","Thu Aug 24 10:09:48 CST 2023","486","cases.send","test_send","TestSend","","","test_send_to_admin_error_min[test_send3]","
+        测试sendToAmin命令，输入小于1u金额，
+        "
+"passed","Wed Aug 23 21:29:46 CST 2023","Wed Aug 23 21:29:58 CST 2023","12537","cases.stake","test_fee","TestFee","","","test_un_kyc_delegate_fee[100.9]","
+        验证delegate下修改fees
+        "
+"passed","Wed Aug 23 21:14:33 CST 2023","Wed Aug 23 21:14:38 CST 2023","5659","cases.send","test_send","TestSend","","","test_send_to_admin_error_max","
+        测试sendToAmin命令，输入大于余额的金额，
+        "
+"passed","Wed Aug 23 21:15:14 CST 2023","Wed Aug 23 21:15:20 CST 2023","5673","cases.send","test_send","TestSendTreasury","","","test_send_to_treasury_min[test_send2]","
+        测试sendToTreasury命令，输入小于1u金额，
+        "
+"passed","Wed Aug 23 21:03:22 CST 2023","Wed Aug 23 21:03:22 CST 2023","143","cases.fixed","test_fixed","TestFixed","","","test_fixed_error_mouth[13]",""
+"passed","Wed Aug 23 21:19:10 CST 2023","Wed Aug 23 21:19:15 CST 2023","5186","cases.send","test_send","TestSendTo","","","test_send_to_user_max","
+        测试转账时超过自身最大金额
+        "
+"passed","Wed Aug 23 21:19:47 CST 2023","Wed Aug 23 21:19:52 CST 2023","5559","cases.send","test_send","TestSendTo","","","test_send_to_pool[pool5]","
+        测试给模块账户转钱
+        "
+"passed","Wed Aug 23 21:12:40 CST 2023","Wed Aug 23 21:12:46 CST 2023","6504","cases.kyc","test_kyc","TestKyc","","","test_kyc_from_pool[pool_name_data11]","
+        测试非superadmin账户。拿模块账号认证KYC
+        "
+"passed","Wed Aug 23 21:13:02 CST 2023","Wed Aug 23 21:13:23 CST 2023","20564","cases.reward","test_reward","TestDelegateReward","","","test_no_kyc_reward","
+        测试非KYC发起活期委托，且在赎回时计算收益
+        "
+"passed","Wed Aug 23 21:38:09 CST 2023","Wed Aug 23 21:38:22 CST 2023","12547","cases.stake","test_fee","TestFee","","","test_kyc_fee[100.0]","
+        验证kyc下修改fees
+        "
+"skipped","Wed Aug 23 21:37:46 CST 2023","Wed Aug 23 21:37:46 CST 2023","12","cases.stake","test_fee","TestFee","","","test_create_region_fee[9999999999999000000]","
+        验证创建区的费用
+        "
+"passed","Wed Aug 23 21:15:28 CST 2023","Wed Aug 23 21:15:29 CST 2023","681","cases.send","test_send","TestSendTreasury","","","test_send_to_treasury_form[test_send1]","
+        测试sendToTreasury命令，--from=模块账号时的场景
+        "
+"passed","Wed Aug 23 21:12:46 CST 2023","Wed Aug 23 21:12:53 CST 2023","6469","cases.kyc","test_kyc","TestKyc","","","test_kyc_from_pool[pool_name_data12]","
+        测试非superadmin账户。拿模块账号认证KYC
+        "
+"passed","Wed Aug 23 21:22:46 CST 2023","Wed Aug 23 21:23:45 CST 2023","59646","cases.stake","test_delegate","TestDelegate","","","test_no_kyc_un_delegate","
+        新创建的用户，没有kyc，有活期委托 进行赎回操作
+        "
+"passed","Wed Aug 23 21:11:41 CST 2023","Wed Aug 23 21:11:48 CST 2023","6482","cases.kyc","test_kyc","TestKyc","","","test_kyc_from_pool[pool_name_data2]","
+        测试非superadmin账户。拿模块账号认证KYC
+        "
+"passed","Wed Aug 23 21:14:38 CST 2023","Wed Aug 23 21:14:39 CST 2023","274","cases.send","test_send","TestSend","","","test_send_to_admin_error_from[test_send0]","
+        测试sendToAmin命令，--from=模块账号，
+        "
+"skipped","Wed Aug 23 21:39:16 CST 2023","Wed Aug 23 21:39:16 CST 2023","18","cases.stake","test_region","TestRegion","","","test_un_bind_validator_create_region","
+        未绑定的验证者去创建区
+        @Desc:
+           - validator 未绑定区的验证者
+           - region 链上没有的区
+           + expect: 1.如果所有验证者都绑定区忽略该用例
+                     2.区创建成功，能正常查询到区id
+        "
+"passed","Wed Aug 23 21:14:39 CST 2023","Wed Aug 23 21:14:39 CST 2023","323","cases.send","test_send","TestSend","","","test_send_to_admin_error_from[test_send1]","
+        测试sendToAmin命令，--from=模块账号，
+        "
+"passed","Wed Aug 23 21:32:50 CST 2023","Wed Aug 23 21:33:08 CST 2023","18419","cases.stake","test_fee","TestFee","","","test_kyc_un_delegate_fee[100.0]","
+        验证kyc_un_delegate下修改fees
+        "
+"passed","Wed Aug 23 21:20:04 CST 2023","Wed Aug 23 21:20:09 CST 2023","5549","cases.send","test_send","TestSendTo","","","test_send_to_pool[pool8]","
+        测试给模块账户转钱
+        "
+"passed","Wed Aug 23 21:37:21 CST 2023","Wed Aug 23 21:37:34 CST 2023","12459","cases.stake","test_fee","TestFee","","","test_withdraw_fixed_fee[100.9]","
+        验证定期提取下修改fees
+        "
+"passed","Wed Aug 23 21:15:08 CST 2023","Wed Aug 23 21:15:14 CST 2023","5673","cases.send","test_send","TestSendTreasury","","","test_send_to_treasury_min[test_send1]","
+        测试sendToTreasury命令，输入小于1u金额，
+        "
+"passed","Wed Aug 23 21:28:06 CST 2023","Wed Aug 23 21:28:12 CST 2023","6263","cases.stake","test_fee","TestFee","","","test_send_fee[100.1]","
+        验证send下修改fees
+        "
+"passed","Wed Aug 23 21:28:18 CST 2023","Wed Aug 23 21:28:25 CST 2023","6213","cases.stake","test_fee","TestFee","","","test_send_fee[100.9]","
+        验证send下修改fees
+        "
+"passed","Wed Aug 23 21:19:25 CST 2023","Wed Aug 23 21:19:30 CST 2023","5515","cases.send","test_send","TestSendTo","","","test_send_to_pool[pool1]","
+        测试给模块账户转钱
+        "
+"passed","Wed Aug 23 21:18:00 CST 2023","Wed Aug 23 21:18:05 CST 2023","5163","cases.send","test_send","TestSendTo","","","test_send_to_user_min[test_send_data1]","
+        测试sendToAmin命令，输入小于1u金额，
+        "
+"passed","Wed Aug 23 21:35:24 CST 2023","Wed Aug 23 21:35:42 CST 2023","18432","cases.stake","test_fee","TestFee","","","test_deposit_fixed_fee[100.49]","
+        验证定期质押下修改fees
+        "
+"passed","Wed Aug 23 21:33:27 CST 2023","Wed Aug 23 21:33:45 CST 2023","18454","cases.stake","test_fee","TestFee","","","test_kyc_un_delegate_fee[100.49]","
+        验证kyc_un_delegate下修改fees
+        "
+"passed","Wed Aug 23 21:28:43 CST 2023","Wed Aug 23 21:28:56 CST 2023","12635","cases.stake","test_fee","TestFee","","","test_kyc_delegate_fee[100.49]","
+        验证delegate下修改fees
+        "
+"passed","Wed Aug 23 21:36:01 CST 2023","Wed Aug 23 21:36:19 CST 2023","18460","cases.stake","test_fee","TestFee","","","test_deposit_fixed_fee[200]","
+        验证定期质押下修改fees
+        "
+"passed","Wed Aug 23 21:23:45 CST 2023","Wed Aug 23 21:24:58 CST 2023","72379","cases.stake","test_delegate","TestDelegate","","","test_kyc_have_balance_delegate","新创建的用户，做了kyc，有余额时进行活期委托"
+"passed","Wed Aug 23 21:15:20 CST 2023","Wed Aug 23 21:15:25 CST 2023","5720","cases.send","test_send","TestSendTreasury","","","test_send_to_treasury_min[test_send3]","
+        测试sendToTreasury命令，输入小于1u金额，
+        "
+"passed","Wed Aug 23 21:19:58 CST 2023","Wed Aug 23 21:20:04 CST 2023","5561","cases.send","test_send","TestSendTo","","","test_send_to_pool[pool7]","
+        测试给模块账户转钱
+        "
+"passed","Wed Aug 23 21:30:41 CST 2023","Wed Aug 23 21:30:59 CST 2023","18414","cases.stake","test_fee","TestFee","","","test_no_kyc_un_delegate_fee[100.0]","
+        验证no_kyc_un_delegate下修改fees
+        "
+"skipped","Wed Aug 23 21:39:21 CST 2023","Wed Aug 23 21:39:21 CST 2023","9","cases.stake","test_region","TestRegion","","","test_un_bind_validator_create_region_error_region_name[USa]","
+        未绑定的验证者去创建区,传入错误的区名
+        @Desc:
+           - validator 未绑定区的验证者
+           - error_region_name 异常的区名
+           + expect: 1.如果所有验证者都绑定区忽略该用例
+                     2.传入错误的区名无法创建区
+        "
+"passed","Wed Aug 23 21:21:51 CST 2023","Wed Aug 23 21:21:51 CST 2023","166","cases.stake","test_delegate","TestDelegate","","","test_no_kyc_no_balance_delegate[10]","
+        新创建的用户，没有kyc，没有余额时进行活期委托
+        "
+"passed","Wed Aug 23 21:15:27 CST 2023","Wed Aug 23 21:15:28 CST 2023","617","cases.send","test_send","TestSendTreasury","","","test_send_to_treasury_form[test_send0]","
+        测试sendToTreasury命令，--from=模块账号时的场景
+        "
+"passed","Wed Aug 23 21:18:23 CST 2023","Wed Aug 23 21:18:28 CST 2023","5174","cases.send","test_send","TestSendTo","","","test_send_to_user_min[test_send_data2]","
+        测试sendToAmin命令，输入小于1u金额，
+        "
+"passed","Wed Aug 23 21:31:18 CST 2023","Wed Aug 23 21:31:36 CST 2023","18411","cases.stake","test_fee","TestFee","","","test_no_kyc_un_delegate_fee[100.49]","
+        验证no_kyc_un_delegate下修改fees
+        "
+"passed","Wed Aug 23 21:19:19 CST 2023","Wed Aug 23 21:19:25 CST 2023","5537","cases.send","test_send","TestSendTo","","","test_send_to_pool[pool0]","
+        测试给模块账户转钱
+        "
+"passed","Wed Aug 23 21:14:45 CST 2023","Wed Aug 23 21:14:51 CST 2023","5711","cases.send","test_send","TestSendTreasury","","","test_send_to_treasury_success[test_send1]","
+        测试sendToTreasury命令，输入正确的转账正确金额，
+        "
+"passed","Wed Aug 23 21:28:00 CST 2023","Wed Aug 23 21:28:06 CST 2023","6221","cases.stake","test_fee","TestFee","","","test_send_fee[100.0]","
+        验证send下修改fees
+        "
+"passed","Wed Aug 23 21:15:29 CST 2023","Wed Aug 23 21:15:29 CST 2023","675","cases.send","test_send","TestSendTreasury","","","test_send_to_treasury_form[test_send2]","
+        测试sendToTreasury命令，--from=模块账号时的场景
+        "
+"passed","Wed Aug 23 21:28:56 CST 2023","Wed Aug 23 21:29:08 CST 2023","12602","cases.stake","test_fee","TestFee","","","test_kyc_delegate_fee[100.9]","
+        验证delegate下修改fees
+        "
+"passed","Wed Aug 23 21:02:33 CST 2023","Wed Aug 23 21:02:33 CST 2023","145","cases.fixed","test_fixed","TestFixed","","","test_fixed_error_mouth[10]",""
+"passed","Thu Aug 24 10:08:20 CST 2023","Thu Aug 24 10:08:22 CST 2023","2200","cases.fixed","test_fixed","TestFixed","","","test_fixed_min_or_max_amount[test_fixed0]","
+        发起定期，最大（超过自身余额）或者最小（小于0.01mec）金额测试
+        "
+"passed","Wed Aug 23 21:11:48 CST 2023","Wed Aug 23 21:11:54 CST 2023","6454","cases.kyc","test_kyc","TestKyc","","","test_kyc_from_pool[pool_name_data3]","
+        测试非superadmin账户。拿模块账号认证KYC
+        "
+"skipped","Wed Aug 23 21:39:21 CST 2023","Wed Aug 23 21:39:21 CST 2023","12","cases.stake","test_region","TestRegion","","","test_un_bind_validator_create_region_error_region_name[xxxx]","
+        未绑定的验证者去创建区,传入错误的区名
+        @Desc:
+           - validator 未绑定区的验证者
+           - error_region_name 异常的区名
+           + expect: 1.如果所有验证者都绑定区忽略该用例
+                     2.传入错误的区名无法创建区
+        "
+"passed","Wed Aug 23 21:28:12 CST 2023","Wed Aug 23 21:28:18 CST 2023","6203","cases.stake","test_fee","TestFee","","","test_send_fee[100.49]","
+        验证send下修改fees
+        "
+"passed","Thu Aug 24 10:09:47 CST 2023","Thu Aug 24 10:09:47 CST 2023","516","cases.send","test_send","TestSend","","","test_send_to_admin_error_min[test_send1]","
+        测试sendToAmin命令，输入小于1u金额，
+        "
+"passed","Wed Aug 23 21:16:40 CST 2023","Wed Aug 23 21:16:51 CST 2023","10212","cases.send","test_send","TestSendTo","","","test_send_to_user_success[test_send_data2]","
+        用户给用户转钱，正常范围金额，成功
+        "
+"skipped","Wed Aug 23 21:39:21 CST 2023","Wed Aug 23 21:39:21 CST 2023","9","cases.stake","test_region","TestRegion","","","test_un_bind_validator_create_region_error_region_name[100.9]","
+        未绑定的验证者去创建区,传入错误的区名
+        @Desc:
+           - validator 未绑定区的验证者
+           - error_region_name 异常的区名
+           + expect: 1.如果所有验证者都绑定区忽略该用例
+                     2.传入错误的区名无法创建区
+        "
+"passed","Wed Aug 23 21:36:31 CST 2023","Wed Aug 23 21:36:44 CST 2023","12425","cases.stake","test_fee","TestFee","","","test_withdraw_fixed_fee[100]","
+        验证定期提取下修改fees
+        "
+"passed","Thu Aug 24 10:09:47 CST 2023","Thu Aug 24 10:09:48 CST 2023","560","cases.send","test_send","TestSend","","","test_send_to_admin_error_min[test_send2]","
+        测试sendToAmin命令，输入小于1u金额，
+        "
+"passed","Wed Aug 23 21:14:40 CST 2023","Wed Aug 23 21:14:45 CST 2023","5767","cases.send","test_send","TestSendTreasury","","","test_send_to_treasury_success[test_send0]","
+        测试sendToTreasury命令，输入正确的转账正确金额，
+        "
+"passed","Wed Aug 23 21:13:46 CST 2023","Wed Aug 23 21:14:06 CST 2023","20565","cases.reward","test_reward","TestDelegateReward","","","test_kyc_reward","
+        测试kyc发起活期委托，且计算收益，
+        "
+"passed","Wed Aug 23 21:30:59 CST 2023","Wed Aug 23 21:31:18 CST 2023","18432","cases.stake","test_fee","TestFee","","","test_no_kyc_un_delegate_fee[100.1]","
+        验证no_kyc_un_delegate下修改fees
+        "
+"passed","Wed Aug 23 21:20:26 CST 2023","Wed Aug 23 21:20:31 CST 2023","5526","cases.send","test_send","TestSendTo","","","test_send_to_pool[pool12]","
+        测试给模块账户转钱
+        "
+"skipped","Wed Aug 23 21:37:46 CST 2023","Wed Aug 23 21:37:46 CST 2023","10","cases.stake","test_fee","TestFee","","","test_create_region_fee[100.1]","
+        验证创建区的费用
+        "
+"passed","Wed Aug 23 21:32:32 CST 2023","Wed Aug 23 21:32:50 CST 2023","18437","cases.stake","test_fee","TestFee","","","test_kyc_un_delegate_fee[100]","
+        验证kyc_un_delegate下修改fees
+        "
+"passed","Thu Aug 24 10:08:46 CST 2023","Thu Aug 24 10:08:48 CST 2023","2214","cases.fixed","test_fixed","TestFixed","","","test_fixed_min_or_max_amount[test_fixed1]","
+        发起定期，最大（超过自身余额）或者最小（小于0.01mec）金额测试
+        "
+"passed","Wed Aug 23 21:33:08 CST 2023","Wed Aug 23 21:33:27 CST 2023","18443","cases.stake","test_fee","TestFee","","","test_kyc_un_delegate_fee[100.1]","
+        验证kyc_un_delegate下修改fees
+        "
+"passed","Wed Aug 23 21:28:25 CST 2023","Wed Aug 23 21:28:31 CST 2023","6235","cases.stake","test_fee","TestFee","","","test_send_fee[200]","
+        验证send下修改fees
+        "
+"passed","Thu Aug 24 10:09:46 CST 2023","Thu Aug 24 10:09:47 CST 2023","510","cases.send","test_send","TestSend","","","test_send_to_admin_error_min[test_send0]","
+        测试sendToAmin命令，输入小于1u金额，
+        "
+"passed","Wed Aug 23 21:37:57 CST 2023","Wed Aug 23 21:38:09 CST 2023","12570","cases.stake","test_fee","TestFee","","","test_kyc_fee[100]","
+        验证kyc下修改fees
+        "
+"passed","Wed Aug 23 21:03:46 CST 2023","Wed Aug 23 21:03:46 CST 2023","165","cases.fixed","test_fixed","TestFixed","","","test_fixed_error_mouth[14]",""
+"passed","Wed Aug 23 21:35:42 CST 2023","Wed Aug 23 21:36:01 CST 2023","18463","cases.stake","test_fee","TestFee","","","test_deposit_fixed_fee[100.9]","
+        验证定期质押下修改fees
+        "
+"passed","Thu Aug 24 09:42:18 CST 2023","Thu Aug 24 09:42:25 CST 2023","6516","cases.fixed","test_fixed","TestFixed","","","test_fixed_success_amount_and_mouth[test_fixed1]","
+        发起定期委托： 正常金额测试 这里需要完善的是随机拿一个KYC用户,通过
+        "
+"passed","Wed Aug 23 21:04:58 CST 2023","Wed Aug 23 21:04:58 CST 2023","135","cases.fixed","test_fixed","TestFixed","","","test_fixed_error_mouth[17]",""
+"passed","Wed Aug 23 21:02:09 CST 2023","Wed Aug 23 21:02:09 CST 2023","144","cases.fixed","test_fixed","TestFixed","","","test_fixed_error_mouth[8]",""
+"passed","Wed Aug 23 21:36:56 CST 2023","Wed Aug 23 21:37:09 CST 2023","12461","cases.stake","test_fee","TestFee","","","test_withdraw_fixed_fee[100.1]","
+        验证定期提取下修改fees
+        "
+"passed","Wed Aug 23 21:19:36 CST 2023","Wed Aug 23 21:19:41 CST 2023","5511","cases.send","test_send","TestSendTo","","","test_send_to_pool[pool3]","
+        测试给模块账户转钱
+        "
+"passed","Wed Aug 23 21:12:07 CST 2023","Wed Aug 23 21:12:14 CST 2023","6526","cases.kyc","test_kyc","TestKyc","","","test_kyc_from_pool[pool_name_data6]","
+        测试非superadmin账户。拿模块账号认证KYC
+        "
+"passed","Wed Aug 23 21:15:29 CST 2023","Wed Aug 23 21:15:30 CST 2023","694","cases.send","test_send","TestSendTreasury","","","test_send_to_treasury_form[test_send3]","
+        测试sendToTreasury命令，--from=模块账号时的场景
+        "
+"passed","Wed Aug 23 21:25:17 CST 2023","Wed Aug 23 21:26:28 CST 2023","71114","cases.stake","test_delegate","TestDelegate","","","test_kyc_un_delegate","
+        新创建的用户，有kyc，有活期委托 进行赎回操作
+        "
+"passed","Wed Aug 23 21:21:39 CST 2023","Wed Aug 23 21:21:40 CST 2023","295","cases.stake","test_delegate","TestDelegate","","","test_error_delegate[error_data0]","
+        错误传参数的活期委托
+        "
+"passed","Wed Aug 23 21:08:59 CST 2023","Wed Aug 23 21:09:25 CST 2023","25651","cases.fixed","test_fixed","TestFixedWithdraw","","","test_deposit_id_done","发起一笔定期，然后提取两次，输入已经提取过的id"
+"passed","Wed Aug 23 21:14:51 CST 2023","Wed Aug 23 21:14:57 CST 2023","5688","cases.send","test_send","TestSendTreasury","","","test_send_to_treasury_success[test_send2]","
+        测试sendToTreasury命令，输入正确的转账正确金额，
+        "
+"passed","Wed Aug 23 21:35:05 CST 2023","Wed Aug 23 21:35:24 CST 2023","18421","cases.stake","test_fee","TestFee","","","test_deposit_fixed_fee[100.1]","
+        验证定期质押下修改fees
+        "
+"passed","Wed Aug 23 21:39:16 CST 2023","Wed Aug 23 21:39:16 CST 2023","152","cases.stake","test_region","TestRegion","","","test_show_region","
+        查询已存在的区
+        @Desc:
+           - exit_region_name 已存在的区
+           + expect: 能正常查询到已存在的区相关信息
+        "
+"passed","Wed Aug 23 21:12:14 CST 2023","Wed Aug 23 21:12:20 CST 2023","6477","cases.kyc","test_kyc","TestKyc","","","test_kyc_from_pool[pool_name_data7]","
+        测试非superadmin账户。拿模块账号认证KYC
+        "
+"passed","Wed Aug 23 21:11:15 CST 2023","Wed Aug 23 21:11:28 CST 2023","13408","cases.kyc","test_kyc","TestKyc","","","test_kyc_error_region[3]","
+        拿不存在的区去new_kyc
+        "
+"passed","Wed Aug 23 21:01:45 CST 2023","Wed Aug 23 21:01:45 CST 2023","175","cases.fixed","test_fixed","TestFixed","","","test_fixed_error_mouth[7]",""
+"passed","Wed Aug 23 21:05:46 CST 2023","Wed Aug 23 21:05:46 CST 2023","146","cases.fixed","test_fixed","TestFixed","","","test_fixed_error_mouth[20]",""
+"passed","Wed Aug 23 21:34:22 CST 2023","Wed Aug 23 21:34:28 CST 2023","6198","cases.stake","test_fee","TestFee","","","test_deposit_fixed_fee[990000000000000]","
+        验证定期质押下修改fees
+        "
+"passed","Wed Aug 23 21:02:57 CST 2023","Wed Aug 23 21:02:58 CST 2023","175","cases.fixed","test_fixed","TestFixed","","","test_fixed_error_mouth[11]",""
+"passed","Wed Aug 23 21:10:48 CST 2023","Wed Aug 23 21:11:01 CST 2023","13373","cases.kyc","test_kyc","TestKyc","","","test_kyc_error_region[1]","
+        拿不存在的区去new_kyc
+        "
+"passed","Wed Aug 23 21:20:20 CST 2023","Wed Aug 23 21:20:26 CST 2023","5543","cases.send","test_send","TestSendTo","","","test_send_to_pool[pool11]","
+        测试给模块账户转钱
+        "
+"passed","Wed Aug 23 21:11:01 CST 2023","Wed Aug 23 21:11:15 CST 2023","13424","cases.kyc","test_kyc","TestKyc","","","test_kyc_error_region[2]","
+        拿不存在的区去new_kyc
+        "
+"passed","Wed Aug 23 21:17:09 CST 2023","Wed Aug 23 21:17:19 CST 2023","10223","cases.send","test_send","TestSendTo","","","test_send_to_user_success[test_send_data3]","
+        用户给用户转钱，正常范围金额，成功
+        "
+"passed","Wed Aug 23 21:36:19 CST 2023","Wed Aug 23 21:36:31 CST 2023","12406","cases.stake","test_fee","TestFee","","","test_withdraw_fixed_fee[990000000000000]","
+        验证定期提取下修改fees
+        "
+"passed","Wed Aug 23 21:29:33 CST 2023","Wed Aug 23 21:29:46 CST 2023","12550","cases.stake","test_fee","TestFee","","","test_un_kyc_delegate_fee[100.49]","
+        验证delegate下修改fees
+        "
+"passed","Wed Aug 23 21:11:54 CST 2023","Wed Aug 23 21:12:01 CST 2023","6491","cases.kyc","test_kyc","TestKyc","","","test_kyc_from_pool[pool_name_data4]","
+        测试非superadmin账户。拿模块账号认证KYC
+        "
+"passed","Wed Aug 23 21:37:09 CST 2023","Wed Aug 23 21:37:21 CST 2023","12462","cases.stake","test_fee","TestFee","","","test_withdraw_fixed_fee[100.49]","
+        验证定期提取下修改fees
+        "
+"passed","Thu Aug 24 10:09:42 CST 2023","Thu Aug 24 10:09:44 CST 2023","2202","cases.fixed","test_fixed","TestFixed","","","test_fixed_min_or_max_amount[test_fixed3]","
+        发起定期，最大（超过自身余额）或者最小（小于0.01mec）金额测试
+        "
+"passed","Wed Aug 23 21:38:34 CST 2023","Wed Aug 23 21:38:47 CST 2023","12540","cases.stake","test_fee","TestFee","","","test_kyc_fee[100.49]","
+        验证kyc下修改fees
+        "
+"skipped","Wed Aug 23 21:37:46 CST 2023","Wed Aug 23 21:37:46 CST 2023","11","cases.stake","test_fee","TestFee","","","test_create_region_fee[100.0]","
+        验证创建区的费用
+        "
+"passed","Wed Aug 23 21:29:58 CST 2023","Wed Aug 23 21:30:23 CST 2023","24436","cases.stake","test_fee","TestFee","","","test_no_kyc_un_delegate_fee[990000000000000]","
+        验证no_kyc_un_delegate下修改fees
+        "
+"passed","Wed Aug 23 21:19:52 CST 2023","Wed Aug 23 21:19:58 CST 2023","5561","cases.send","test_send","TestSendTo","","","test_send_to_pool[pool6]","
+        测试给模块账户转钱
+        "
+"passed","Wed Aug 23 21:01:21 CST 2023","Wed Aug 23 21:01:21 CST 2023","134","cases.fixed","test_fixed","TestFixed","","","test_fixed_error_mouth[5]",""
+"passed","Wed Aug 23 21:00:33 CST 2023","Wed Aug 23 21:00:33 CST 2023","166","cases.fixed","test_fixed","TestFixed","","","test_fixed_error_mouth[2]",""
+"passed","Wed Aug 23 21:30:23 CST 2023","Wed Aug 23 21:30:41 CST 2023","18449","cases.stake","test_fee","TestFee","","","test_no_kyc_un_delegate_fee[100]","
+        验证no_kyc_un_delegate下修改fees
+        "
+"passed","Wed Aug 23 21:16:12 CST 2023","Wed Aug 23 21:16:22 CST 2023","10216","cases.send","test_send","TestSendTo","","","test_send_to_user_success[test_send_data1]","
+        用户给用户转钱，正常范围金额，成功
+        "
+"passed","Thu Aug 24 10:09:12 CST 2023","Thu Aug 24 10:09:18 CST 2023","6270","cases.fixed","test_fixed","TestFixed","","","test_fixed_min_or_max_amount[test_fixed2]","
+        发起定期，最大（超过自身余额）或者最小（小于0.01mec）金额测试
+        "
+"passed","Wed Aug 23 21:27:53 CST 2023","Wed Aug 23 21:28:00 CST 2023","6249","cases.stake","test_fee","TestFee","","","test_send_fee[100]","
+        验证send下修改fees
+        "
+"skipped","Wed Aug 23 21:39:21 CST 2023","Wed Aug 23 21:39:21 CST 2023","13","cases.stake","test_region","TestRegion","","","test_un_bind_validator_create_region_error_region_name[TTT]","
+        未绑定的验证者去创建区,传入错误的区名
+        @Desc:
+           - validator 未绑定区的验证者
+           - error_region_name 异常的区名
+           + expect: 1.如果所有验证者都绑定区忽略该用例
+                     2.传入错误的区名无法创建区
+        "
+"skipped","Wed Aug 23 21:37:46 CST 2023","Wed Aug 23 21:37:46 CST 2023","8","cases.stake","test_fee","TestFee","","","test_create_region_fee[200]","
+        验证创建区的费用
+        "
+"passed","Wed Aug 23 21:15:44 CST 2023","Wed Aug 23 21:15:54 CST 2023","10201","cases.send","test_send","TestSendTo","","","test_send_to_user_success[test_send_data0]","
+        用户给用户转钱，正常范围金额，成功
+        "
+"passed","Wed Aug 23 21:06:22 CST 2023","Wed Aug 23 21:06:27 CST 2023","5209","cases.fixed","test_fixed","TestFixed","","","test_fixed_no_kyc","
+        测试非KYC用户发起定期委托 这里需要补充一下，一个非KYC、还有superadmin 还有 其他的各种账户
+        "
+"passed","Wed Aug 23 21:21:40 CST 2023","Wed Aug 23 21:21:40 CST 2023","307","cases.stake","test_delegate","TestDelegate","","","test_error_delegate[error_data2]","
+        错误传参数的活期委托
+        "
+"passed","Wed Aug 23 21:21:51 CST 2023","Wed Aug 23 21:21:51 CST 2023","164","cases.stake","test_delegate","TestDelegate","","","test_no_kyc_no_balance_delegate[1]","
+        新创建的用户，没有kyc，没有余额时进行活期委托
+        "
+"passed","Wed Aug 23 21:08:21 CST 2023","Wed Aug 23 21:08:35 CST 2023","14437","cases.fixed","test_fixed","TestFixedWithdraw","","","test_withdraw_no_expire","
+        发起一笔定期，未到期提取定期委托1
+        "
+"passed","Wed Aug 23 21:37:34 CST 2023","Wed Aug 23 21:37:46 CST 2023","12441","cases.stake","test_fee","TestFee","","","test_withdraw_fixed_fee[200]","
+        验证定期提取下修改fees
+        "
+"passed","Wed Aug 23 21:38:59 CST 2023","Wed Aug 23 21:39:12 CST 2023","12528","cases.stake","test_fee","TestFee","","","test_kyc_fee[200]","
+        验证kyc下修改fees
+        "
+"passed","Wed Aug 23 21:31:36 CST 2023","Wed Aug 23 21:31:55 CST 2023","18440","cases.stake","test_fee","TestFee","","","test_no_kyc_un_delegate_fee[100.9]","
+        验证no_kyc_un_delegate下修改fees
+        "
+"passed","Wed Aug 23 21:20:15 CST 2023","Wed Aug 23 21:20:20 CST 2023","5511","cases.send","test_send","TestSendTo","","","test_send_to_pool[pool10]","
+        测试给模块账户转钱
+        "
+"passed","Wed Aug 23 21:12:27 CST 2023","Wed Aug 23 21:12:33 CST 2023","6509","cases.kyc","test_kyc","TestKyc","","","test_kyc_from_pool[pool_name_data9]","
+        测试非superadmin账户。拿模块账号认证KYC
+        "
+"passed","Wed Aug 23 21:21:40 CST 2023","Wed Aug 23 21:21:40 CST 2023","344","cases.stake","test_delegate","TestDelegate","","","test_error_delegate[error_data1]","
+        错误传参数的活期委托
+        "
+"passed","Wed Aug 23 21:37:46 CST 2023","Wed Aug 23 21:37:57 CST 2023","10374","cases.stake","test_fee","TestFee","","","test_kyc_fee[990000000000000]","
+        验证kyc下修改fees
+        "
+"skipped","Wed Aug 23 21:37:46 CST 2023","Wed Aug 23 21:37:46 CST 2023","8","cases.stake","test_fee","TestFee","","","test_create_region_fee[100.9]","
+        验证创建区的费用
+        "
+"passed","Wed Aug 23 21:12:33 CST 2023","Wed Aug 23 21:12:40 CST 2023","6507","cases.kyc","test_kyc","TestKyc","","","test_kyc_from_pool[pool_name_data10]","
+        测试非superadmin账户。拿模块账号认证KYC
+        "
+"skipped","Thu Aug 24 09:42:57 CST 2023","Thu Aug 24 09:42:57 CST 2023","0","","","","","","test_fixed_success_amount_and_mouth[test_fixed3]","
+        发起定期委托： 正常金额测试 这里需要完善的是随机拿一个KYC用户,通过
+        "
+"passed","Wed Aug 23 21:04:10 CST 2023","Wed Aug 23 21:04:10 CST 2023","167","cases.fixed","test_fixed","TestFixed","","","test_fixed_error_mouth[15]",""
+"passed","Wed Aug 23 21:34:04 CST 2023","Wed Aug 23 21:34:22 CST 2023","18424","cases.stake","test_fee","TestFee","","","test_kyc_un_delegate_fee[200]","
+        验证kyc_un_delegate下修改fees
+        "
+"passed","Wed Aug 23 21:26:36 CST 2023","Wed Aug 23 21:26:37 CST 2023","1316","cases.stake","test_fee","TestFee","","","test_fee_error[test_fee1]","验证各种场景下fees 传入错误、异常参数的情况"
+"passed","Wed Aug 23 21:14:39 CST 2023","Wed Aug 23 21:14:39 CST 2023","358","cases.send","test_send","TestSend","","","test_send_to_admin_error_from[test_send2]","
+        测试sendToAmin命令，--from=模块账号，
+        "
+"passed","Wed Aug 23 21:19:41 CST 2023","Wed Aug 23 21:19:47 CST 2023","5560","cases.send","test_send","TestSendTo","","","test_send_to_pool[pool4]","
+        测试给模块账户转钱
+        "
+"passed","Wed Aug 23 21:06:51 CST 2023","Wed Aug 23 21:07:57 CST 2023","65501","cases.fixed","test_fixed","TestFixedWithdraw","","","test_withdraw_expire","
+        发起一笔定期，等待60秒到期后提取收益
+        "
+"passed","Wed Aug 23 21:33:45 CST 2023","Wed Aug 23 21:34:04 CST 2023","18423","cases.stake","test_fee","TestFee","","","test_kyc_un_delegate_fee[100.9]","
+        验证kyc_un_delegate下修改fees
+        "
+"skipped","Wed Aug 23 21:31:55 CST 2023","Wed Aug 23 21:32:13 CST 2023","18446","cases.stake","test_fee","TestFee","","","test_no_kyc_un_delegate_fee[200]","
+        验证no_kyc_un_delegate下修改fees
+        "
+"passed","Wed Aug 23 21:18:46 CST 2023","Wed Aug 23 21:18:52 CST 2023","5170","cases.send","test_send","TestSendTo","","","test_send_to_user_min[test_send_data3]","
+        测试sendToAmin命令，输入小于1u金额，
+        "
+"passed","Wed Aug 23 21:36:44 CST 2023","Wed Aug 23 21:36:56 CST 2023","12420","cases.stake","test_fee","TestFee","","","test_withdraw_fixed_fee[100.0]","
+        验证定期提取下修改fees
+        "
+"passed","Wed Aug 23 21:34:47 CST 2023","Wed Aug 23 21:35:05 CST 2023","18422","cases.stake","test_fee","TestFee","","","test_deposit_fixed_fee[100.0]","
+        验证定期质押下修改fees
+        "
+"passed","Wed Aug 23 21:26:34 CST 2023","Wed Aug 23 21:26:36 CST 2023","1273","cases.stake","test_fee","TestFee","","","test_fee_error[test_fee0]","验证各种场景下fees 传入错误、异常参数的情况"
+"passed","Wed Aug 23 21:10:09 CST 2023","Wed Aug 23 21:10:30 CST 2023","20636","cases.fixed","test_fixed","TestFixedWithdraw","","","test_deposit_withdraw_payee_error","A发起定期，B去提取A的定期"
+"passed","Wed Aug 23 21:34:28 CST 2023","Wed Aug 23 21:34:47 CST 2023","18450","cases.stake","test_fee","TestFee","","","test_deposit_fixed_fee[100]","
+        验证定期质押下修改fees
+        "
+"passed","Wed Aug 23 21:05:22 CST 2023","Wed Aug 23 21:05:22 CST 2023","137","cases.fixed","test_fixed","TestFixed","","","test_fixed_error_mouth[19]",""
+"passed","Wed Aug 23 21:20:09 CST 2023","Wed Aug 23 21:20:15 CST 2023","5504","cases.send","test_send","TestSendTo","","","test_send_to_pool[pool9]","
+        测试给模块账户转钱
+        "
+"passed","Wed Aug 23 21:21:51 CST 2023","Wed Aug 23 21:21:51 CST 2023","170","cases.stake","test_delegate","TestDelegate","","","test_no_kyc_no_balance_delegate[20]","
+        新创建的用户，没有kyc，没有余额时进行活期委托
+        "
+"passed","Wed Aug 23 21:15:03 CST 2023","Wed Aug 23 21:15:08 CST 2023","5651","cases.send","test_send","TestSendTreasury","","","test_send_to_treasury_min[test_send0]","
+        测试sendToTreasury命令，输入小于1u金额，
+        "
+"passed","Wed Aug 23 21:14:08 CST 2023","Wed Aug 23 21:14:14 CST 2023","5511","cases.send","test_send","TestSend","","","test_send_to_admin_success[test_send0]","
+        测试sendToAmin命令，输入正确的转账正确金额，
+        "
+"passed","Wed Aug 23 21:38:47 CST 2023","Wed Aug 23 21:38:59 CST 2023","12548","cases.stake","test_fee","TestFee","","","test_kyc_fee[100.9]","
+        验证kyc下修改fees
+        "
+"passed","Wed Aug 23 21:10:34 CST 2023","Wed Aug 23 21:10:48 CST 2023","13597","cases.kyc","test_kyc","TestKyc","","","test_kyc_success","
+        测试new_kyc成功
+        "
+"passed","Wed Aug 23 21:21:51 CST 2023","Wed Aug 23 21:22:46 CST 2023","54451","cases.stake","test_delegate","TestDelegate","","","test_no_kyc_have_balance_delegate","
+        新创建的用户，没有kyc，有余额时进行活期委托
+        "
+"passed","Wed Aug 23 21:29:08 CST 2023","Wed Aug 23 21:29:21 CST 2023","12571","cases.stake","test_fee","TestFee","","","test_kyc_delegate_fee[200]","
+        验证delegate下修改fees
+        "
+"passed","Wed Aug 23 21:28:31 CST 2023","Wed Aug 23 21:28:43 CST 2023","12196","cases.stake","test_fee","TestFee","","","test_kyc_delegate_fee[990000000000000]","
+        验证delegate下修改fees
+        "
+"passed","Thu Aug 24 09:41:22 CST 2023","Thu Aug 24 09:41:24 CST 2023","2003","cases.fixed","test_fixed","TestFixed","","","test_fixture",""
+"passed","Thu Aug 24 09:42:49 CST 2023","Thu Aug 24 09:42:55 CST 2023","6515","cases.fixed","test_fixed","TestFixed","","","test_fixed_success_amount_and_mouth[test_fixed2]","
+        发起定期委托： 正常金额测试 这里需要完善的是随机拿一个KYC用户,通过
+        "
+"passed","Wed Aug 23 21:12:01 CST 2023","Wed Aug 23 21:12:07 CST 2023","6468","cases.kyc","test_kyc","TestKyc","","","test_kyc_from_pool[pool_name_data5]","
+        测试非superadmin账户。拿模块账号认证KYC
+        "
+"passed","Wed Aug 23 21:14:39 CST 2023","Wed Aug 23 21:14:40 CST 2023","325","cases.send","test_send","TestSend","","","test_send_to_admin_error_from[test_send3]","
+        测试sendToAmin命令，--from=模块账号，
+        "
+"passed","Wed Aug 23 21:38:22 CST 2023","Wed Aug 23 21:38:34 CST 2023","12559","cases.stake","test_fee","TestFee","","","test_kyc_fee[100.1]","
+        验证kyc下修改fees
+        "
+"passed","Wed Aug 23 21:24:58 CST 2023","Wed Aug 23 21:25:17 CST 2023","19057","cases.stake","test_delegate","TestDelegate","","","test_kyc_no_balance_delegate","新创建的用户，做了kyc，没有余额时进行活期委托"
+"skipped","Wed Aug 23 21:39:21 CST 2023","Wed Aug 23 21:39:21 CST 2023","10","cases.stake","test_region","TestRegion","","","test_un_bind_validator_create_region_exit_region_name","
+        未绑定的验证者去创建区,传入已存在的区名
+        @Desc:
+           - validator 未绑定区的验证者
+           - exit_region_name 已创建的取名
+           + expect: 1.如果所有验证者都已绑定区，忽略该用例
+                     2.传已创建的区名无法创建区
+        "
+"passed","Wed Aug 23 21:14:19 CST 2023","Wed Aug 23 21:14:25 CST 2023","5553","cases.send","test_send","TestSend","","","test_send_to_admin_success[test_send2]","
+        测试sendToAmin命令，输入正确的转账正确金额，
+        "
+"passed","Wed Aug 23 21:00:57 CST 2023","Wed Aug 23 21:00:57 CST 2023","154","cases.fixed","test_fixed","TestFixed","","","test_fixed_error_mouth[4]",""
+"passed","Wed Aug 23 21:29:21 CST 2023","Wed Aug 23 21:29:33 CST 2023","12198","cases.stake","test_fee","TestFee","","","test_un_kyc_delegate_fee[990000000000000]","
+        验证delegate下修改fees
+        "
+"passed","Wed Aug 23 21:11:35 CST 2023","Wed Aug 23 21:11:41 CST 2023","6494","cases.kyc","test_kyc","TestKyc","","","test_kyc_from_pool[pool_name_data1]","
+        测试非superadmin账户。拿模块账号认证KYC
+        "
+"passed","Wed Aug 23 21:17:37 CST 2023","Wed Aug 23 21:17:42 CST 2023","5188","cases.send","test_send","TestSendTo","","","test_send_to_user_min[test_send_data0]","
+        测试sendToAmin命令，输入小于1u金额，
+        "
+"passed","Wed Aug 23 21:32:13 CST 2023","Wed Aug 23 21:32:32 CST 2023","18390","cases.stake","test_fee","TestFee","","","test_kyc_un_delegate_fee[990000000000000]","
+        验证kyc_un_delegate下修改fees
+        "
+"passed","Wed Aug 23 21:19:30 CST 2023","Wed Aug 23 21:19:36 CST 2023","5553","cases.send","test_send","TestSendTo","","","test_send_to_pool[pool2]","
+        测试给模块账户转钱
+        "
+"passed","Wed Aug 23 21:15:25 CST 2023","Wed Aug 23 21:15:27 CST 2023","2210","cases.send","test_send","TestSendTreasury","","","test_send_to_treasury_max","
+        测试sendToTreasury命令，输入大于余额金额，
+        "
+"passed","Wed Aug 23 21:14:14 CST 2023","Wed Aug 23 21:14:19 CST 2023","5508","cases.send","test_send","TestSend","","","test_send_to_admin_success[test_send1]","
+        测试sendToAmin命令，输入正确的转账正确金额，
+        "
+"passed","Wed Aug 23 21:11:28 CST 2023","Wed Aug 23 21:11:35 CST 2023","6491","cases.kyc","test_kyc","TestKyc","","","test_kyc_from_pool[pool_name_data0]","
+        测试非superadmin账户。拿模块账号认证KYC
+        "
+"passed","Wed Aug 23 21:06:10 CST 2023","Wed Aug 23 21:06:10 CST 2023","165","cases.fixed","test_fixed","TestFixed","","","test_fixed_error_mouth[21]",""
+"passed","Thu Aug 24 09:41:48 CST 2023","Thu Aug 24 09:41:54 CST 2023","6537","cases.fixed","test_fixed","TestFixed","","","test_fixed_success_amount_and_mouth[test_fixed0]","
+        发起定期委托： 正常金额测试 这里需要完善的是随机拿一个KYC用户,通过
+        "

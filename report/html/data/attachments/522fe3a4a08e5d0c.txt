@@ -1,0 +1,68 @@
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 362] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 362] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 362 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 362] Sesch channel 362 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 362] EOF received (362)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 362] EOF sent (362)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 363] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 363] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 363 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 363] Sesch channel 363 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 363] EOF received (363)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 363] EOF sent (363)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 364] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 364] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 364 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 364] Sesch channel 364 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 364] EOF received (364)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 364] EOF sent (364)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 365] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 365] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 365 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 365] Sesch channel 365 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 365] EOF received (365)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 365] EOF sent (365)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 366] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 366] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 366 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 366] Sesch channel 366 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 366] EOF received (366)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 366] EOF sent (366)
+[35mDEBUG   [0m httpcore.connection:_trace.py:45 close.started
+[35mDEBUG   [0m httpcore.connection:_trace.py:45 close.complete
+[35mDEBUG   [0m httpcore.connection:_trace.py:45 connect_tcp.started host='192.168.0.207' port=1317 local_address=None timeout=10 socket_options=None
+[35mDEBUG   [0m httpcore.connection:_trace.py:45 connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x7fd00c1bead0>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_headers.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_headers.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_body.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_body.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_headers.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json'), (b'Grpc-Metadata-Content-Type', b'application/grpc+cosmos-sdk-grpc-codec'), (b'Grpc-Metadata-X-Cosmos-Block-Height', b'8560'), (b'X-Server-Time', b'1692796639'), (b'Date', b'Wed, 23 Aug 2023 13:17:19 GMT'), (b'Content-Length', b'93')])
+[32mINFO    [0m httpx:_client.py:1013 HTTP Request: GET http://192.168.0.207:1317/cosmos/bank/v1beta1/balances/me1h43eqscl6mjky3793yamm4233gnxpn0vcnc6rc "HTTP/1.1 200 OK"
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_body.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_body.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 response_closed.started
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 response_closed.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_headers.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_headers.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_body.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 send_request_body.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_headers.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json'), (b'Grpc-Metadata-Content-Type', b'application/grpc+cosmos-sdk-grpc-codec'), (b'Grpc-Metadata-X-Cosmos-Block-Height', b'8560'), (b'X-Server-Time', b'1692796639'), (b'Date', b'Wed, 23 Aug 2023 13:17:19 GMT'), (b'Content-Length', b'87')])
+[32mINFO    [0m httpx:_client.py:1013 HTTP Request: GET http://192.168.0.207:1317/cosmos/bank/v1beta1/balances/me1qfx2sujacdytepsdpt7rq3e0y8cse6yedm3dzk "HTTP/1.1 200 OK"
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_body.started request=<Request [b'GET']>
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 receive_response_body.complete
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 response_closed.started
+[35mDEBUG   [0m httpcore.http11:_trace.py:45 response_closed.complete
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 367] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 367] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 367 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 367] Sesch channel 367 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 367] EOF received (367)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 367] EOF sent (367)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 368] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 368] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 368 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 368] Sesch channel 368 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 368] EOF received (368)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 368] EOF sent (368)

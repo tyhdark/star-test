@@ -1,0 +1,12 @@
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 290] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 290] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 290 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 290] Sesch channel 290 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 290] EOF received (290)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 290] EOF sent (290)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 291] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 291] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 291 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 291] Sesch channel 291 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 291] EOF received (291)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 291] EOF sent (291)

@@ -1,0 +1,1 @@
+{"uuid": "6744fdf5-a516-4857-bb78-bd20360d9438", "children": ["ea356102-2daf-4b5d-8778-5c4041a4f3e2"], "befores": [{"name": "creat_one_kyc_region", "status": "passed", "start": 1692841347295, "stop": 1692841369050}], "afters": [{"name": "creat_one_kyc_region::0", "status": "passed", "start": 1692841375567, "stop": 1692841377730}], "start": 1692841347295, "stop": 1692841377730}

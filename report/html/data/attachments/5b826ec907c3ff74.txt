@@ -1,0 +1,12 @@
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 454] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 454] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 454 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 454] Sesch channel 454 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 454] EOF received (454)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 454] EOF sent (454)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 455] Max packet in: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 455] Max packet out: 32768 bytes
+[35mDEBUG   [0m paramiko.transport:transport.py:1893 Secsh channel 455 opened.
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 455] Sesch channel 455 request ok
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 455] EOF received (455)
+[35mDEBUG   [0m paramiko.transport:channel.py:1210 [chan 455] EOF sent (455)
