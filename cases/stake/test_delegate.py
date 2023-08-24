@@ -78,7 +78,10 @@ class TestDelegate(object):
     @pytest.mark.parametrize("error_data", (("", -10), ("xxx", "xx"), ("??", "-1.1")))
     def test_error_delegate(self, setup_class_get_kyc_user_info, error_data):
         """
-        错误传参数的活期委托
+        错误传参数的活期委托参数
+        @Desc:
+           - error_data 错误的活期委托参数
+           + expect: 命令错误
         """
         user_addr, user_no_kyc_addr = setup_class_get_kyc_user_info
         # 断言 错误的地址返回Error
@@ -95,6 +98,9 @@ class TestDelegate(object):
     def test_no_kyc_no_balance_delegate(self, setup_no_kyc_no_balance_data, balance_data):
         """
         新创建的用户，没有kyc，没有余额时进行活期委托
+        @Desc:
+           - balance_data 正确的委托金额
+           + expect: 找不到活期委托数据
         """
         logger.info("TestDelegate/test_no_kyc_no_balance_delegate")
         user_addr = setup_no_kyc_no_balance_data
@@ -151,6 +157,15 @@ class TestDelegate(object):
     def test_no_kyc_have_balance_delegate(self):
         """
         新创建的用户，没有kyc，有余额时进行活期委托
+        @Desc:
+           - user 非kyc用户 有余额
+           - amount 传入大于已存在的活期委托金额
+           + expect: code=5
+
+           - user 非kyc用户 有余额
+           - amount 传入小于已存在的活期委托金额
+           + expect: 1.余额正常减少
+                     2.活期委托账户金额增加
         """
         logger.info("TestDelegate/test_no_kyc_have_balance_delegate")
         user_info = self.test_key.test_add()
@@ -217,6 +232,14 @@ class TestDelegate(object):
     def test_no_kyc_un_delegate(self):
         """
         新创建的用户，没有kyc，有活期委托 进行赎回操作
+        @Desc:
+           - user 非kyc用户 有活期委托
+           - amount 赎回小于委托的金额
+           + expect: 金额进入委托账户，用户手续费扣减，并计算收益
+
+           - user 非kyc用户 有活期委托
+           - amount 赎回大于等于委托的金额
+           + expect: 金额进入委托账户，用户手续费扣减，并计算收益
         """
         logger.info("TestDelegate/test_no_kyc_un_delegate")
         user_info = self.test_key.test_add()
@@ -262,7 +285,18 @@ class TestDelegate(object):
         self.test_key.test_delete_key(user_addr)
 
     def test_kyc_have_balance_delegate(self):
-        """新创建的用户，做了kyc，有余额时进行活期委托"""
+        """
+        新创建的用户，做了kyc，有余额时进行活期委托
+        @Desc:
+           - user kyc用户 有余额
+           - amount 传入大于余额委托金额
+           + expect: code=5
+
+           - user kyc用户 有余额
+           - amount 传入小于余额的活期委托金额
+           + expect: 1.余额正常减少
+                     2.活期委托金额增加
+        """
         logger.info("TestDelegate/test_kyc_have_balance_delegate")
         user_info = self.test_kyc.test_new_kyc_user()
         user_addr = user_info
@@ -338,7 +372,13 @@ class TestDelegate(object):
         self.test_key.test_delete_key(user_addr)
 
     def test_kyc_no_balance_delegate(self):
-        """新创建的用户，做了kyc，没有余额时进行活期委托"""
+        """
+        新创建的用户，做了kyc，没有余额时进行活期委托
+        @Desc:
+           - user kyc用户 没有余额
+           - amount 传入大于等于余额的活期委托金额
+           + expect: code=1144
+        """
         logger.info("TestDelegate/test_kyc_no_balance_delegate")
         user_info = self.test_kyc.test_new_kyc_user()
         user_addr = user_info
@@ -398,6 +438,14 @@ class TestDelegate(object):
     def test_kyc_un_delegate(self):
         """
         新创建的用户，有kyc，有活期委托 进行赎回操作
+        @Desc:
+           - user kyc用户 有活期委托
+           - amount 赎回小于等于委托的金额
+           + expect: 金额进入委托账户，用户手续费扣减，并计算收益
+
+           - user kyc用户 有活期委托
+           - amount 赎回大于等于委托的金额
+           + expect: 提示 code = 53  message index: 0: Validator DelgationAmount \u003c 0."
         """
         logger.info("TestDelegate/test_kyc_un_delegate")
         user_info = self.test_kyc.test_new_kyc_user()
