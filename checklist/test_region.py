@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+import time
+
 import pytest
 from loguru import logger
 
 from cases import unitcases
 from tools.compute import Compute
+from x.query import HttpQuery, Query
+from x.tx import Tx
 
 
 # logger.add("logs/case_{time}.log", rotation="500MB")
@@ -16,6 +20,10 @@ class TestRegionInfo(object):
     test_kyc = unitcases.Kyc()
     test_bank = unitcases.Bank()
     test_fixed = unitcases.Fixed()
+    test_validator = unitcases.Validator()
+    tx = Tx()
+    hq = HttpQuery()
+    q = Query()
     base_cfg = test_bank.tx
     # DefaultTotalStakeAllow 100000 * 400 = 40000000
     default_stake_allow_ac = Compute.as_to_ac(base_cfg.region_as)
@@ -99,3 +107,92 @@ class TestRegionInfo(object):
         with pytest.raises(AssertionError) as ex:
             self.test_del.test_delegate(**del_data)
         assert "'code': 2018" in str(ex.value)
+
+    def test_find_validator(self):
+        # {
+        #     'commission': {
+        #         'commission_rates': {
+        #             'max_change_rate': '0.010000000000000000',
+        #             'max_rate': '0.200000000000000000',
+        #             'rate': '0.100000000000000000'
+        #         },
+        #         'update_time': '2023-08-23T11:34:57.542134293Z'
+        #     },
+        #     'consensus_pubkey': {
+        #         '@type': '/cosmos.crypto.ed25519.PubKey',
+        #         'key': 'qeSrHKdZcrWNGmEfb9U86hq3RGq/0qU8gZ9M8fiKb3g='
+        #     },
+        #     'delegation_amount': '9000000',
+        #     'description': {
+        #         'details': '',
+        #         'identity': '',
+        #         'moniker': 'node5',
+        #         'security_contact': '',
+        #         'website': ''
+        #     },
+        #     'jailed': False,
+        #     'kyc_amount': '20000000',
+        #     'min_self_stake': '1000000',
+        #     'operator_address': 'mevaloper1u2swta5eynlnyf0rjpx2d97l50psrqjnd9gwmx',
+        #     'owner_address': 'me16lxhdm5p3ma2s4nh8f2rphfla4tzd35vu36q95',
+        #     'staker_shares': '999999000000.000000000000000000',
+        #     'status': 'BOND_STATUS_BONDED',
+        #     'tokens': '999999000000',
+        #     'unbonding_height': '0',
+        #     'unbonding_ids': [],
+        #     'unbonding_on_hold_ref_count': '0',
+        #     'unbonding_time': '1970-01-01T00:00:00Z'
+        # }
+
+        # - creator: me13t38gy4kp0vcq06sp2ek0na60wd2k50gqpu0ea
+        # name: MLT
+        # nft_class_id: MLT - NFT - CLASS - ID -
+        # operator_address: mevaloper1u2swta5eynlnyf0rjpx2d97l50psrqjnd9gwmx
+        # regionId: mlt
+
+        # - address: me1kpc32s5svs8hd5rpvgukd2jas7k8tzmyty6w08
+        # name: tyh_test02
+        # pubkey: '{"@type":"/cosmos.crypto.secp256k1.PubKey","key":"A6m3NnZASnNJdBVDlnbhkELzh4amTkVJ68WRhWx4hpKE"}'
+        # type: local
+        addr = 'me1kpc32s5svs8hd5rpvgukd2jas7k8tzmyty6w08'
+        # send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=addr, amount=100)
+        # resp = self.test_bank.test_send(**send_data)
+        # self.hq.tx.query_tx(resp['txhash'])
+        # time.sleep(6)
+        validator = self.test_validator.find_validator_by_node_name('node5')
+        logger.info(f"validator===={validator}")
+        logger.info(f"validator delegation_amount 活期委托金额===={validator['delegation_amount']}")
+        logger.info(f"validator kyc_amount kyc占用的金额===={validator['kyc_amount']}")
+        logger.info(f"validator staker_shares 总占用股份===={validator['staker_shares']}")
+        logger.info(f"validator 可用金额===="
+                    f"{int(validator['tokens']) - int(validator['kyc_amount']) - int(validator['delegation_amount'])}")
+        logger.info(f"可用金额2=={self.test_validator.get_validator_available_pledge_amount_by_kyc_adr(addr)}")
+        delegate_data = dict(from_addr=addr, amount=20)
+        resp = self.tx.staking.delegate(**delegate_data)
+        txhash = self.hq.tx.query_tx(resp['txhash'])
+        code = txhash['code']
+        assert code == 52
+        # code=52 failed to execute message; message index: 0: Node delegation limit exceeded.
+        # 超过验证者节点最大可质押数
+
+    def test_my_cmd(self):
+        addr = "me10esf6004mf8tcv4hk8wuegtunwx3fcllgqdmfd"
+
+        # 认证kyc
+        kyc_data = dict(user_addr=addr, region_id='chn')
+        resp = self.tx.staking.new_kyc(**kyc_data)
+        code = self.hq.tx.query_tx(resp['txhash'])['code']
+        assert code == 0
+
+        # 从超管转钱给用户
+        # send_data = dict(from_addr=self.base_cfg.super_addr, to_addr=addr, amount=100)
+        # resp = self.test_bank.test_send(**send_data)
+        # code = self.hq.tx.query_tx(resp['txhash'])['code']
+        # assert code == 0
+
+        # 用户进行活期委托
+        delegate_data = dict(from_addr=addr, amount=20)
+        resp = self.tx.staking.delegate(**delegate_data)
+        txhash = self.hq.tx.query_tx(resp['txhash'])
+        code = txhash['code']
+        assert code == 0

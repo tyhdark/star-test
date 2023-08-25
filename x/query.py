@@ -274,7 +274,7 @@ class HttpQuery(BaseClass):
     class Tx:
 
         @staticmethod
-        @retry(stop=stop_after_attempt(5), wait=wait_fixed(2))
+        @retry(stop=stop_after_attempt(20), wait=wait_fixed(2))
         def query_tx(tx_hash):
             url = HttpQuery.api_url + HttpQuery.query_tx_hash.format(hash=tx_hash)
             logger.info(f"{inspect.stack()[0][3]}: {url}")

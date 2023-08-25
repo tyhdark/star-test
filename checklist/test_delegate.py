@@ -26,6 +26,16 @@ class TestRegionDelegate(object):
     base_cfg = test_bank.tx
     user_addr = None
 
+    def test_no_kyc_user_un_delegate_seven(self,create_two_user_kyc_one):
+        """
+        没有进行kyc的用户进行超过7次的赎回操作
+        @Desc
+            - user 非kyc用户
+            - 超管给用户发钱
+            - 超过
+        """
+        addr = create_two_user_kyc_one
+
     # def test_region_delegate(self, setup_create_region):
     #     """测试新创建区域并质押"""
     #     logger.info("TestRegionDelegate/test_region_delegate")

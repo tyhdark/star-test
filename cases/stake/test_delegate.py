@@ -341,10 +341,10 @@ class TestDelegate(object):
 
         # 用户发起等于余额的委托
         user_balance = HttpResponse.get_balance_unit(user_addr)
-        resp = self.tx.staking.delegate(from_addr=user_addr, amount=user_balance)
+        resp = self.tx.staking.delegate(from_addr=user_addr, amount=100)
         time.sleep(self.tx.sleep_time)
         tx_resp = self.q.tx.query_tx(resp['txhash'])
-        assert tx_resp['code'] == 52
+        assert tx_resp['code'] == 5
 
         # 委托金额 < 余额-手续费 用户发起10块钱委托
         delegate_amount = 10

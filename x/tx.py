@@ -39,10 +39,11 @@ class Tx(BaseClass):
     class Bank(object):
 
         @staticmethod
-        def send_tx(from_addr, to_addr, amount, fees=Fees):
+        def send_tx(from_addr, to_addr, amount, fees=Fees, node_ip="localhost:26657"):
             """发送转账交易"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx bank send {from_addr} {to_addr} {amount}{Tx.coin['c']} " \
-                                 f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y "
+                                 f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y " \
+                                 f"--node=tcp://{node_ip}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 

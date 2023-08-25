@@ -16,6 +16,8 @@ region = unitcases.Region()
 kyc = unitcases.Kyc()
 validator = unitcases.Validator()
 base = unitcases.Base()
+keys = unitcases.Keys()
+bank = unitcases.Bank()
 
 
 # @pytest.fixture(scope="session")
@@ -174,6 +176,22 @@ def creat_one_kyc_region():
     user_name = kyc.q.Key.name_of_addre(addr=user_addr)
     kyc.tx.Keys.delete(user_name=user_name)
     print("creat_kyc_user_Teardown_用户已删除   ")
+
+
+@pytest.fixture()
+def create_two_user_kyc_one():
+    """
+    创建一个非kyc用户，超管给用户转100mec
+    :return: user_addr
+    """
+    user_name = "user_tyh_01"
+    user_addr = keys.test_add("user_tyh_01")['address']
+    send_data = dict(from_addr=base.tx.super_addr, to_addr=user_addr, amount=100)
+    bank.test_send(**send_data)
+    logger.info("----------------------->创建")
+    yield user_addr
+    logger.info("----------------------->删除")
+    base.tx.keys.delete(user_name)
 
 
 pass
