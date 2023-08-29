@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import inspect
 import time
+import random
 
+import pytest
 from loguru import logger
 
 from tools.name import UserInfo, RegionInfo, ValidatorInfo
@@ -22,8 +24,6 @@ class Bank(Base):
         """用户发起转账 好"""
         tx_info = self.tx.bank.send_tx(from_addr, to_addr, amount, **kwargs)
         logger.info(f"{inspect.stack()[0][3]}: {tx_info}")
-        # time.sleep(self.tx.sleep_time)
-        time.sleep(10)
         resp = self.hq.tx.query_tx(tx_info['txhash'])
         assert resp['code'] == 0, f"test_send failed, resp: {resp}"
         return resp
@@ -69,6 +69,37 @@ class Kyc(Keys):
             user_info = addr
         if region_id is None:
             region_id_variable = RegionInfo.region_for_id_existing()
+        else:
+            region_id_variable = region_id
+        logger.info(f"user_info:{user_info}")
+        tx_info = self.tx.staking.new_kyc(user_addr=user_info,
+                                          region_id=region_id_variable)
+        time.sleep(5)
+        resp = self.hq.tx.query_tx(tx_hash=tx_info["txhash"])
+        assert resp['code'] == 0, f"test_new_kyc_user failed,resp: {resp}"
+        logger.info(f"region_id: {region_id},new_kyc_addr:{user_info}")
+        return user_info
+
+    def test_new_kyc_user_not_in_node5(self, region_id=None, addr=None):
+        """认证kyc,用户就可以，区被绑定的验证者节点的应的node不是node5"""
+        if addr is None:
+            user_info = self.test_add().get('address')
+        else:
+            user_info = addr
+        if region_id is None:
+            region_id_variable = RegionInfo.region_for_id_existing()
+            # 找到node5 对应的region_id
+            operator_address = Validator.find_validator_by_node_name(self, "node5")['operator_address']
+            list_region = self.q.staking.list_region()['region']
+            if len(list_region) == 0:
+                pytest.skip("当前没有区可以使用")
+            no_node5_list_region = []
+            for region in list_region:
+                if operator_address != region['operator_address']:
+                    no_node5_list_region.append(region['regionId'])
+            if len(no_node5_list_region) != 0:
+                region_id = random.choice(no_node5_list_region)
+                region_id_variable = region_id
         else:
             region_id_variable = region_id
         logger.info(f"user_info:{user_info}")
@@ -182,6 +213,14 @@ class Region(Kyc, Bank):
         assert tx_resp['code'] == 0, f"test_create_region failed, resp: {tx_resp}"
         gas_dict = dict(gas_wanted=tx_resp['gas_wanted'], gas_used=tx_resp['gas_used'])
         return region_admin_info, region_id, region_name, gas_dict
+
+    def get_region_id_by_operator_address(self, operator_address=None):
+        """根据验证者节点地址查询所绑定的区id"""
+        list_region = self.q.staking.list_region()['region']
+        for region in list_region:
+            if operator_address == region['operator_address']:
+                region_id = region['regionId']
+        return region_id
 
 
 class Delegate(Base):

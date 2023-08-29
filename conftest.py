@@ -178,8 +178,8 @@ def creat_one_kyc_region():
     print("creat_kyc_user_Teardown_用户已删除   ")
 
 
-@pytest.fixture()
-def create_two_user_kyc_one():
+@pytest.fixture(scope='class')
+def create_no_kyc_send_money():
     """
     创建一个非kyc用户，超管给用户转100mec
     :return: user_addr
