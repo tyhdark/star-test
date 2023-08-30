@@ -39,10 +39,13 @@ class Tx(BaseClass):
     class Bank(object):
 
         @staticmethod
-        def send_tx(from_addr, to_addr, amount, fees=Fees):
+        def send_tx(from_addr, to_addr, amount, fees=Fees, node="localhost:26657", sequence=None):
             """发送转账交易"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx bank send {from_addr} {to_addr} {amount}{Tx.coin['c']} " \
-                                 f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y "
+                                 f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y " + f'--node=tcp://{node} '
+            if sequence is not None:
+                cmd = Tx.work_home + f"{Tx.chain_bin} tx bank send {from_addr} {to_addr} {amount}{Tx.coin['c']} " \
+                                     f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y " + f'--node=tcp://{node} ' + f"{sequence}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -94,31 +97,34 @@ class Tx(BaseClass):
             return Tx._executor(cmd)
 
         @staticmethod
-        def validator_stake_unstake(operator_address=None, stake_or_unstake=None, amount=None, fees=Fees):
+        def validator_stake_unstake(operator_address=None, stake_or_unstake=None, amount=None,
+                                    super_addr=BaseClass.super_addr, fees=Fees):
             """
             修改区信息
             :param operator_address: 节点地址
             :param stake_or_unstake: 传入stake就是增加，unstake减少
             :param amount: 金额
+            :param super_addr: 超管地址
             :param fees: 手续费
             :return:
             """
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking {stake_or_unstake} {operator_address} " \
-                                 f"{amount}{Tx.coin['c']} --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']} " \
+                                 f"{amount}{Tx.coin['c']} --from={super_addr} --fees={fees}{Tx.coin['uc']} " \
                                  f"{Tx.chain_id} {Tx.keyring_backend} -y "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
         @staticmethod
-        def edit_validator(operator_address, owner_address, fees=Fees, ):
+        def edit_validator(operator_address, owner_address, super_addr=BaseClass.super_addr, fees=Fees, ):
             """
             Only used to modify the Region ID of the verifier 把节点售卖给别人
             :param operator_address: Validator address
             :param owner_address: 卖给谁
+            :param super_addr: 超管地址
             :param fees: fees
             """
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking edit-validator {operator_address} " \
-                                 f"--owner-address={owner_address} --from={Tx.super_addr} " \
+                                 f"--owner-address={owner_address} --from={super_addr} " \
                                  f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y "
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
@@ -160,7 +166,7 @@ class Tx(BaseClass):
             return Tx._executor(cmd)
 
         @staticmethod
-        def deposit_fixed(from_addr, amount, month=None, fees=Fees):
+        def deposit_fixed(from_addr, amount, month=None, fees=Fees, node="localhost:26657"):
             """创建定期质押
             :param from_addr: 用户地址
             :param amount: 金额
@@ -173,23 +179,25 @@ class Tx(BaseClass):
                 mon = month
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking deposit-fixed {amount}{Tx.coin['c']} Term_{mon}_Months " \
                                  f"--from={from_addr}  --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} " \
-                                 f"{Tx.keyring_backend} -y "
+                                 f"{Tx.keyring_backend} -y  --node=tcp://{node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
         @staticmethod
-        def withdraw_fixed(from_addr, fixed_delegation_id, fees=Fees):
+        def withdraw_fixed(from_addr, fixed_delegation_id, fees=Fees, node="localhost:26657"):
             """提取定期质押 可用"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking withdraw-fixed {fixed_delegation_id} --from={from_addr}" \
-                                 f"  --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y "
+                                 f" --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y " \
+                                 f"--node=tcp://{node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
         @staticmethod
-        def withdraw_rewards(from_addr, fees=Fees):
+        def withdraw_rewards(from_addr, fees=Fees, node="localhost:26657"):
             """用户提取活期收益，不区分KYC用户"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx distribution withdraw-rewards --from={from_addr} " \
-                                 f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y "
+                                 f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y " \
+                                 f"--node=tcp://{node}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -217,7 +225,7 @@ class Tx(BaseClass):
             :return: tx Hash
             """
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking new-kyc {user_addr} {region_id} --from={super_addr} " \
-                                 f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y "
+                                 f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y --node=tcp://localhost:26657"
 
             # if from_addr != Tx.super_addr:  # 区管理员 不能创建 KYC_ROlE_ADMIN
             #     assert role == config["chain"]["role"]["user"]

@@ -20,11 +20,15 @@ class Bank(Base):
 
     def test_send(self, from_addr, to_addr, amount, **kwargs):
         """用户发起转账 好"""
+        # block = self.hq.Block.query_block()
+        # logger.info(f"block={block}")
         tx_info = self.tx.bank.send_tx(from_addr, to_addr, amount, **kwargs)
         logger.info(f"{inspect.stack()[0][3]}: {tx_info}")
-        # time.sleep(self.tx.sleep_time)
-        time.sleep(10)
+
+        time.sleep(self.tx.sleep_time)
+        # time.sleep(5)
         resp = self.hq.tx.query_tx(tx_info['txhash'])
+        # logger.info(f"http query result={resp}")
         assert resp['code'] == 0, f"test_send failed, resp: {resp}"
         return resp
 
@@ -74,7 +78,8 @@ class Kyc(Keys):
         logger.info(f"user_info:{user_info}")
         tx_info = self.tx.staking.new_kyc(user_addr=user_info,
                                           region_id=region_id_variable)
-        time.sleep(5)
+        # time.sleep(10)
+        time.sleep(self.tx.sleep_time)
         resp = self.hq.tx.query_tx(tx_hash=tx_info["txhash"])
         assert resp['code'] == 0, f"test_new_kyc_user failed,resp: {resp}"
         logger.info(f"region_id: {region_id},new_kyc_addr:{user_info}")
@@ -234,46 +239,12 @@ if __name__ == '__main__':
     keys = Keys()
     bank = k.test_show(user_name="test_bank")
     print(bank['address'])
-    # print(k.test_new_kyc_user())
 
-    # print(b.test_send(from_addr=Tx.super_addr, to_addr=addr, amount=10000))
-    # print(r.test_create_region_wang())
-    # u_name =
-    # a.test_add(user_name="testnamekyc005")
-    # time.sleep(Tx.sleep_time)
+    # Tx Error: error in json rpc client, with http response metadata: (Status: 200 OK, Protocol HTTP/1.1). RPC error -32603 - Internal error: tx (D1FE830927B9E5B252939AC9346722288E2A8F77AD7EDEB7F385BF294856B82B) not found
+    # b = Bank()
+    send_data = dict(from_addr="me1yvrw8l724k4wdd50wzw6vyxnf0mx245kf8ruar",
+                     to_addr="me1yn6n3e7ntcwscysq94wv6rnn4cjp8tnsrzsxdk", amount=0.01)  # 定义转账数据
+    b.test_send(**send_data)
 
-    # amount = 1000000
-    # fixed_delegation_id = 16
-    # print(u_add)
-    # print(s_add)
-    # data_send = dict(from_addr=s_add, to_addr=kyc_add, amount=amount)
-    # data_new_kyc= dict(addr=u_add,region_id="kor")
-    # data_del = dict(from_addr=kyc_add, amount=amount)
-    # data_u = dict(from_addr=kyc_add)
-    # data_del_fixed = dict(from_addr=kyc_add, amount=amount)
-    # data_del_fixed_withdraw = dict(from_addr=kyc_add, fixed_delegation_id=fixed_delegation_id)
-    # undelegate_data = dict(from_addr=kyc_add2, amount=amount)
-    # undelegate_resp = d.test_undelegate_kyc(**undelegate_data)
-
-    # print(undelegate_resp)
-    # d_name = "userSara"
-    # print(Tx.Keys.delete(user_name=d_name))
-    # print(b.test_send(**data_send))
-    # print(keys.test_add())
-
-    # print(b.test_send(**data_send))
-    # print(d.test_delegate(**data_del))
-    # print(keys.test_add())
-    # print(k.test_new_kyc_user())
-    # k.test_new_kyc_user(addr=kyc_add)
-    # print(d.test_withdraw(**data_u))
-    # d.test_undelegate_kyc(**data_del)
-    # print(d.test_undelegate_nokyc(**data_del))
-    # print(f.test_delegate_fixed(**data_del_fixed))
-    # f.test_withdraw_fixed(**data_del_fixed_withdraw)
-    # r.test_create_region_wang()
-    # print(v.test_create_validator())
-    # print(k.test_new_kyc_user(region_id='hti', addr=None))
-    # print(r.test_create_region(node_name='node1'))
     # print("1221")
     pass

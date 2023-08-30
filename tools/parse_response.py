@@ -76,12 +76,12 @@ class HttpResponse:
         return [i['account'] for i in kyc_info['kyc']]
 
     @classmethod
-    def get_tx_hash_height(cls, tx_hash):
-        height = cls.hq.tx.query_tx(tx_hash=tx_hash)
-        return height
+    def get_tx_hash(cls, tx_hash):
+        result = cls.hq.tx.query_tx(tx_hash=tx_hash)
+        return result
 
     @classmethod
-    def get_fixed_deposit_by_addr(cls, addr, fixed_type):
+    def get_fixed_deposit_by_addr(cls, addr, fixed_type="ALL_STATE"):
         fixed_info = cls.q.staking.show_fixed_deposit_by_addr(addr, fixed_type)
         return fixed_info
     @classmethod
@@ -129,7 +129,12 @@ if __name__ == '__main__':
     #     print(i['description']['moniker'])
     # node_list = [i['description']['moniker'] for i in v_list]
     # print(node_list)
-    print(HttpResponse.get_region(region_id='hti'))
+    # print(HttpResponse.get_region(region_id='hti'))
+    user1_rate = (HttpResponse.get_fixed_deposit_by_addr_hq(addr="me1560u4mhluvtn4m8kh8zezf4c3x9gerp8nzt4yl"))[0]['rate']
+    month = (HttpResponse.get_fixed_deposit_by_addr_hq(addr="me1560u4mhluvtn4m8kh8zezf4c3x9gerp8nzt4yl"))[0]['term'][5:-7:1]
+    print(user1_rate)
+    print(month)
+
     # print(HttpResponse.get_balance_unit(user_addr='me1w5xhsf98c9z0uaghcxuhh3auz07yclvam5wq09'))
     pass
 

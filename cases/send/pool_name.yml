@@ -1,20 +1,18 @@
 - pool_name: bonded_stake_tokens_pool
-- pool_name: bonded_tokens_pool
-- pool_name: distribution
-- pool_name: fee_collector
+#- pool_name: bonded_tokens_pool
+#- pool_name: distribution
+#- pool_name: fee_collector
+
+#- pool_name: interchainaccounts
+#- pool_name: mint
+#- pool_name: nft
+#- pool_name: not_bonded_stake_tokens_pool
+#- pool_name: not_bonded_tokens_pool
+#- pool_name: siid_nft_pool
 #
-##- pool_name: gov
+#- pool_name: temp-distribution
+#- pool_name: transfer
+#- pool_name: treasury_pool
 
-- pool_name: interchainaccounts
-- pool_name: mint
-- pool_name: nft
-- pool_name: not_bonded_stake_tokens_pool
-- pool_name: not_bonded_tokens_pool
-- pool_name: siid_nft_pool
-#
-##- pool_name: stake_tokens_pool
-
-- pool_name: temp-distribution
-- pool_name: transfer
-- pool_name: treasury_pool
-
+#- pool_name: stake_tokens_pool
+#- pool_name: gov

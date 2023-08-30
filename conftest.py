@@ -59,7 +59,8 @@ def setup_create_region_and_kyc_user():
 def get_region_id_existing():
     """获取链上存在的区id"""
     region_id = RegionInfo.region_for_id_existing()
-    return region_id
+    # return region_id
+    return "fro"
 
 
 @pytest.fixture()
@@ -68,10 +69,10 @@ def get_treasury_balances():
     # 拿到国库地址，
     treasury_addr = base.q.Account.auth_account(pool_name="treasury_pool")
     treasury_balance = base.hq.Bank.query_balances(addr=treasury_addr)
-    treasury_balance2 = base.q.Bank.query_balances(addr=treasury_addr)
+    # treasury_balance2 = base.q.Bank.query_balances(addr=treasury_addr)
     # 查询国库余额
     yield treasury_balance
-    treasury_balance2 = base.hq.Bank.query_balances(addr=treasury_addr)
+    # treasury_balance2 = base.hq.Bank.query_balances(addr=treasury_addr)
     pass
 
 
@@ -96,7 +97,7 @@ def creat_one_nokyc():
     # 在测试之前执行的操作
     print("Setup============")
     user_addr_a = (kyc.test_add())["address"]
-    amount = 10
+    amount = 100
     # user_addr_b = (kyc.test_add())["address"]
     bank_addr = (kyc.test_show(user_name="test_bank"))["address"]
     # time.sleep(2)
@@ -123,7 +124,11 @@ def creat_two_nokyc():
     bank_addr = (kyc.test_show(user_name="test_bank"))["address"]
     amount = 5
     # time.sleep(2)
-    kyc.tx.Bank.send_tx(from_addr=bank_addr, to_addr=user_addr_a, amount=amount)
+    result1 = kyc.tx.Bank.send_tx(from_addr=bank_addr, to_addr=user_addr_a, amount=amount)
+    logger.info(f"result1={result1}")
+    time.sleep(5)
+    result2 = kyc.tx.Bank.send_tx(from_addr=bank_addr, to_addr=user_addr_b, amount=amount)
+    logger.info(f"result1={result2}")
     time.sleep(5)
     # user_balances_a = kyc.hq.Bank.query_balances(addr=user_addr_a)
 
@@ -140,17 +145,17 @@ def creat_two_nokyc():
 def creat_one_kyc():
     """创建一个KYC用户，转账，最后会删掉"""
     print("Setup")
-    amount = 10
-    user_addr_a = kyc.test_new_kyc_user()
+    amount = 100
+    user_addr_a = kyc.test_new_kyc_user(region_id="gtm")
     time.sleep(6)
     bank_addr = (kyc.test_show(user_name="test_bank"))["address"]
     kyc.tx.Bank.send_tx(from_addr=bank_addr, to_addr=user_addr_a, amount=amount)
     time.sleep(5)
     # kyc.tx.Bank.send_tx(from_addr=bank_addr, to_addr=user_addr_a, amount=amount)
-
+    # time.sleep(5)
     # 返回测试函数前的上下文，类似于 setup 方法
     yield user_addr_a, Compute.to_u(amount)
-    kyc.test_delete_key(addr=user_addr_a)
+    # kyc.test_delete_key(addr=user_addr_a)
     # kyc.test_delete_key(addr=user_addr_b)
 
     # 在测试之后执行的操作
@@ -174,6 +179,38 @@ def creat_one_kyc_region():
     user_name = kyc.q.Key.name_of_addre(addr=user_addr)
     kyc.tx.Keys.delete(user_name=user_name)
     print("creat_kyc_user_Teardown_用户已删除   ")
+
+
+@pytest.fixture()
+def creat_two_kyc():
+    # 创建两个kyc用户，返回kyc用户的地址，区id 和余额 删掉用户
+    amount = 10
+    user_addr1 = kyc.test_new_kyc_user(region_id="chn")
+    time.sleep(6)
+    user_addr2 = kyc.test_new_kyc_user(region_id="fro")
+
+    bank_addr = (kyc.test_show(user_name="test_bank"))["address"]
+    kyc.tx.Bank.send_tx(from_addr=bank_addr, to_addr=user_addr1, amount=amount)
+    time.sleep(6)
+    kyc.tx.Bank.send_tx(from_addr=bank_addr, to_addr=user_addr2, amount=amount)
+
+    # 拿区id出来
+    # region_id = kyc.hq.Staking.kyc(addr=user_addr1)['kyc']['regionId']
+    yield user_addr1, user_addr2, Compute.to_u(amount)
+
+    # 然后删除该用户
+    user_name1 = kyc.q.Key.name_of_addre(addr=user_addr1)
+    user_name2 = kyc.q.Key.name_of_addre(addr=user_addr2)
+    kyc.tx.Keys.delete(user_name=user_name1)
+    kyc.tx.Keys.delete(user_name=user_name2)
+    print("creat_kyc_user_Teardown_用户已删除   ")
+
+
+@pytest.fixture()
+def bank_addr():
+    bank_addr = (kyc.test_show(user_name="test_bank"))["address"]
+    return bank_addr
+    pass
 
 
 pass

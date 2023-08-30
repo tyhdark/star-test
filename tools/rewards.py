@@ -60,12 +60,12 @@ class Reward(object):
         u_amount = amount * (10 ** 6)
         logger.info(
             f"设置的年化利率是:{rate}百分比,选择的定期月是{month}个月,存入的本金是{u_amount}umec")
-        s = Decimal((rate * u_amount * (3 / 12)) )
+        # s = Decimal((rate * u_amount * (3 / 12)) )
         # d = s
         # logger.info(f"d={d}")
         # s = "{:.10f}".format((rate * month / 12))
-        logger.info(f"s = {s}")
-        rewards = int((rate * month / 12) * u_amount)
+        # logger.info(f"s = {s}")
+        rewards = int((float(rate) * int(month) / 12) * u_amount)
         logger.info(f"到期后获得的利息是{rewards}")
 
         return rewards
@@ -79,5 +79,6 @@ if __name__ == '__main__':
     # print(Reward.reward_nokyc(stake=1469, end_height=100, start_height=99))
     # reward = Reward.reward_nokyc(stake=1, end_height=101, start_height=100)
     # Reward.fixed_reward(rate=)
-    reward = Reward.fixed_reward(rate=0.05, month=1, amount=9.0)
+    reward = Reward.reward_kyc(stake=1,start_height=1,end_height=20)
+    # reward = Reward.fixed_reward(rate=0.05, month=1, amount=9.0)
     print(reward)

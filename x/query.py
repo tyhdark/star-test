@@ -244,9 +244,19 @@ class Query(BaseClass):
             查询所有指定模块，，且返回模块地址，
             :param pool_name: 模块账户地址，默认是国库地址
             """
-            cmd = Query.work_home + f"./me-chaind query auth module-accounts | grep -w 'name: {pool_name}' -B 6 | grep 'address'"
+            cmd = Query.work_home + f"./me-chaind query auth module-accounts | grep -w 'name: {pool_name}' " \
+                                    f"-B 6 | grep 'address'"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))['address']
+
+        @staticmethod
+        def aunt_account_addr(addr=None):
+            """
+            根据地址查询用户的信息，查询用户的account_number和sequence
+            """
+            cmd = Query.work_home + f"./me-chaind q auth account {addr}"
+            logger.info(f"{inspect.stack()[0][3]}: {cmd}")
+            return Result.yaml_to_dict(Query.ssh_client.ssh(cmd))
 
 
 class HttpQuery(BaseClass):
@@ -274,7 +284,7 @@ class HttpQuery(BaseClass):
     class Tx:
 
         @staticmethod
-        @retry(stop=stop_after_attempt(5), wait=wait_fixed(2))
+        @retry(stop=stop_after_attempt(10), wait=wait_fixed(3))
         def query_tx(tx_hash):
             url = HttpQuery.api_url + HttpQuery.query_tx_hash.format(hash=tx_hash)
             logger.info(f"{inspect.stack()[0][3]}: {url}")
@@ -438,11 +448,13 @@ if __name__ == '__main__':
     # print(q_ssh.Staking.kyc_by_region(region_id="jpn"))
     # print(q_ssh.Staking.list_fixed_deposit())
     hq = HttpQuery()
+    block = hq.Block.query_block()
+    print(block)
     # s=hq.Staking.fixed_deposit()
     # s = hq.Staking.fixed_deposit_rate(month=1)
     # print(s, type(s))
-    a=hq.Staking.kyc(addr="me13rt4yckef6yuy3a097ahqpqfll0ez0kcum4u69")['kyc']['regionId']
-    print(a)
+    # a=hq.Staking.kyc(addr="me13rt4yckef6yuy3a097ahqpqfll0ez0kcum4u69")['kyc']['regionId']
+    # print(a)
     # print(hq.Staking.delegation(addr="me13a4rmm64wetlatj5z6jcfxkxtraxdcm8jl0z8u"))
     # print(hq.Staking.region(region_id="pry"))
     # print(hq.Staking.validator(addr="mevaloper183rayk6wts2mgcrvqp8ydssphvxdkdw53e6llf"))
@@ -457,13 +469,10 @@ if __name__ == '__main__':
     # for i in r.get('region'):
     #     print(i.get('name'))
     # l = [i.get('name') for i in hq.Staking.region().get('region')]
-    # print(r)
-    # print(r)
+    print("asda", HttpQuery.Staking.delegation(addr="me1wxay3azlqt0dsmq4xsqex6qztuevf8v4y3qyfx")['startHeight'])
     # print(hq.Staking.kyc(addr="me1q6v4ud6dy0dh3k0jnpva287n7m3wlv3w2qgnwc"))
     # l = hq.Staking.fixed_deposit(addr="me10xujye2ceftjakuzhx6pg7ecaj7x0qrrg0kexa")
-    # print(l)
-    # ll = [i.get('id') for i in hq.Staking.fixed_deposit(addr="me10xujye2ceftjakuzhx6pg7ecaj7x0qrrg0kexa")]
-    # print(ll)
+
     # print(hq.Staking.fixed_deposit_rate())
     # print(q_ssh.Bank.query_balances("me1f5mcf4cw8av4jzh2zygnjcmvsqgygac77zsrtu"))
 

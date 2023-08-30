@@ -298,3 +298,84 @@ class TestFixedWithdraw:
         assert len(all_fixed_list_end) == len(all_fixed_list_start) + 1
         # 提取定期打扫数据
         Tx.Staking.withdraw_fixed(from_addr=user_addr_a, fixed_delegation_id=latest_id)
+
+
+class TestFixedNode:
+    def test_fixed_node_fees_eq(self, creat_one_kyc_region):
+        """
+        指定节点发起定期委托，满足对应节点手续费的情况
+        """
+        # 指定节点发起定期，
+        user_addr, start_balance, region_id = creat_one_kyc_region
+        # amount = "{:.10f}".format(test_fixed['success_amount'])
+        amount = 1
+        # mouth = test_fixed['mouth']
+        mouth = 1
+        # 获取委托前的数据
+        user_fixed_list_start = HttpQuery.Staking.fixed_deposit(addr=user_addr)
+        region_fixed_list_start = (Query.Staking.show_fixed_deposit_by_region(region_id=region_id))['FixedDeposit']
+        all_fixed_list_start = HttpQuery.Staking.fixed_deposit()
+
+        result = Tx.Staking.deposit_fixed(from_addr=user_addr, amount=amount, month=mouth, fees=200,
+                                          node="localhost:14007")
+        time.sleep(6)
+        logger.info(f"result = {result}")
+
+        user_fixed_list_end = HttpQuery.Staking.fixed_deposit(addr=user_addr)
+        #  查看区域定期委托列表有没有新增
+        region_fixed_list_end = (Query.Staking.show_fixed_deposit_by_region(region_id=region_id))['FixedDeposit']
+        # 查看全网定期委托列表有没有增加
+        all_fixed_list_end = HttpQuery.Staking.fixed_deposit()
+        # 查看用户结束余额
+        end_balance = HttpQuery.Bank.query_balances(addr=user_addr)
+        logger.info(f"end_balance={end_balance}")
+        # 断言1：自己定期列表
+        assert len(user_fixed_list_end) == len(user_fixed_list_start) + 1
+        # 断言2： 区域定期委托列表
+        assert len(region_fixed_list_end) == len(region_fixed_list_start) + 1
+        # 断言3：全网定期委托列表
+        assert len(all_fixed_list_end) == len(all_fixed_list_start) + 1
+        # 断言3： 用户结束余额==开始余额-委托金额-手续费
+        assert end_balance == start_balance - Compute.to_u(float(amount)) - 200
+
+    def test_fixed_node_fees_less(self, creat_one_kyc_region):
+        """
+        指定节点发起定期委托，未满足对应节点手续费的情况，应该委托失败
+        """
+        # 指定节点发起定期，
+        user_addr, start_balance, region_id = creat_one_kyc_region
+        # amount = "{:.10f}".format(test_fixed['success_amount'])
+        amount = 1
+        # mouth = test_fixed['mouth']
+        mouth = 1
+        # 获取委托前的数据
+        user_fixed_list_start = HttpQuery.Staking.fixed_deposit(addr=user_addr)
+        region_fixed_list_start = (Query.Staking.show_fixed_deposit_by_region(region_id=region_id))['FixedDeposit']
+        all_fixed_list_start = HttpQuery.Staking.fixed_deposit()
+
+        result = Tx.Staking.deposit_fixed(from_addr=user_addr, amount=amount, month=mouth, fees=199,
+                                          node="localhost:14007")
+        time.sleep(6)
+        logger.info(f"result = {result}")
+
+        user_fixed_list_end = HttpQuery.Staking.fixed_deposit(addr=user_addr)
+        #  查看区域定期委托列表有没有新增
+        region_fixed_list_end = (Query.Staking.show_fixed_deposit_by_region(region_id=region_id))['FixedDeposit']
+        # 查看全网定期委托列表有没有增加
+        all_fixed_list_end = HttpQuery.Staking.fixed_deposit()
+        # 查看用户结束余额
+        end_balance = HttpQuery.Bank.query_balances(addr=user_addr)
+        logger.info(f"end_balance={end_balance}")
+        # 断言1：自己定期列表
+        assert len(user_fixed_list_end) == len(user_fixed_list_start)
+        # 断言2： 区域定期委托列表
+        assert len(region_fixed_list_end) == len(region_fixed_list_start)
+        # 断言3：全网定期委托列表
+        assert len(all_fixed_list_end) == len(all_fixed_list_start)
+        # 断言4： 用户结束余额==开始余额
+        assert end_balance == start_balance
+        # 断言报错信息应该
+        # assert "insufficient fee" in str(result) and "'code': 13" in str(result)
+        assert 'insufficient fee' in result['raw_log'], "Expected 'insufficient fee' not found in 'raw_log'"
+        assert result['code'] == 13, "Expected 'code' value of 13"
+

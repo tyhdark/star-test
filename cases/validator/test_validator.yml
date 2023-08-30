@@ -1,0 +1,33 @@
+##- moniker: "node1"
+##  amount: 1
+##  owner: "owner1"
+##- moniker: "node2"
+##  amount: 2
+##  owner: "owner2"
+#- moniker: "node3"
+#  amount: 3
+#  owner: "owner3"
+##- moniker: "node4"
+##  amount: 4
+##  owner: "owner4"
+##- moniker: "node5"
+##  amount: 5
+##  owner: "owner5"
+- pool_name: bonded_stake_tokens_pool
+- pool_name: bonded_tokens_pool
+- pool_name: distribution
+- pool_name: fee_collector
+
+- pool_name: interchainaccounts
+- pool_name: mint
+- pool_name: nft
+- pool_name: not_bonded_stake_tokens_pool
+- pool_name: not_bonded_tokens_pool
+- pool_name: siid_nft_pool
+
+- pool_name: temp-distribution
+- pool_name: transfer
+- pool_name: treasury_pool
+
+- pool_name: stake_tokens_pool
+- pool_name: gov
