@@ -33,7 +33,7 @@ class TestDelegate(object):
         :return: user_addr, user_no_kyc_addr
         """
 
-        user_info = self.test_kyc.test_new_kyc_user()
+        user_info = self.test_kyc.test_new_kyc_user_not_in_node5()
         user_addr = user_info
         time.sleep(self.tx.sleep_time)
 
@@ -93,6 +93,28 @@ class TestDelegate(object):
         del_data = dict(from_addr=user_addr, amount=error_data[1])
         resp = self.tx.staking.delegate(**del_data)
         assert "Error" in resp
+
+    @pytest.mark.parametrize("delegate_data", (0.1, 0.01, 0.009, 0.001, 0.002, 0.0011, 0.0001, 0.00001))
+    def test_delegate_amount(self, create_no_kyc_send_money, delegate_data):
+        """
+        验证不同金额下的活期委托 最小活期委托金额是0.01mec = 10000umec
+        @Desc
+            - delegate_data >=0.01
+            + expect: 能正常委托
+            - delegate_data <0.01
+            + expect:提示minimum delegate amount is 0.01,not less than this value.input value = 100
+        """
+        user_addr = create_no_kyc_send_money
+
+        # 没有余额的情况下进行活期委托 委托10 命令应该错误
+        del_data = dict(from_addr=user_addr, amount=delegate_data)
+        resp = self.tx.staking.delegate(**del_data)
+        # minimum delegate amount is 0.01,not less than this value.input value = 100
+        if delegate_data >= 0.01:
+            tx_resp = self.hq.tx.query_tx(resp['txhash'])
+            assert tx_resp['code'] == 0
+        else:
+            assert "Error" in resp
 
     @pytest.mark.parametrize("balance_data", (1, 10, 20))
     def test_no_kyc_no_balance_delegate(self, setup_no_kyc_no_balance_data, balance_data):
@@ -298,7 +320,7 @@ class TestDelegate(object):
                      2.活期委托金额增加
         """
         logger.info("TestDelegate/test_kyc_have_balance_delegate")
-        user_info = self.test_kyc.test_new_kyc_user()
+        user_info = self.test_kyc.test_new_kyc_user_not_in_node5()
         user_addr = user_info
         time.sleep(self.tx.sleep_time)
         # 查询当前用户是不是没有余额
@@ -336,14 +358,14 @@ class TestDelegate(object):
         # 用户发起大于余额的委托
         resp = self.tx.staking.delegate(from_addr=user_addr, amount=110)
         time.sleep(self.tx.sleep_time)
-        tx_resp = self.q.tx.query_tx(resp['txhash'])
+        tx_resp = self.hq.tx.query_tx(resp['txhash'])
         assert tx_resp['code'] == 5
 
         # 用户发起等于余额的委托
         user_balance = HttpResponse.get_balance_unit(user_addr)
         resp = self.tx.staking.delegate(from_addr=user_addr, amount=100)
         time.sleep(self.tx.sleep_time)
-        tx_resp = self.q.tx.query_tx(resp['txhash'])
+        tx_resp = self.hq.tx.query_tx(resp['txhash'])
         assert tx_resp['code'] == 5
 
         # 委托金额 < 余额-手续费 用户发起10块钱委托
@@ -380,7 +402,7 @@ class TestDelegate(object):
            + expect: code=1144
         """
         logger.info("TestDelegate/test_kyc_no_balance_delegate")
-        user_info = self.test_kyc.test_new_kyc_user()
+        user_info = self.test_kyc.test_new_kyc_user_not_in_node5()
         user_addr = user_info
         time.sleep(self.tx.sleep_time)
 
@@ -448,7 +470,7 @@ class TestDelegate(object):
            + expect: 提示 code = 53  message index: 0: Validator DelgationAmount \u003c 0."
         """
         logger.info("TestDelegate/test_kyc_un_delegate")
-        user_info = self.test_kyc.test_new_kyc_user()
+        user_info = self.test_kyc.test_new_kyc_user_not_in_node5()
         user_addr = user_info
 
         time.sleep(self.tx.sleep_time)
@@ -480,15 +502,18 @@ class TestDelegate(object):
         # 当前活期委托数据应该等于委托数据
         user_delegate_info = HttpResponse.get_delegate(user_addr)
         assert int(user_delegate_info['amount']) == Compute.to_u(delegate_amount - un_del_amount)
+        logger.info(f"当前活期委托的余额是：{user_delegate_info['amount']},umec")
 
         # 赎超过活期的委托    "code": 53, "raw_log": "failed to execute message;
         # message index: 0: Validator DelgationAmount \u003c 0.",
-        un_del_amount = 100
+        un_del_amount = 900
         un_del_data = dict(from_addr=user_addr, amount=un_del_amount)
+        logger.info(f"赎回的金额是：{Compute.to_u(un_del_amount)}, umec")
         un_del_resp = self.tx.staking.undelegate_kyc(**un_del_data)
         time.sleep(self.tx.sleep_time)
         un_del_resp_tx = un_del_resp['txhash']
         resp = self.hq.tx.query_tx(un_del_resp_tx)
+        logger.info(f"赎回交易的hash内容是：{resp}")
         assert 53 == resp['code']
 
         # 超过金额应该被全部赎回没成功，所以活期委托还是10-5 = 5

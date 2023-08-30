@@ -214,21 +214,16 @@ class TestFee(object):
     def test_node_update_rate_send_fees(self):
         """
         验证修改node minimum-gas-prices = "0.001umec"  这个值* 200000 = 200 这里最低手续费就是 200umec
-        :return:
+        提示交易失败：insufficient fees; got: 100umec required: 200umec: insufficient fee
         """
         user_adr = self.q.key.address_of_name("user_tyh")
         before_user_balance = HttpResponse.get_balance_unit(user_adr)
         other_adr = self.q.key.address_of_name("user1_tyh")
         # 前置条件是把node7的gas费率调整成 0.001umec, 且 user_tyh 这个用户是node7的kyc用户
-        send_data = dict(from_addr=user_adr, to_addr=other_adr, amount=2, fees=200, node_ip='localhost:14007')
+        send_data = dict(from_addr=user_adr, to_addr=other_adr, amount=2, fees=100, node_ip='localhost:14007')
         resp = self.tx.bank.send_tx(**send_data)
         logger.info(f"resp={resp}")
-        time.sleep(self.tx.sleep_time)
-        after_user_balance = HttpResponse.get_balance_unit(user_adr)
-        logger.info(f"test_node7_send_fees/ 交易前的余额 before_user_balance={before_user_balance}")
-        logger.info(f"test_node7_send_fees/ 交易后的余额 after_user_balance={after_user_balance}")
-        logger.info(f"test_node7_send_fees/ 默认手续费 ={before_user_balance - Compute.to_u(2) - after_user_balance}")
-        assert before_user_balance - Compute.to_u(2) - after_user_balance == 200
+        assert resp['code'] == 13
 
     # @pytest.mark.parametrize("send_fees", (Compute.to_u(990000000), 100, 100.0, 100.1, 100.49, 100.9, 200))
     @pytest.mark.parametrize("send_fees", (Compute.to_u(990000000), 100.49, 100.9, 200))

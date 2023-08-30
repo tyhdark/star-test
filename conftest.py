@@ -186,6 +186,7 @@ def create_no_kyc_send_money():
     """
     user_name = "user_tyh_01"
     user_addr = keys.test_add("user_tyh_01")['address']
+    time.sleep(base.tx.sleep_time)
     send_data = dict(from_addr=base.tx.super_addr, to_addr=user_addr, amount=100)
     bank.test_send(**send_data)
     logger.info("----------------------->创建")

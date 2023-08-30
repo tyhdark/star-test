@@ -95,7 +95,7 @@ class Kyc(Keys):
                 pytest.skip("当前没有区可以使用")
             no_node5_list_region = []
             for region in list_region:
-                if operator_address != region['operator_address']:
+                if operator_address != region['operator_address'] and region['regionId'] != 'gtm':
                     no_node5_list_region.append(region['regionId'])
             if len(no_node5_list_region) != 0:
                 region_id = random.choice(no_node5_list_region)
