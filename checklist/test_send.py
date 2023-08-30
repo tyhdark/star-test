@@ -161,7 +161,7 @@ class TestSend(object):
         #     # 提交操作1和操作2到进程池中并发执行
         #     future1 = executor.submit(partial_function1)
         #     future2 = executor.submit(partial_function2)
-        #     #     # 等待操作1和操作2执行完成
+        #     #     # 等待操作1和操作2执行完成1
         #     future1.result()
         #     future2.result()
         # 查看余额有没有到账
