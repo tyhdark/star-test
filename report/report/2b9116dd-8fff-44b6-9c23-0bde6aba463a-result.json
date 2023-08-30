@@ -1,0 +1,39 @@
+{
+	"name": "test_different_node_delegate",
+	"status": "passed",
+	"description": "\n        在费率不同的验证者节点之间进行委托和赎回\n        @Desc\n            - node1 和 node7 的节点费率不同\n            - 用户通过node1节点验证委托\n            - 用户通过node7节点验证赎回\n            + expect:委托和赎回正常，收费费分别按对应的扣除\n        ",
+	"start": 1693388528726,
+	"stop": 1693388565353,
+	"uuid": "0c498d6f-304b-4b20-97cc-2d834ee1457a",
+	"historyId": "1ab044994ca9044e7c84e555ff4e9c93",
+	"testCaseId": "ade70d9f0f96b82c8cfd7f86df0e3ddc",
+	"fullName": "checklist.test_delegate.TestRegionDelegate#test_different_node_delegate",
+	"labels": [{
+		"name": "tag",
+		"value": "P0"
+	}, {
+		"name": "parentSuite",
+		"value": "checklist"
+	}, {
+		"name": "suite",
+		"value": "test_delegate"
+	}, {
+		"name": "subSuite",
+		"value": "TestRegionDelegate"
+	}, {
+		"name": "host",
+		"value": "tangyihang-B250M-DS3H"
+	}, {
+		"name": "thread",
+		"value": "57807-MainThread"
+	}, {
+		"name": "framework",
+		"value": "pytest"
+	}, {
+		"name": "language",
+		"value": "cpython3"
+	}, {
+		"name": "package",
+		"value": "checklist.test_delegate"
+	}]
+}

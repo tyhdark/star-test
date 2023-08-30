@@ -1,0 +1,39 @@
+{
+	"name": "test_different_fees_delegate",
+	"status": "passed",
+	"description": "\n        在费率不同的验证者节点之间交叉委托、赎回\n        @Desc\n            - node1 和 node7 的节点费率不同\n            - 用户通过node1节点验证委托\n            - 用户通过node7节点验证赎回\n            + expect:委托和赎回正常，收费费分别按对应的扣除\n        ",
+	"start": 1693389335517,
+	"stop": 1693389380804,
+	"uuid": "ab759c32-b71f-4212-9fd9-cb1c519aebc4",
+	"historyId": "4f85435d76d05dd8139f581f15bbe6ea",
+	"testCaseId": "ee73c39206cf1cf56c8698ad56c66ad1",
+	"fullName": "checklist.test_fee.TestSendCoin#test_different_fees_delegate",
+	"labels": [{
+		"name": "tag",
+		"value": "P0"
+	}, {
+		"name": "parentSuite",
+		"value": "checklist"
+	}, {
+		"name": "suite",
+		"value": "test_fee"
+	}, {
+		"name": "subSuite",
+		"value": "TestSendCoin"
+	}, {
+		"name": "host",
+		"value": "tangyihang-B250M-DS3H"
+	}, {
+		"name": "thread",
+		"value": "60193-MainThread"
+	}, {
+		"name": "framework",
+		"value": "pytest"
+	}, {
+		"name": "language",
+		"value": "cpython3"
+	}, {
+		"name": "package",
+		"value": "checklist.test_fee"
+	}]
+}
