@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import inspect
 import time
+import random
 
+import pytest
 from loguru import logger
 
 from tools.name import UserInfo, RegionInfo, ValidatorInfo
@@ -85,6 +87,37 @@ class Kyc(Keys):
         logger.info(f"region_id: {region_id},new_kyc_addr:{user_info}")
         return user_info
 
+    def test_new_kyc_user_not_in_node5(self, region_id=None, addr=None):
+        """认证kyc,用户就可以，区被绑定的验证者节点的应的node不是node5"""
+        if addr is None:
+            user_info = self.test_add().get('address')
+        else:
+            user_info = addr
+        if region_id is None:
+            region_id_variable = RegionInfo.region_for_id_existing()
+            # 找到node5 对应的region_id
+            operator_address = Validator.find_validator_by_node_name(self, "node5")['operator_address']
+            list_region = self.q.staking.list_region()['region']
+            if len(list_region) == 0:
+                pytest.skip("当前没有区可以使用")
+            no_node5_list_region = []
+            for region in list_region:
+                if operator_address != region['operator_address'] and region['regionId'] != 'gtm':
+                    no_node5_list_region.append(region['regionId'])
+            if len(no_node5_list_region) != 0:
+                region_id = random.choice(no_node5_list_region)
+                region_id_variable = region_id
+        else:
+            region_id_variable = region_id
+        logger.info(f"user_info:{user_info}")
+        tx_info = self.tx.staking.new_kyc(user_addr=user_info,
+                                          region_id=region_id_variable)
+        time.sleep(5)
+        resp = self.hq.tx.query_tx(tx_hash=tx_info["txhash"])
+        assert resp['code'] == 0, f"test_new_kyc_user failed,resp: {resp}"
+        logger.info(f"region_id: {region_id},new_kyc_addr:{user_info}")
+        return user_info
+
 
 class Validator(Kyc):
     def test_create_validator(self, node_name=None):
@@ -114,6 +147,29 @@ class Validator(Kyc):
         assert resp['code'] == 0, f"test_new_kyc_user failed, resp: {resp}"
         gas_dict = dict(gas_wanted=resp['gas_wanted'], gas_used=resp['gas_used'])
         return user_info, gas_dict
+
+    def find_validator_by_node_name(self, node_name=None):
+        """
+        根据node名称查询对应绑定的验证者地址operator_address,如果没有就返回空
+        :param node_name: 默认查node1的
+        :return: validator 验证者节点信息
+        """
+        validator = None
+        va_list = self.q.staking.validators_list()
+        for va in va_list['validators']:
+            if node_name == va['description']['moniker']:
+                validator = va
+        return validator
+
+    def get_validator_available_pledge_amount_by_kyc_adr(self, addr=None):
+        """
+        根据KYC用户的地址获取到所在区的验证者节点可用的质押余额
+        :param addr:
+        :return: available_pledge_amount (umec)
+        """
+        validator = Fees.test_get_user_region_validator_info(self, addr)
+        available_pledge_amount = (int(validator['tokens']) - int(validator['delegation_amount']))
+        return available_pledge_amount
 
 
 class Region(Kyc, Bank):
@@ -164,6 +220,14 @@ class Region(Kyc, Bank):
         assert tx_resp['code'] == 0, f"test_create_region failed, resp: {tx_resp}"
         gas_dict = dict(gas_wanted=tx_resp['gas_wanted'], gas_used=tx_resp['gas_used'])
         return region_admin_info, region_id, region_name, gas_dict
+
+    def get_region_id_by_operator_address(self, operator_address=None):
+        """根据验证者节点地址查询所绑定的区id"""
+        list_region = self.q.staking.list_region()['region']
+        for region in list_region:
+            if operator_address == region['operator_address']:
+                region_id = region['regionId']
+        return region_id
 
 
 class Delegate(Base):
@@ -227,6 +291,57 @@ class Fixed(Base):
         logger.info(f"return txhash is : {resp}")
         assert resp['code'] == 0, f"test_undelegate_fixed failed, resp: {resp}"
         return resp
+
+
+class Fees(Base):
+    # fees模块需要用到的方法
+
+    def test_get_user_region_id(self, addr=None):
+        """
+        根据用户地址查询用户所在区的信息
+        :param addr:
+        :return: region_info 返回区的信息 例如：
+        {'creator': 'me13t38gy4kp0vcq06sp2ek0na60wd2k50gqpu0ea',
+        'name': 'AND', 'nft_class_id': 'AND-NFT-CLASS-ID-',
+        'operator_address': 'mevaloper10mvzmucamjgvlgk2r2cll02qs08uc4gtuk5r5e',
+        'regionId': 'and'}
+        """
+        kyc_info = self.q.staking.show_kyc(addr)
+        assert kyc_info is not None, "get kyc info error"
+        logger.info(f"addr={addr},Kyc_info={kyc_info}")
+        kyc_region_id = kyc_info['kyc']['regionId']
+        logger.info(f"region_id={kyc_region_id}")
+        region_info = self.q.staking.show_region(kyc_region_id)["region"]
+        assert kyc_region_id is not None, "get region_info error"
+        return region_info
+
+    def test_get_user_region_validator_info(self, addr=None):
+        """
+        根据用户地址查询所在区对应的验证者信息
+        :param addr:
+        :return:validator_info 验证者信息
+        """
+        region_info = Fees.test_get_user_region_id(self, addr)
+        validator_info = self.q.staking.validator(region_info['operator_address'])
+        assert validator_info is not None, "验证者信息获取失败"
+        return validator_info
+
+    def user_in_validator_owner_is_pm(self, addr):
+        """
+        判断用户所在区的验证者地址是否与pm地址一致
+        如果不一致就说明该验证者被售卖了
+        :param addr: 用户的地址
+        :return: True 表示节点的owner是PM  False表示owner不是PM
+        """
+        pm_addr = self.q.key.address_of_name('PM')
+        assert pm_addr is not None, "PM的地址获取失败"
+        validator_info = Fees.test_get_user_region_validator_info(self, addr)
+        owner_address = validator_info['owner_address']
+        assert owner_address is not None, "获取验证者的owner_address失败"
+        if owner_address == pm_addr:
+            return True
+        else:
+            return False
 
 
 if __name__ == '__main__':

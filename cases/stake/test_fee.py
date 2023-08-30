@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import inspect
+import os
+import sys
 import time
 
 import pytest
@@ -14,11 +16,19 @@ from tools.compute import Compute
 from tools.name import RegionInfo, ValidatorInfo
 from x.base import BaseClass
 
-with open('./cases/stake/test_fee.yml', 'r') as file:
+# with open('./cases/stake/test_fee.yml', 'r') as file:
+#     test_data = yaml.safe_load(file)
+# with open('test_fee.yml', 'r') as file:
+#     test_data = yaml.safe_load(file)
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+current_path = os.path.dirname(__file__)
+with open(current_path + '/test_fee.yml', 'r') as file:
     test_data = yaml.safe_load(file)
 
 
 # 单元测试fee模块模块
+
 
 class TestFee(object):
     tx = Tx()
@@ -31,6 +41,7 @@ class TestFee(object):
     test_bank = unitcases.Bank()
     test_validator = unitcases.Validator()
     test_fixed = unitcases.Fixed()
+    test_fees = unitcases.Fees()
     base_cfg = test_bank.tx
     user_addr = None
     user_no_kyc_addr = None
@@ -104,7 +115,13 @@ class TestFee(object):
 
     @pytest.mark.parametrize("test_fee", test_data)
     def test_fee_error(self, test_fee, get_error_user_info):
-        """验证各种场景下fees 传入错误、异常参数的情况"""
+        """
+        验证各种场景下fees 传入错误、异常参数的情况
+        @Desc:
+           - test_data 错误的参数
+           - get_error_user_info 创建的有余额、有委托的用户
+           + expect: 返回包含Error的命令行提示
+        """
         user_addr, region_id = get_error_user_info
 
         amount = 10
@@ -142,10 +159,24 @@ class TestFee(object):
         resp = self.tx.staking.new_kyc(**kyc_data)
         assert_resp(resp, test_fee)
 
-    @pytest.mark.parametrize("send_fees", (Compute.to_u(990000000), 100, 100.0, 100.1, 100.49, 100.9, 200))
+    @pytest.mark.parametrize("send_fees", (9999999999999, 100, 100.0, 100.1, 100.49, 100.9, 200))
     def test_send_fee(self, setup_class_get_kyc_user_info, send_fees):
         """
         验证send下修改fees
+        @Desc:
+           - user_addr_balance 资金转出方 的余额
+           - user_no_kyc_addr_balance 资金接受方 的余额
+           - send_fees 手续费
+           - user_send_amount 转出资金金额
+           - send_fees <= user_addr_balance - user_send_amount
+           + expect: 交易成功 能查到手续费被扣减，手续费被分成：节点拥有者拥有10%，pm拥有10%，国库80%
+
+           - user_addr_balance 资金转出方 的余额
+           - user_no_kyc_addr_balance 资金接受方 的余额
+           - send_fees 手续费
+           - user_send_amount 转出资金金额
+           - send_fees > user_addr_balance - user_send_amount
+           + expect: 交易不成功 提示 coed = 1144
         """
         logger.info("TestFee/test_send_fee")
 
@@ -153,13 +184,14 @@ class TestFee(object):
 
         before_user_balance = HttpResponse.get_balance_unit(user_addr)
         before_user_no_kyc_balance = HttpResponse.get_balance_unit(user_no_kyc_addr)
+        before_pm_balance = HttpResponse.get_balance_unit(self.q.key.address_of_name('PM'))
 
         user_send_amount = 2
         send_data = dict(from_addr=user_addr, to_addr=user_no_kyc_addr, amount=user_send_amount, fees=send_fees)
         resp = self.tx.bank.send_tx(**send_data)
         time.sleep(self.tx.sleep_time)
 
-        # 如果传入的手续费数据大于管理员本金就判断交易无法成功且返回1144的code
+        # 如果传入的手续费数据大于 余额减去交易金额后的值 交易无法成功且返回1144的code
         if send_fees > before_user_balance - user_send_amount:
             time.sleep(self.tx.sleep_time)
             assert resp['code'] == 1144
@@ -171,6 +203,27 @@ class TestFee(object):
         # 手续费忽略小数
         assert before_user_balance - Compute.to_u(user_send_amount) - after_user_balance == int(send_fees)
         assert after_user_no_kyc_balance - Compute.to_u(user_send_amount) == before_user_no_kyc_balance
+        after_pm_balance = HttpResponse.get_balance_unit(self.q.key.address_of_name('PM'))
+        if self.test_fees.user_in_validator_owner_is_pm(user_addr):
+            # 如果验证者节点的所有者是pm，pm获得手续费的20%
+            assert after_pm_balance - before_pm_balance == self.base_cfg.fees * 0.2
+        else:
+            # 如果验证者节点的所有者不是pm，pm只获得手续费的10%
+            assert after_pm_balance - before_pm_balance == self.base_cfg.fees * 0.1
+
+    def test_node_update_rate_send_fees(self):
+        """
+        验证修改node minimum-gas-prices = "0.001umec"  这个值* 200000 = 200 这里最低手续费就是 200umec
+        提示交易失败：insufficient fees; got: 100umec required: 200umec: insufficient fee
+        """
+        user_adr = self.q.key.address_of_name("user_tyh")
+        before_user_balance = HttpResponse.get_balance_unit(user_adr)
+        other_adr = self.q.key.address_of_name("user1_tyh")
+        # 前置条件是把node7的gas费率调整成 0.001umec, 且 user_tyh 这个用户是node7的kyc用户
+        send_data = dict(from_addr=user_adr, to_addr=other_adr, amount=2, fees=100, node_ip='localhost:14007')
+        resp = self.tx.bank.send_tx(**send_data)
+        logger.info(f"resp={resp}")
+        assert resp['code'] == 13
 
     # @pytest.mark.parametrize("send_fees", (Compute.to_u(990000000), 100, 100.0, 100.1, 100.49, 100.9, 200))
     @pytest.mark.parametrize("send_fees", (Compute.to_u(990000000), 100.49, 100.9, 200))
@@ -182,6 +235,7 @@ class TestFee(object):
 
         user_addr, _ = setup_class_get_kyc_user_info
         before_user_balance = HttpResponse.get_balance_unit(user_addr)
+        before_pm_balance = HttpResponse.get_balance_unit(self.q.key.address_of_name('PM'))
 
         user_delegate_amount = 2
         send_data = dict(from_addr=user_addr, amount=user_delegate_amount, fees=send_fees)
@@ -197,12 +251,19 @@ class TestFee(object):
         assert self.hq.tx.query_tx(kyc_resp['txhash'])['code'] == 0
         after_user_balance = HttpResponse.get_balance_unit(user_addr)
         after_user_delegate = HttpResponse.get_delegate(user_addr)['amount']
+
         # # after_user_no_kyc_balance = HttpResponse.get_balance_unit(user_no_kyc_addr)
         # 手续费忽略小数
-
         assert before_user_balance - Compute.to_u(user_delegate_amount) - after_user_balance == int(send_fees)
         # 断言当前存在的活期委托金额与操作活期委托的金额是一致的
         assert int(after_user_delegate) == Compute.to_u(user_delegate_amount)
+        after_pm_balance = HttpResponse.get_balance_unit(self.q.key.address_of_name('PM'))
+        if self.test_fees.user_in_validator_owner_is_pm(user_addr):
+            # 如果验证者节点的所有者是pm，pm获得手续费的20%
+            assert after_pm_balance - before_pm_balance == self.base_cfg.fees * 0.2
+        else:
+            # 如果验证者节点的所有者不是pm，pm只获得手续费的10%
+            assert after_pm_balance - before_pm_balance == self.base_cfg.fees * 0.1
 
         # 赎回委托，避免数据污染
         un_del_data = dict(from_addr=user_addr, amount=user_delegate_amount)
@@ -210,7 +271,6 @@ class TestFee(object):
         time.sleep(self.tx.sleep_time)
         # 断言赎回成功
         assert self.hq.tx.query_tx(resp['txhash'])['code'] == 0
-        # assert after_user_no_kyc_balance - Compute.to_u(user_send_amount) == before_user_no_kyc_balance
 
     # @pytest.mark.parametrize("send_fees", (Compute.to_u(990000000), 100, 100.0, 100.1, 100.49, 100.9, 200))
     @pytest.mark.parametrize("send_fees", (Compute.to_u(990000000), 100.49, 100.9))

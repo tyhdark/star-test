@@ -166,7 +166,7 @@ class ValidatorInfo:
         all_oper_list = [o.get('operator_address') for o in operators_address ]
 
         if bind:
-            no_region_oper_list = all_oper_list
+            no_region_oper_list = [i for i in all_oper_list if i in region_oper_list]
         else:
             no_region_oper_list = [i for i in all_oper_list if i not in region_oper_list]
         # 根据判断的节点地址去它的node名称

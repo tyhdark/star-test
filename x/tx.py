@@ -22,6 +22,7 @@ def outer(func):
 
 
 class Tx(BaseClass):
+    node_id = {"node1": "localhost:26657", "node7": "localhost:14007"}
 
     def __init__(self):
         self.bank = self.Bank()
@@ -39,13 +40,11 @@ class Tx(BaseClass):
     class Bank(object):
 
         @staticmethod
-        def send_tx(from_addr, to_addr, amount, fees=Fees, node="localhost:26657", sequence=None):
+        def send_tx(from_addr, to_addr, amount, fees=Fees, node_ip="localhost:26657"):
             """发送转账交易"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx bank send {from_addr} {to_addr} {amount}{Tx.coin['c']} " \
-                                 f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y " + f'--node=tcp://{node} '
-            if sequence is not None:
-                cmd = Tx.work_home + f"{Tx.chain_bin} tx bank send {from_addr} {to_addr} {amount}{Tx.coin['c']} " \
-                                     f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y " + f'--node=tcp://{node} ' + f"{sequence}"
+                                 f"--fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y " \
+                                 f"--node=tcp://{node_ip}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -69,18 +68,19 @@ class Tx(BaseClass):
     class Staking(object):
 
         @staticmethod
-        def create_region(region_name, node_name, fees=Fees):
+        def create_region(region_name, node_name, fees=Fees, node_ip="localhost:26657"):
             """
             创建一个区
             :param region_name: 区名称
             :param node_name: 节点名称，方便找节点地址
             :param fees: Gas费用
+            :param node_ip:
             :return:
             """
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking new-region {region_name} " \
                                  f"$(./me-chaind q staking validators | grep -w \"{node_name}\" -A 6 " \
                                  f"| awk '/address/{{print$2}}') --from={Tx.super_addr} --fees={fees}{Tx.coin['uc']}" \
-                                 f"  {Tx.chain_id} {Tx.keyring_backend} -y "
+                                 f"  {Tx.chain_id} {Tx.keyring_backend} -y --node=tcp://{node_ip}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
@@ -130,26 +130,29 @@ class Tx(BaseClass):
             return Tx._executor(cmd)
 
         @staticmethod
-        def delegate(from_addr, amount, fees=Fees):
+        def delegate(from_addr, amount, fees=Fees, node_ip="localhost:26657"):
             """创建/追加 活期质押
             :param from_addr: 用户地址
             :param amount: 金额
             :param fees: fees
+            :param node_ip:
             :return 交易结果，含哈希，记得提取"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking delegate {amount}{Tx.coin['c']} --from={from_addr} " \
-                                 f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y "
+                                 f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y " \
+                                 f"--node=tcp://{node_ip}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
         @staticmethod
-        def undelegate_nokyc(from_addr, amount, fees=Fees):
+        def undelegate_nokyc(from_addr, amount, fees=Fees, node_ip="localhost:26657"):
             """
             非KYC减少活期质押可用:
             1.减少质押金额 >= 实际质押额 则按实际质押额兑付 并主动发放收益
             2.减少质押金额 < 实际质押额 则按传入金额兑付, 收益重新计算但不主动发放
             """
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking unKycUnbond {amount}{Tx.coin['c']} --from={from_addr} " \
-                                 f" --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y "
+                                 f" --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y " \
+                                 f" --node=tcp://{node_ip}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 

@@ -16,6 +16,8 @@ region = unitcases.Region()
 kyc = unitcases.Kyc()
 validator = unitcases.Validator()
 base = unitcases.Base()
+keys = unitcases.Keys()
+bank = unitcases.Bank()
 
 
 # @pytest.fixture(scope="session")
@@ -59,8 +61,7 @@ def setup_create_region_and_kyc_user():
 def get_region_id_existing():
     """获取链上存在的区id"""
     region_id = RegionInfo.region_for_id_existing()
-    # return region_id
-    return "fro"
+    return region_id
 
 
 @pytest.fixture()
@@ -97,7 +98,7 @@ def creat_one_nokyc():
     # 在测试之前执行的操作
     print("Setup============")
     user_addr_a = (kyc.test_add())["address"]
-    amount = 100
+    amount = 10
     # user_addr_b = (kyc.test_add())["address"]
     bank_addr = (kyc.test_show(user_name="test_bank"))["address"]
     # time.sleep(2)
@@ -124,11 +125,7 @@ def creat_two_nokyc():
     bank_addr = (kyc.test_show(user_name="test_bank"))["address"]
     amount = 5
     # time.sleep(2)
-    result1 = kyc.tx.Bank.send_tx(from_addr=bank_addr, to_addr=user_addr_a, amount=amount)
-    logger.info(f"result1={result1}")
-    time.sleep(5)
-    result2 = kyc.tx.Bank.send_tx(from_addr=bank_addr, to_addr=user_addr_b, amount=amount)
-    logger.info(f"result1={result2}")
+    kyc.tx.Bank.send_tx(from_addr=bank_addr, to_addr=user_addr_a, amount=amount)
     time.sleep(5)
     # user_balances_a = kyc.hq.Bank.query_balances(addr=user_addr_a)
 
@@ -145,8 +142,8 @@ def creat_two_nokyc():
 def creat_one_kyc():
     """创建一个KYC用户，转账，最后会删掉"""
     print("Setup")
-    amount = 100
-    user_addr_a = kyc.test_new_kyc_user(region_id="gtm")
+    amount = 10
+    user_addr_a = kyc.test_new_kyc_user()
     time.sleep(6)
     bank_addr = (kyc.test_show(user_name="test_bank"))["address"]
     kyc.tx.Bank.send_tx(from_addr=bank_addr, to_addr=user_addr_a, amount=amount)
@@ -155,7 +152,7 @@ def creat_one_kyc():
     # time.sleep(5)
     # 返回测试函数前的上下文，类似于 setup 方法
     yield user_addr_a, Compute.to_u(amount)
-    # kyc.test_delete_key(addr=user_addr_a)
+    kyc.test_delete_key(addr=user_addr_a)
     # kyc.test_delete_key(addr=user_addr_b)
 
     # 在测试之后执行的操作
@@ -211,6 +208,23 @@ def bank_addr():
     bank_addr = (kyc.test_show(user_name="test_bank"))["address"]
     return bank_addr
     pass
+
+
+@pytest.fixture(scope='class')
+def create_no_kyc_send_money():
+    """
+    创建一个非kyc用户，超管给用户转100mec
+    :return: user_addr
+    """
+    user_name = "user_tyh_01"
+    user_addr = keys.test_add("user_tyh_01")['address']
+    time.sleep(base.tx.sleep_time)
+    send_data = dict(from_addr=base.tx.super_addr, to_addr=user_addr, amount=100)
+    bank.test_send(**send_data)
+    logger.info("----------------------->创建")
+    yield user_addr
+    logger.info("----------------------->删除")
+    base.tx.keys.delete(user_name)
 
 
 pass
