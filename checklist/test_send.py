@@ -76,9 +76,9 @@ class TestSend(object):
         time.sleep(6)
         # 转账数据定义
         send_data_1 = dict(from_addr=user_addr_a,
-                           to_addr=user_addr_b, amount=1, node="localhost:26657")
+                           to_addr=user_addr_b, amount=1, node_ip="localhost:26657")
         send_data_2 = dict(from_addr=user_addr_b,
-                           to_addr=user_addr_a, amount=2, node="localhost:14002")
+                           to_addr=user_addr_a, amount=2, node_ip="localhost:14002")
 
         partial_function1 = partial(self.test_bank.test_send, **send_data_1)
         partial_function2 = partial(self.test_bank.test_send, **send_data_2)
@@ -109,9 +109,9 @@ class TestSend(object):
         time.sleep(6)
         # 转账数据定义
         send_data_1 = dict(from_addr=user_addr_a,
-                           to_addr=user_addr_b, amount=1, fees=100, node="localhost:26657")
+                           to_addr=user_addr_b, amount=1, fees=100, node_ip="localhost:26657")
         send_data_2 = dict(from_addr=user_addr_b,
-                           to_addr=user_addr_a, amount=2, fees=200, node="localhost:14007")
+                           to_addr=user_addr_a, amount=2, fees=200, node_ip="localhost:14007")
 
         partial_function1 = partial(self.test_bank.test_send, **send_data_1)
         partial_function2 = partial(self.test_bank.test_send, **send_data_2)
@@ -146,10 +146,10 @@ class TestSend(object):
         sequence = int((HttpResponse.q.Account.aunt_account_addr(addr=user_addr_a))['sequence'])
         logger.info(f"number={number},sequence={sequence},type={type(sequence)}")
         send_data_1 = dict(from_addr=user_addr_a,
-                           to_addr=user_addr_b, amount=1, fees=100, node="localhost:26657",
+                           to_addr=user_addr_b, amount=1, fees=100, node_ip="localhost:26657",
                            sequence=f"-s={sequence} -a={number}  --offline")
         send_data_2 = dict(from_addr=user_addr_a,
-                           to_addr=user_addr_b, amount=2, fees=100, node="localhost:26657",
+                           to_addr=user_addr_b, amount=2, fees=100, node_ip="localhost:26657",
                            sequence=f"-s={sequence + 1} -a={number}  --offline")
         self.test_bank.test_send(**send_data_1)
         self.test_bank.test_send(**send_data_2)

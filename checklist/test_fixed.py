@@ -337,9 +337,9 @@ class TestRegionFixed(object):
         self.test_bank.test_send(**send_data3)
         all_fixed_list_start = HttpResponse.get_fixed_deposit_by_addr_hq(addr=None)
         # 发起定期委托
-        fixed_data1 = dict(from_addr=user1_addr, amount=9, month=3, fees=100, node="localhost:26657")
-        fixed_data2 = dict(from_addr=user2_addr, amount=9, month=6, fees=100, node="localhost:14002")
-        fixed_data3 = dict(from_addr=user3_addr, amount=9, month=1, fees=200, node="localhost:14007")
+        fixed_data1 = dict(from_addr=user1_addr, amount=9, month=3, fees=100, node_ip="localhost:26657")
+        fixed_data2 = dict(from_addr=user2_addr, amount=9, month=6, fees=100, node_ip="localhost:14002")
+        fixed_data3 = dict(from_addr=user3_addr, amount=9, month=1, fees=200, node_ip="localhost:14007")
         self.test_fixed.test_delegate_fixed(**fixed_data1)
         self.test_fixed.test_delegate_fixed(**fixed_data2)
         self.test_fixed.test_delegate_fixed(**fixed_data3)
@@ -358,9 +358,9 @@ class TestRegionFixed(object):
         assert len(user3_fixed_list) == 1
         assert len(all_fixed_list_end) == len(all_fixed_list_start) + 3
         # 打扫数据，取出自己的定期
-        # withdraw1 = dict(from_addr=user1_addr, fixed_delegation_id=user1_fixed_id, fees=100, node="localhost:26657")
-        # withdraw2 = dict(from_addr=user2_addr, fixed_delegation_id=user2_fixed_id, fees=100, node="localhost:14002")
-        # withdraw3 = dict(from_addr=user3_addr, fixed_delegation_id=user3_fixed_id, fees=200, node="localhost:14007")
+        # withdraw1 = dict(from_addr=user1_addr, fixed_delegation_id=user1_fixed_id, fees=100, node_ip="localhost:26657")
+        # withdraw2 = dict(from_addr=user2_addr, fixed_delegation_id=user2_fixed_id, fees=100, node_ip="localhost:14002")
+        # withdraw3 = dict(from_addr=user3_addr, fixed_delegation_id=user3_fixed_id, fees=200, node_ip="localhost:14007")
         # return user1_addr,user1_fixed_id
         return user1_addr, user2_addr, user3_addr, user1_fixed_id, user2_fixed_id, user3_fixed_id
         # self.test_fixed.test_withdraw_fixed(**withdraw1)
@@ -396,9 +396,9 @@ class TestRegionFixed(object):
         all_fixed_list_start = HttpResponse.get_fixed_deposit_by_addr_hq(addr=None)
 
         # 提取两个未到期的，
-        withdraw_1 = dict(from_addr=user1_addr, fixed_delegation_id=user1_fixed_id, fees=100, node="localhost:26657")
-        withdraw_2 = dict(from_addr=user2_addr, fixed_delegation_id=user2_fixed_id, fees=100, node="localhost:14002")
-        withdraw_3 = dict(from_addr=user3_addr, fixed_delegation_id=user3_fixed_id, fees=200, node="localhost:14007")
+        withdraw_1 = dict(from_addr=user1_addr, fixed_delegation_id=user1_fixed_id, fees=100, node_ip="localhost:26657")
+        withdraw_2 = dict(from_addr=user2_addr, fixed_delegation_id=user2_fixed_id, fees=100, node_ip="localhost:14002")
+        withdraw_3 = dict(from_addr=user3_addr, fixed_delegation_id=user3_fixed_id, fees=200, node_ip="localhost:14007")
         self.test_fixed.test_withdraw_fixed(**withdraw_1)
         self.test_fixed.test_withdraw_fixed(**withdraw_2)
         time.sleep(50)

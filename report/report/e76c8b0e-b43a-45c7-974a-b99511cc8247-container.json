@@ -1,0 +1,1 @@
+{"uuid": "8a067f1d-f8c2-431f-8ff5-dc5550f3e217", "children": ["9eafc104-52fc-4cbb-823b-ced7c0961ccc"], "befores": [{"name": "creat_two_nokyc", "status": "passed", "start": 1693278629508, "stop": 1693278648427}], "afters": [{"name": "creat_two_nokyc::0", "status": "passed", "start": 1693278661177, "stop": 1693278665493}], "start": 1693278629508, "stop": 1693278665493}

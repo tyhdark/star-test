@@ -169,7 +169,7 @@ class Tx(BaseClass):
             return Tx._executor(cmd)
 
         @staticmethod
-        def deposit_fixed(from_addr, amount, month=None, fees=Fees, node="localhost:26657"):
+        def deposit_fixed(from_addr, amount, month=None, fees=Fees, node_ip="localhost:26657"):
             """创建定期质押
             :param from_addr: 用户地址
             :param amount: 金额
@@ -182,25 +182,25 @@ class Tx(BaseClass):
                 mon = month
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking deposit-fixed {amount}{Tx.coin['c']} Term_{mon}_Months " \
                                  f"--from={from_addr}  --fees={fees}{Tx.coin['uc']}  {Tx.chain_id} " \
-                                 f"{Tx.keyring_backend} -y  --node=tcp://{node}"
+                                 f"{Tx.keyring_backend} -y  --node=tcp://{node_ip}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
         @staticmethod
-        def withdraw_fixed(from_addr, fixed_delegation_id, fees=Fees, node="localhost:26657"):
+        def withdraw_fixed(from_addr, fixed_delegation_id, fees=Fees, node_ip="localhost:26657"):
             """提取定期质押 可用"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx staking withdraw-fixed {fixed_delegation_id} --from={from_addr}" \
                                  f" --fees={fees}{Tx.coin['uc']} {Tx.chain_id} {Tx.keyring_backend} -y " \
-                                 f"--node=tcp://{node}"
+                                 f"--node=tcp://{node_ip}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
         @staticmethod
-        def withdraw_rewards(from_addr, fees=Fees, node="localhost:26657"):
+        def withdraw_rewards(from_addr, fees=Fees, node_ip="localhost:26657"):
             """用户提取活期收益，不区分KYC用户"""
             cmd = Tx.work_home + f"{Tx.chain_bin} tx distribution withdraw-rewards --from={from_addr} " \
                                  f"--fees={fees}{Tx.coin['uc']}  {Tx.chain_id} {Tx.keyring_backend} -y " \
-                                 f"--node=tcp://{node}"
+                                 f"--node=tcp://{node_ip}"
             logger.info(f"{inspect.stack()[0][3]}: {cmd}")
             return Tx._executor(cmd)
 
